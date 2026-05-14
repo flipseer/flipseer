@@ -1,9 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -23,8 +30,22 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = () => {
-    if (email) setSubmitted(true);
+  const handleSubmit = async () => {
+    if (!email) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from('waitlist')
+      .insert([{ email }]);
+    setLoading(false);
+    if (error) {
+      if (error.code === '23505') {
+        setSubmitted(true);
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    } else {
+      setSubmitted(true);
+    }
   };
 
   return (
@@ -33,7 +54,7 @@ export default function Home() {
       {/* NAV */}
       <nav style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1A7A4A' }}>
         <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>FLIPSEER</span>
-        <span style={{ fontSize: '13px', color: '#6B7280' }}>flipseer.com</span>
+        <a href="mailto:contact@flipseer.com" style={{ fontSize: '13px', color: '#2E9E5E', textDecoration: 'none' }}>contact@flipseer.com</a>
       </nav>
 
       {/* HERO */}
@@ -41,15 +62,13 @@ export default function Home() {
         <div style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', fontSize: '12px', fontWeight: 'bold', padding: '6px 16px', borderRadius: '20px', marginBottom: '24px', letterSpacing: '1px' }}>
           ⚽ WORLD CUP 2026 — BUILD YOUR REPUTATION BEFORE KICK-OFF
         </div>
-        <h1 style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 'bold', fontFamily: 'Georgia, serif', lineHeight: 1.15, marginBottom: '20px', maxWidth: '800px', margin: '0 auto 20px' }}>
+        <h1 style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 'bold', fontFamily: 'Georgia, serif', lineHeight: 1.15, maxWidth: '800px', margin: '0 auto 20px' }}>
           Build your forecasting<br />
           <span style={{ color: '#2E9E5E' }}>reputation in football.</span>
         </h1>
         <p style={{ fontSize: '18px', color: '#9CA3AF', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.6 }}>
           Where correct calls earn you status among real fans. No betting. No AI tips. Just your football intelligence — on record.
         </p>
-
-        {/* EMAIL CAPTURE */}
         {!submitted ? (
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
             <input
@@ -61,8 +80,9 @@ export default function Home() {
             />
             <button
               onClick={handleSubmit}
+              disabled={loading}
               style={{ padding: '14px 28px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-              Claim Your Spot →
+              {loading ? 'Saving...' : 'Claim Your Spot →'}
             </button>
           </div>
         ) : (
@@ -78,7 +98,7 @@ export default function Home() {
         <p style={{ color: '#6B7280', fontSize: '13px', letterSpacing: '2px', marginBottom: '20px' }}>WORLD CUP 2026 KICKS OFF IN</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
           {[['DAYS', days], ['HOURS', hours], ['MINS', minutes], ['SECS', seconds]].map(([label, val]) => (
-            <div key={label} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px 28px', minWidth: '80px' }}>
+            <div key={label as string} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px 28px', minWidth: '80px' }}>
               <div style={{ fontSize: '40px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{String(val).padStart(2, '0')}</div>
               <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '2px', marginTop: '4px' }}>{label}</div>
             </div>
@@ -88,7 +108,7 @@ export default function Home() {
 
       {/* HOW IT WORKS */}
       <section style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '48px', color: 'white' }}>How it works</h2>
+        <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '48px' }}>How it works</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
           {[
             { num: '01', title: 'Predict', desc: 'Submit your match predictions with a confidence percentage before kick-off.' },
@@ -104,7 +124,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SAMPLE PREDICTION CARDS */}
+      {/* PREDICTION CARDS */}
       <section style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
         <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '12px' }}>Real predictions. Real reputation.</h2>
         <p style={{ textAlign: 'center', color: '#6B7280', marginBottom: '40px' }}>Every call you make is permanently on record.</p>
@@ -121,7 +141,7 @@ export default function Home() {
                 <span style={{ backgroundColor: '#1A3A20', padding: '4px 10px', borderRadius: '6px', fontSize: '13px' }}>{pick}</span>
                 <span style={{ fontSize: '13px', color: '#2E9E5E' }}>{conf}% confidence</span>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: upset ? '#F59E0B' : '#2E9E5E', marginTop: '8px' }}>{result}</div>
+              <div style={{ fontSize: '13px', fontWeight: 'bold', color: upset ? '#F59E0B' : '#2E9E5E' }}>{result}</div>
             </div>
           ))}
         </div>
@@ -152,7 +172,7 @@ export default function Home() {
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px' }}>
           The World Cup starts June 11.<br />Build your reputation before kick-off.
         </h2>
-        <p style={{ color: '#E8F5ED', marginBottom: '32px' }}>29 days to establish your forecasting identity.</p>
+        <p style={{ color: '#E8F5ED', marginBottom: '32px' }}>28 days to establish your forecasting identity.</p>
         {!submitted ? (
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <input
@@ -164,8 +184,9 @@ export default function Home() {
             />
             <button
               onClick={handleSubmit}
+              disabled={loading}
               style={{ padding: '14px 28px', backgroundColor: '#0D1F0F', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-              Get Early Access →
+              {loading ? 'Saving...' : 'Get Early Access →'}
             </button>
           </div>
         ) : (
@@ -174,8 +195,13 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '13px' }}>© 2026 Flipseer · flipseer.com · No betting. No gambling. Pure football reputation.</p>
+      <footer style={{ padding: '32px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
+        <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '8px' }}>
+          © 2026 Flipseer · flipseer.com · No betting. No gambling. Pure football reputation.
+        </p>
+        <p style={{ color: '#6B7280', fontSize: '13px' }}>
+          Contact: <a href="mailto:contact@flipseer.com" style={{ color: '#2E9E5E', textDecoration: 'none' }}>contact@flipseer.com</a>
+        </p>
       </footer>
 
     </main>
