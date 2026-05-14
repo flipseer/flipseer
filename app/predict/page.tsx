@@ -68,14 +68,15 @@ export default function Predict() {
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
     setLoading(prev => ({ ...prev, [matchId]: true }));
-    const { error } = await supabase
-      .from('predictions')
-      .upsert({
-        user_id: user.id,
-        match_id: matchId,
-        predicted_outcome: predictions[matchId].outcome,
-        confidence_pct: predictions[matchId].confidence,
-      }, { onConflict: 'user_id,match_id' });
+  const { error } = await supabase
+  .from('predictions')
+  .upsert({
+    user_id: user.id,
+    match_id: matchId,
+    predicted_outcome: predictions[matchId].outcome,
+    confidence: predictions[matchId].confidence,
+    confidence_pct: predictions[matchId].confidence,
+  }, { onConflict: 'user_id,match_id' });
     setLoading(prev => ({ ...prev, [matchId]: false }));
     if (!error) setSaved(prev => ({ ...prev, [matchId]: true }));
   };
