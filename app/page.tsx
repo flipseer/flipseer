@@ -100,24 +100,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '48px' }}>How it works</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px' }}>
-          {[
-            { num: '01', title: 'Predict', desc: 'Submit your match predictions with a confidence percentage before kick-off.' },
-            { num: '02', title: 'Earn Reputation', desc: 'Correct calls build your score. Upset calls earn bonus reputation. Streaks multiply it.' },
-            { num: '03', title: 'Build Identity', desc: 'Your Forecast Journal grows every season. Share it. Own it. Forever.' },
-          ].map(({ num, title, desc }) => (
-            <div key={num} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '32px 24px', textAlign: 'center' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', marginBottom: '12px' }}>{num}</div>
-              <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px' }}>{title}</div>
-              <div style={{ fontSize: '14px', color: '#9CA3AF', lineHeight: 1.6 }}>{desc}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+{/* HOW IT WORKS */}
+<section style={{ maxWidth: '900px', margin: '0 auto', padding: '80px 20px' }}>
+  <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+    <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '8px' }}>How Flipseer Works</h2>
+    <p style={{ color: '#6B7280', fontSize: '16px' }}>Simple. Addictive. Permanent.</p>
+  </div>
 
+  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
+    {[
+      {
+        num: '01',
+        title: 'Predict',
+        icon: '🎯',
+        body: 'Submit your scoreline + confidence % before kick-off. Lock in your football brain — no edits, no excuses.'
+      },
+      {
+        num: '02',
+        title: 'Earn Reputation',
+        icon: '⭐',
+        body: 'Exact score → +30 pts · Correct winner → +10 pts · Bold calls (80%+) earn a confidence multiplier. Reputation updates instantly.'
+      },
+      {
+        num: '03',
+        title: 'Build Your Legacy',
+        icon: '👑',
+        body: 'Every prediction lives forever in your Forecast Journal. Collect badges. Climb global leaderboards. Your forecasting identity grows with every tournament.'
+      },
+    ].map(({ num, title, icon, body }) => (
+      <div key={num} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '32px 24px' }}>
+        <div style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>{num}</div>
+        <div style={{ fontSize: '32px', marginBottom: '12px' }}>{icon}</div>
+        <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '12px' }}>{title}</h3>
+        <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.6' }}>{body}</p>
+      </div>
+    ))}
+  </div>
+
+  {/* FLOW */}
+  <div style={{ marginTop: '48px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '13px', color: '#9CA3AF' }}>
+      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Predict Match</span>
+      <span>→</span>
+      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Match Ends</span>
+      <span>→</span>
+      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Points + Badge</span>
+      <span>→</span>
+      <span style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '6px 14px', borderRadius: '999px', fontWeight: 'bold' }}>Journal + Share ⚡</span>
+    </div>
+  </div>
+</section>
       {/* PREDICTION CARDS */}
       <section style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
         <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '12px' }}>Real predictions. Real reputation.</h2>
