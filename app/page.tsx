@@ -7,227 +7,117 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function Home() {
-  const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [days, setDays] = useState(0);
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+export default function Profile() {
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const target = new Date('2026-06-11T00:00:00Z');
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = target.getTime() - now.getTime();
-      if (diff <= 0) { clearInterval(interval); return; }
-      setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
-      setHours(Math.floor((diff / (1000 * 60 * 60)) % 24));
-      setMinutes(Math.floor((diff / (1000 * 60)) % 60));
-      setSeconds(Math.floor((diff / 1000) % 60));
-    }, 1000);
-    return () => clearInterval(interval);
+    const getProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { window.location.href = '/auth'; return; }
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      setProfile(data);
+      setLoading(false);
+    };
+    getProfile();
   }, []);
 
-  const handleSubmit = async () => {
-    if (!email) return;
-    setLoading(true);
-    const { error } = await supabase
-      .from('waitlist')
-      .insert([{ email }]);
-    setLoading(false);
-    if (error) {
-      if (error.code === '23505') {
-        setSubmitted(true);
-      } else {
-        alert('Something went wrong. Please try again.');
-      }
-    } else {
-      setSubmitted(true);
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
   };
+
+  if (loading) return (
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: '#2E9E5E', fontFamily: 'Georgia, serif', fontSize: '20px' }}>Loading...</p>
+    </main>
+  );
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
-      {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '80px 20px 60px' }}>
-        <div style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', fontSize: '12px', fontWeight: 'bold', padding: '6px 16px', borderRadius: '20px', marginBottom: '24px', letterSpacing: '1px' }}>
-          ⚽ WORLD CUP 2026 — BUILD YOUR REPUTATION BEFORE KICK-OFF
+      {/* PROFILE HERO */}
+      <section style={{ textAlign: 'center', padding: '60px 20px 40px' }}>
+        <div style={{ width: '80px', height: '80px', backgroundColor: '#1A7A4A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>⚽</div>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>@{profile?.username || 'forecaster'}</h1>
+        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '8px' }}>Football Forecaster · Flipseer</p>
+        <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '16px' }}>
+          <span style={{ fontSize: '16px' }}>{profile?.rank_icon || '🥉'}</span>
+          <span style={{ color: '#2E9E5E', fontWeight: 'bold', marginLeft: '8px', fontSize: '14px' }}>{profile?.rank || 'Rookie'}</span>
         </div>
-        <h1 style={{ fontSize: 'clamp(32px, 6vw, 64px)', fontWeight: 'bold', fontFamily: 'Georgia, serif', lineHeight: 1.15, maxWidth: '800px', margin: '0 auto 20px' }}>
-          Build your forecasting<br />
-          <span style={{ color: '#2E9E5E' }}>reputation in football.</span>
-        </h1>
-        <p style={{ fontSize: '18px', color: '#9CA3AF', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.6 }}>
-          Where correct calls earn you status among real fans. No betting. No AI tips. Just your football intelligence — on record.
-        </p>
-        {!submitted ? (
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ padding: '14px 20px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D2B14', color: 'white', fontSize: '16px', width: '280px', outline: 'none' }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              style={{ padding: '14px 28px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-              {loading ? 'Saving...' : 'Claim Your Spot →'}
-            </button>
-          </div>
-        ) : (
-          <div style={{ backgroundColor: '#1A7A4A', padding: '16px 32px', borderRadius: '8px', display: 'inline-block', marginBottom: '16px' }}>
-            ✅ You're on the list. Your forecasting reputation starts June 11.
-          </div>
-        )}
-        <p style={{ fontSize: '13px', color: '#6B7280' }}>No betting. No spam. Free to join.</p>
+        <br />
+        <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: '1px solid #1A7A4A', color: '#9CA3AF', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', marginTop: '8px' }}>
+          Sign Out
+        </button>
       </section>
 
-      {/* COUNTDOWN */}
-      <section style={{ textAlign: 'center', padding: '40px 20px' }}>
-        <p style={{ color: '#6B7280', fontSize: '13px', letterSpacing: '2px', marginBottom: '20px' }}>WORLD CUP 2026 KICKS OFF IN</p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-          {[['DAYS', days], ['HOURS', hours], ['MINS', minutes], ['SECS', seconds]].map(([label, val]) => (
-            <div key={label as string} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px 28px', minWidth: '80px' }}>
-              <div style={{ fontSize: '40px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{String(val).padStart(2, '0')}</div>
-              <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '2px', marginTop: '4px' }}>{label}</div>
+      {/* POINTS */}
+      <section style={{ textAlign: 'center', padding: '0 20px 40px' }}>
+        <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '2px solid #1A7A4A', borderRadius: '16px', padding: '24px 48px' }}>
+          <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{profile?.total_points ?? 0}</div>
+          <div style={{ fontSize: '13px', color: '#6B7280', letterSpacing: '2px', marginTop: '4px' }}>TOTAL POINTS</div>
+        </div>
+      </section>
+
+      {/* STATS */}
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {[
+            { label: 'Predictions', value: profile?.prediction_count ?? 0 },
+            { label: 'Correct', value: profile?.correct_count ?? 0 },
+            { label: 'Accuracy', value: `${profile?.accuracy_pct ?? 0}%` },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
+              <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{value}</div>
+              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>{label}</div>
             </div>
           ))}
         </div>
       </section>
 
-{/* HOW IT WORKS */}
-<section style={{ maxWidth: '900px', margin: '0 auto', padding: '80px 20px' }}>
-  <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-    <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '8px' }}>How Flipseer Works</h2>
-    <p style={{ color: '#6B7280', fontSize: '16px' }}>Simple. Addictive. Permanent.</p>
-  </div>
-
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
-    {[
-      {
-        num: '01',
-        title: 'Predict',
-        icon: '🎯',
-        body: 'Submit your scoreline + confidence % before kick-off. Lock in your football brain — no edits, no excuses.'
-      },
-      {
-        num: '02',
-        title: 'Earn Reputation',
-        icon: '⭐',
-        body: 'Exact score → +30 pts · Correct winner → +10 pts · Bold calls (80%+) earn a confidence multiplier. Reputation updates instantly.'
-      },
-      {
-        num: '03',
-        title: 'Build Your Legacy',
-        icon: '👑',
-        body: 'Every prediction lives forever in your Forecast Journal. Collect badges. Climb global leaderboards. Your forecasting identity grows with every tournament.'
-      },
-    ].map(({ num, title, icon, body }) => (
-      <div key={num} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '32px 24px' }}>
-        <div style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>{num}</div>
-        <div style={{ fontSize: '32px', marginBottom: '12px' }}>{icon}</div>
-        <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '12px' }}>{title}</h3>
-        <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.6' }}>{body}</p>
-      </div>
-    ))}
-  </div>
-
-  {/* FLOW */}
-  <div style={{ marginTop: '48px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', textAlign: 'center' }}>
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', flexWrap: 'wrap', fontSize: '13px', color: '#9CA3AF' }}>
-      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Predict Match</span>
-      <span>→</span>
-      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Match Ends</span>
-      <span>→</span>
-      <span style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '6px 14px', borderRadius: '999px' }}>Points + Badge</span>
-      <span>→</span>
-      <span style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '6px 14px', borderRadius: '999px', fontWeight: 'bold' }}>Journal + Share ⚡</span>
-    </div>
-  </div>
-</section>
-      {/* PREDICTION CARDS */}
-      <section style={{ padding: '60px 20px', maxWidth: '900px', margin: '0 auto' }}>
-        <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '12px' }}>Real predictions. Real reputation.</h2>
-        <p style={{ textAlign: 'center', color: '#6B7280', marginBottom: '40px' }}>Every call you make is permanently on record.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+      {/* RANK PROGRESS */}
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Rank Progress</h2>
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '24px' }}>
           {[
-            { match: 'Argentina vs Algeria', pick: 'Argentina Win', conf: 78, result: '✅ CORRECT', upset: false },
-            { match: 'Germany vs Japan', pick: 'Japan Win', conf: 35, result: '✅ UPSET CALL', upset: true },
-            { match: 'Brazil vs Mexico', pick: 'Brazil Win', conf: 82, result: '✅ CORRECT', upset: false },
-          ].map(({ match, pick, conf, result, upset }) => (
-            <div key={match} style={{ backgroundColor: '#0D2B14', border: `1px solid ${upset ? '#F59E0B' : '#1A7A4A'}`, borderRadius: '12px', padding: '20px' }}>
-              <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '8px' }}>⚽ World Cup 2026</div>
-              <div style={{ fontWeight: 'bold', marginBottom: '12px', fontSize: '15px' }}>{match}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <span style={{ backgroundColor: '#1A3A20', padding: '4px 10px', borderRadius: '6px', fontSize: '13px' }}>{pick}</span>
-                <span style={{ fontSize: '13px', color: '#2E9E5E' }}>{conf}% confidence</span>
+            { rank: '🥉 Rookie', min: 0, max: 49 },
+            { rank: '🎯 Predictor', min: 50, max: 199 },
+            { rank: '⭐ Pro', min: 200, max: 499 },
+            { rank: '🔥 Expert', min: 500, max: 999 },
+            { rank: '👑 Legend', min: 1000, max: 9999 },
+          ].map(({ rank, min, max }) => {
+            const pts = profile?.total_points ?? 0;
+            const active = pts >= min && pts <= max;
+            return (
+              <div key={rank} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1A3A1A' }}>
+                <span style={{ fontSize: '14px', color: active ? '#2E9E5E' : '#6B7280', fontWeight: active ? 'bold' : 'normal' }}>{rank}</span>
+                <span style={{ fontSize: '12px', color: '#6B7280' }}>{min}–{max === 9999 ? '∞' : max} pts</span>
+                {active && <span style={{ fontSize: '11px', backgroundColor: '#1A7A4A', color: 'white', padding: '2px 8px', borderRadius: '999px' }}>YOU</span>}
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: upset ? '#F59E0B' : '#2E9E5E' }}>{result}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
-      {/* BADGES */}
-      <section style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '12px' }}>Earn your badges</h2>
-        <p style={{ color: '#6B7280', marginBottom: '40px' }}>Performance-based only. No shortcuts.</p>
-        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px', maxWidth: '700px', margin: '0 auto' }}>
-          {[
-            { icon: '⚡', name: 'Upset Specialist', desc: '5+ correct upset calls' },
-            { icon: '🎯', name: 'Consistency King', desc: '70%+ accuracy over 30 picks' },
-            { icon: '🔥', name: 'Streak Master', desc: '10 correct in a row' },
-            { icon: '🏟️', name: 'Derby Oracle', desc: '3+ correct derby calls' },
-          ].map(({ icon, name, desc }) => (
-            <div key={name} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', width: '150px' }}>
-              <div style={{ fontSize: '28px', marginBottom: '8px' }}>{icon}</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>{name}</div>
-              <div style={{ fontSize: '11px', color: '#6B7280' }}>{desc}</div>
-            </div>
-          ))}
+      {/* FORECAST JOURNAL */}
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Forecast Journal</h2>
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '32px', textAlign: 'center' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📖</div>
+          <p style={{ color: '#6B7280', fontSize: '14px' }}>Your prediction history will appear here</p>
+          <a href="/predict" style={{ display: 'inline-block', marginTop: '16px', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            Make Your First Prediction →
+          </a>
         </div>
-      </section>
-
-      {/* FOOTER CTA */}
-      <section style={{ backgroundColor: '#1A7A4A', padding: '60px 20px', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px' }}>
-          The World Cup starts June 11.<br />Build your reputation before kick-off.
-        </h2>
-        <p style={{ color: '#E8F5ED', marginBottom: '32px' }}>28 days to establish your forecasting identity.</p>
-        {!submitted ? (
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ padding: '14px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#0D2B14', color: 'white', fontSize: '16px', width: '260px' }}
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              style={{ padding: '14px 28px', backgroundColor: '#0D1F0F', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-              {loading ? 'Saving...' : 'Get Early Access →'}
-            </button>
-          </div>
-        ) : (
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>✅ You're in. See you on June 11. ⚽</div>
-        )}
       </section>
 
       {/* FOOTER */}
-      <footer style={{ padding: '32px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '8px' }}>
-          © 2026 Flipseer · flipseer.com · No betting. No gambling. Pure football reputation.
-        </p>
-        <p style={{ color: '#6B7280', fontSize: '13px' }}>
-          Contact: <a href="mailto:contact@flipseer.com" style={{ color: '#2E9E5E', textDecoration: 'none' }}>contact@flipseer.com</a>
-        </p>
+      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
+        <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
       </footer>
 
     </main>
