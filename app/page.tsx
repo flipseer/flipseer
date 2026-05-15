@@ -39,7 +39,8 @@ export default function Profile() {
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-
+      <style>{`nav + nav { display: none; }`}</style>
+      
       {/* PROFILE HERO */}
       <section style={{ textAlign: 'center', padding: '60px 20px 40px' }}>
         <div style={{ width: '80px', height: '80px', backgroundColor: '#1A7A4A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>⚽</div>
