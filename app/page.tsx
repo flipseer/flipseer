@@ -51,12 +51,6 @@ export default function Home() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
-      {/* NAV */}
-      <nav style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1A7A4A' }}>
-        <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>FLIPSEER</span>
-        <a href="mailto:contact@flipseer.com" style={{ fontSize: '13px', color: '#2E9E5E', textDecoration: 'none' }}>contact@flipseer.com</a>
-      </nav>
-
       {/* HERO */}
       <section style={{ textAlign: 'center', padding: '80px 20px 60px' }}>
         <div style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', fontSize: '12px', fontWeight: 'bold', padding: '6px 16px', borderRadius: '20px', marginBottom: '24px', letterSpacing: '1px' }}>
