@@ -86,16 +86,7 @@ export default function Predict() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
-      {/* NAV */}
-      <nav style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1A7A4A', flexWrap: 'wrap', gap: '12px' }}>
-        <a href="/" style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', textDecoration: 'none' }}>FLIPSEER</a>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <a href="/profile" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>My Profile</a>
-          <a href="/leaderboard" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Leaderboard</a>
-        </div>
-      </nav>
-
-      {/* HEADER */}
+        {/* HEADER */}
       <section style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>⚽ World Cup 2026</h1>
         <p style={{ color: '#6B7280', fontSize: '14px' }}>Predict match outcomes before kick-off. Lock in your confidence.</p>
