@@ -43,7 +43,7 @@ export default function Profile() {
       {/* PROFILE HERO */}
       <section style={{ textAlign: 'center', padding: '60px 20px 40px' }}>
         <div style={{ width: '80px', height: '80px', backgroundColor: '#1A7A4A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>⚽</div>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>@{profile?.username || 'forecaster'}</h1>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '10px' }}>@{profile?.username || 'forecaster'}</h1>
         <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '8px' }}>Football Forecaster · Flipseer</p>
         <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '16px' }}>
           <span style={{ fontSize: '16px' }}>{profile?.rank_icon || '🥉'}</span>
