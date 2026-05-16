@@ -24,7 +24,7 @@ const WC_MATCHES = [
 
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
-  const [predictions, setPredictions] = useState<{[key: number]: {outcome: string, confidence: number, home_score?: number, away_score?: number}}>({});
+  const [predictions, setPredictions] = useState<{[key: number]: {outcome: string, confidence: number, predicted_home_score?: number, predicted_away_score?: number}}>({});
   const [saved, setSaved] = useState<{[key: number]: boolean}>({});
   const [loading, setLoading] = useState<{[key: number]: boolean}>({});
 
@@ -44,8 +44,8 @@ export default function Predict() {
           existing[p.match_id] = {
             outcome: p.predicted_outcome,
             confidence: p.confidence_pct,
-            home_score: p.home_score ?? undefined,
-            away_score: p.away_score ?? undefined,
+            predicted_home_score: p.predicted_home_score ?? undefined,
+            predicted_away_score: p.predicted_away_score ?? undefined,
           };
           savedMap[p.match_id] = true;
         });
@@ -59,7 +59,7 @@ export default function Predict() {
   const handlePredict = (matchId: number, outcome: string) => {
     setPredictions(prev => ({
       ...prev,
-      [matchId]: { outcome, confidence: prev[matchId]?.confidence || 50, home_score: prev[matchId]?.home_score, away_score: prev[matchId]?.away_score }
+      [matchId]: { outcome, confidence: prev[matchId]?.confidence || 50, predicted_home_score: prev[matchId]?.predicted_home_score, predicted_away_score: prev[matchId]?.predicted_away_score }
     }));
   };
 
@@ -70,7 +70,7 @@ export default function Predict() {
     }));
   };
 
-  const handleScore = (matchId: number, side: 'home_score' | 'away_score', value: number) => {
+  const handleScore = (matchId: number, side: 'predicted_home_score' | 'predicted_away_score', value: number) => {
     setPredictions(prev => ({
       ...prev,
       [matchId]: { ...prev[matchId], [side]: Math.max(0, Math.min(20, value)) }
@@ -88,8 +88,8 @@ export default function Predict() {
         predicted_outcome: predictions[matchId].outcome,
         confidence: predictions[matchId].confidence,
         confidence_pct: predictions[matchId].confidence,
-        home_score: predictions[matchId].home_score ?? null,
-        away_score: predictions[matchId].away_score ?? null,
+        predicted_home_score: predictions[matchId].predicted_home_score ?? null,
+        predicted_away_score: predictions[matchId].predicted_away_score ?? null,
       }, { onConflict: 'user_id,match_id' });
     setLoading(prev => ({ ...prev, [matchId]: false }));
     if (!error) setSaved(prev => ({ ...prev, [matchId]: true }));
@@ -165,10 +165,10 @@ export default function Predict() {
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                           <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.home}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <button onClick={() => handleScore(match.id, 'home_score', (pred.home_score ?? 0) - 1)}
+                            <button onClick={() => handleScore(match.id, 'predicted_home_score', (pred.predicted_home_score ?? 0) - 1)}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
-                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.home_score ?? 0}</span>
-                            <button onClick={() => handleScore(match.id, 'home_score', (pred.home_score ?? 0) + 1)}
+                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.predicted_home_score ?? 0}</span>
+                            <button onClick={() => handleScore(match.id, 'predicted_home_score', (pred.predicted_home_score ?? 0) + 1)}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
                           </div>
                         </div>
@@ -179,10 +179,10 @@ export default function Predict() {
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                           <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.away}</span>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <button onClick={() => handleScore(match.id, 'away_score', (pred.away_score ?? 0) - 1)}
+                            <button onClick={() => handleScore(match.id, 'predicted_away_score', (pred.predicted_away_score ?? 0) - 1)}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
-                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.away_score ?? 0}</span>
-                            <button onClick={() => handleScore(match.id, 'away_score', (pred.away_score ?? 0) + 1)}
+                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.predicted_away_score ?? 0}</span>
+                            <button onClick={() => handleScore(match.id, 'predicted_away_score', (pred.predicted_away_score ?? 0) + 1)}
                               style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
                           </div>
                         </div>
@@ -225,8 +225,8 @@ export default function Predict() {
                 <div style={{ backgroundColor: '#1A3A20', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '13px', color: '#6EE7B7' }}>
                     Your pick: <strong>{pred.outcome === 'home' ? match.home : pred.outcome === 'away' ? match.away : 'Draw'}</strong>
-                    {pred.home_score !== undefined && pred.away_score !== undefined && (
-                      <span> · Score: <strong>{pred.home_score} – {pred.away_score}</strong></span>
+                    {pred.predicted_home_score !== undefined && pred.predicted_away_score !== undefined && (
+                      <span> · Score: <strong>{pred.predicted_home_score} – {pred.predicted_away_score}</strong></span>
                     )}
                     {' '}· {pred.confidence}% confidence
                   </span>
