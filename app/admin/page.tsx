@@ -23,7 +23,7 @@ const WC_MATCHES = [
 ];
 
 export default function AdminPage() {
-  const [scores, setScores] = useState<{[key: number]: {home: string, away: string}}>({});
+  const [scores, setScores] = useState<{[key: number]: {home: string, away: string, upset: boolean}}>({});
   const [saving, setSaving] = useState<{[key: number]: boolean}>({});
   const [done, setDone] = useState<{[key: number]: boolean}>({});
   const [password, setPassword] = useState('');
@@ -61,6 +61,7 @@ export default function AdminPage() {
         home_score: parseInt(score.home),
         away_score: parseInt(score.away),
         status: 'finished',
+        is_upset: score.upset || false,
       }, { onConflict: 'id' });
 
     setSaving(prev => ({ ...prev, [matchId]: false }));
@@ -72,32 +73,38 @@ export default function AdminPage() {
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', padding: '40px 20px' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', color: '#2E9E5E', marginBottom: '8px' }}>⚙️ Match Results Settler</h1>
-        <p style={{ color: '#6B7280', marginBottom: '32px', fontSize: '14px' }}>Enter final scores to auto-assign points to all predictors.</p>
+        <p style={{ color: '#6B7280', marginBottom: '32px', fontSize: '14px' }}>Enter final scores to auto-assign points. Tick "Upset" for underdog wins (+12 bonus).</p>
 
         {WC_MATCHES.map(match => (
           <div key={match.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${done[match.id] ? '#2E9E5E' : '#1A7A4A'}`, borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-              <span style={{ fontWeight: 'bold', minWidth: '120px' }}>{match.home}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 'bold', minWidth: '110px', fontSize: '14px' }}>{match.home}</span>
               <input
-                type="number"
-                min="0"
-                max="20"
-                placeholder="0"
+                type="number" min="0" max="20" placeholder="0"
                 value={scores[match.id]?.home || ''}
                 onChange={e => setScores(prev => ({ ...prev, [match.id]: { ...prev[match.id], home: e.target.value }}))}
-                style={{ width: '60px', padding: '8px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}
+                style={{ width: '56px', padding: '8px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}
               />
               <span style={{ color: '#6B7280' }}>—</span>
               <input
-                type="number"
-                min="0"
-                max="20"
-                placeholder="0"
+                type="number" min="0" max="20" placeholder="0"
                 value={scores[match.id]?.away || ''}
                 onChange={e => setScores(prev => ({ ...prev, [match.id]: { ...prev[match.id], away: e.target.value }}))}
-                style={{ width: '60px', padding: '8px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}
+                style={{ width: '56px', padding: '8px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}
               />
-              <span style={{ fontWeight: 'bold', minWidth: '120px' }}>{match.away}</span>
+              <span style={{ fontWeight: 'bold', minWidth: '110px', fontSize: '14px' }}>{match.away}</span>
+
+              {/* Upset checkbox */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#F59E0B', cursor: 'pointer', marginLeft: '4px' }}>
+                <input
+                  type="checkbox"
+                  checked={scores[match.id]?.upset || false}
+                  onChange={e => setScores(prev => ({ ...prev, [match.id]: { ...prev[match.id], upset: e.target.checked }}))}
+                  style={{ width: '16px', height: '16px', accentColor: '#F59E0B' }}
+                />
+                ⚡ Upset
+              </label>
+
               <button
                 onClick={() => handleSettle(match.id)}
                 disabled={saving[match.id] || done[match.id]}
