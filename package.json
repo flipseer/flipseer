@@ -12,7 +12,8 @@
     "next": "14.2.3",
     "@supabase/supabase-js": "^2.39.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "@vercel/og": "^0.6.2"
   },
   "devDependencies": {
     "typescript": "^5",
