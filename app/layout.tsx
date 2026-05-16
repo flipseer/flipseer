@@ -4,8 +4,19 @@ import Navbar from '@/components/Navbar';
 export const metadata: Metadata = {
   title: 'Flipseer — Build Your Forecasting Reputation in Football',
   description: 'Where correct calls earn you status among real fans. No betting. No AI tips. Pure football reputation.',
+  openGraph: {
+    title: 'Flipseer — Build Your Forecasting Reputation in Football',
+    description: 'Where correct calls earn you status among real fans.',
+    images: [{ url: '/api/og', width: 1200, height: 630 }],
+    url: 'https://flipseer.com',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Flipseer — Build Your Forecasting Reputation',
+    description: 'Where correct calls earn you status among real fans.',
+    images: ['/api/og'],
+  },
 };
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
