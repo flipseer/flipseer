@@ -243,10 +243,28 @@ function PredictionHistory({ userId }: { userId: string }) {
               <div style={{ fontSize: '11px', color: '#4B5563' }}>
                 {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com')}`} target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#000000', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>𝕏 Share</a>
-                <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}`} target="_blank" rel="noopener noreferrer" style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>f Share</a>
-              </div>
+             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com')}`}
+    target="_blank" rel="noopener noreferrer"
+    style={{ backgroundColor: '#000000', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+    𝕏
+  </a>
+  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}`}
+    target="_blank" rel="noopener noreferrer"
+    style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+    f
+  </a>
+  <a href={`https://t.me/share/url?url=${encodeURIComponent('https://flipseer.com')}&text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ flipseer.com')}`}
+    target="_blank" rel="noopener noreferrer"
+    style={{ backgroundColor: '#229ED9', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+    ✈️
+  </a>
+  <a href={`https://wa.me/?text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com')}`}
+    target="_blank" rel="noopener noreferrer"
+    style={{ backgroundColor: '#25D366', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+    📱
+  </a>
+</div>
             </div>
           </div>
         );
