@@ -10,11 +10,13 @@ const supabase = createClient(
 export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string>('');
 
   useEffect(() => {
     const getProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = '/auth'; return; }
+      setUserId(user.id);
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -40,12 +42,11 @@ export default function Profile() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
       <style>{`nav + nav { display: none; }`}</style>
-      
-      {/* PROFILE HERO */}
+
       <section style={{ textAlign: 'center', padding: '60px 20px 40px' }}>
         <div style={{ width: '80px', height: '80px', backgroundColor: '#1A7A4A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: '32px' }}>⚽</div>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '10px' }}>@{profile?.username || 'forecaster'}</h1>
-        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '8px' }}>Football Forecaster · Flipseer</p>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>@{profile?.username || 'forecaster'}</h1>
+        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '10px' }}>Football Forecaster · Flipseer</p>
         <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '16px' }}>
           <span style={{ fontSize: '16px' }}>{profile?.rank_icon || '🥉'}</span>
           <span style={{ color: '#2E9E5E', fontWeight: 'bold', marginLeft: '8px', fontSize: '14px' }}>{profile?.rank || 'Rookie'}</span>
@@ -56,7 +57,6 @@ export default function Profile() {
         </button>
       </section>
 
-      {/* POINTS */}
       <section style={{ textAlign: 'center', padding: '0 20px 40px' }}>
         <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '2px solid #1A7A4A', borderRadius: '16px', padding: '24px 48px' }}>
           <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{profile?.total_points ?? 0}</div>
@@ -64,7 +64,6 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* STATS */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           {[
@@ -80,7 +79,6 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* RANK PROGRESS */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Rank Progress</h2>
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '24px' }}>
@@ -104,20 +102,18 @@ export default function Profile() {
         </div>
       </section>
 
-{/* FORECAST JOURNAL */}
-<section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
-  <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>📖 Forecast Journal</h2>
-  <PredictionHistory userId={profile?.id} />
-</section>
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>📖 Forecast Journal</h2>
+        <PredictionHistory userId={userId} />
+      </section>
 
-      {/* FOOTER */}
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
         <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
       </footer>
-
     </main>
   );
 }
+
 function PredictionHistory({ userId }: { userId: string }) {
   const [preds, setPreds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +135,7 @@ function PredictionHistory({ userId }: { userId: string }) {
 
   useEffect(() => {
     if (!userId) return;
-    const fetch = async () => {
+    const fetchPreds = async () => {
       const { data } = await supabase
         .from('predictions')
         .select('*')
@@ -148,7 +144,7 @@ function PredictionHistory({ userId }: { userId: string }) {
       if (data) setPreds(data);
       setLoading(false);
     };
-    fetch();
+    fetchPreds();
   }, [userId]);
 
   if (loading) return (
@@ -169,91 +165,64 @@ function PredictionHistory({ userId }: { userId: string }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {preds.map((p) => {
         const match = MATCHES[p.match_id];
-        const outcomLabel = p.predicted_outcome === 'home'
+        const outcomeLabel = p.predicted_outcome === 'home'
           ? match?.home
           : p.predicted_outcome === 'away'
           ? match?.away
           : 'Draw';
         const hasResult = p.points_earned !== null && p.points_earned !== undefined;
         const won = p.points_earned > 0;
+        const twitterText = encodeURIComponent(`I predicted ${outcomeLabel} in ${match?.home} vs ${match?.away} with ${p.confidence_pct}% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com`);
+        const fbText = encodeURIComponent(`I predicted ${outcomeLabel} in ${match?.home} vs ${match?.away} with ${p.confidence_pct}% confidence! ⚽ flipseer.com`);
 
         return (
-          <div key={p.id} style={{
-            backgroundColor: '#0D2B14',
-            border: `1px solid ${hasResult ? (won ? '#2E9E5E' : '#7F1D1D') : '#1A7A4A'}`,
-            borderRadius: '12px',
-            padding: '16px 20px',
-          }}>
-            {/* Match */}
+          <div key={p.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${hasResult ? (won ? '#2E9E5E' : '#7F1D1D') : '#1A7A4A'}`, borderRadius: '12px', padding: '16px 20px' }}>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                {match?.home} vs {match?.away}
-              </span>
+              <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{match?.home} vs {match?.away}</span>
               {hasResult ? (
-                <span style={{
-                  fontSize: '12px',
-                  backgroundColor: won ? '#1A7A4A' : '#7F1D1D',
-                  color: won ? '#6EE7B7' : '#FCA5A5',
-                  padding: '2px 10px',
-                  borderRadius: '999px',
-                  fontWeight: 'bold'
-                }}>
+                <span style={{ fontSize: '12px', backgroundColor: won ? '#1A7A4A' : '#7F1D1D', color: won ? '#6EE7B7' : '#FCA5A5', padding: '2px 10px', borderRadius: '999px', fontWeight: 'bold' }}>
                   {won ? `+${p.points_earned} pts ✅` : '0 pts ❌'}
                 </span>
               ) : (
-                <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '2px 10px', borderRadius: '999px' }}>
-                  Pending
-                </span>
+                <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '2px 10px', borderRadius: '999px' }}>Pending ⏳</span>
               )}
             </div>
 
-            {/* Prediction */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Your pick: </span>
-                <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold' }}>{outcomLabel}</span>
+                <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Pick: </span>
+                <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold' }}>{outcomeLabel}</span>
               </div>
-              <div style={{ textAlign: 'right' }}>
+              <div>
                 <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Confidence: </span>
                 <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold' }}>{p.confidence_pct}%</span>
               </div>
             </div>
 
-            {/* Date + Share */}
-<div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-  <div style={{ fontSize: '11px', color: '#4B5563' }}>
-    {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-  </div>
-  <div style={{ display: 'flex', gap: '8px' }}>
-    
-      href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I predicted ${outcomLabel} in ${match?.home} vs ${match?.away} with ${p.confidence_pct}% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com`)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ backgroundColor: '#000000', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-      𝕏 Share
-    </a>
-    
-      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}&quote=${encodeURIComponent(`I predicted ${outcomLabel} in ${match?.home} vs ${match?.away} with ${p.confidence_pct}% confidence! ⚽ flipseer.com`)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-      f Share
-    </a>
-  </div>
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ backgroundColor: '#000000', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-      𝕏 Share
-    </a>
-    
-      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}&quote=${encodeURIComponent(`I predicted ${outcomeLabel} in ${match?.home} vs ${match?.away} with ${p.confidence_pct}% confidence! ⚽ flipseer.com`)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-      f Share
-    </a>
-  </div>
-</div>          </div>
+            <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '11px', color: '#4B5563' }}>
+                {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                
+                  href={`https://twitter.com/intent/tweet?text=${twitterText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#000000', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+                  𝕏 Share
+                </a>
+                
+                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}&quote=${fbText}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
+                  f Share
+                </a>
+              </div>
+            </div>
+
+          </div>
         );
       })}
     </div>
