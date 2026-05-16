@@ -24,7 +24,7 @@ const WC_MATCHES = [
 
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
-  const [predictions, setPredictions] = useState<{[key: number]: {outcome: string, confidence: number}}>({});
+  const [predictions, setPredictions] = useState<{[key: number]: {outcome: string, confidence: number, home_score?: number, away_score?: number}}>({});
   const [saved, setSaved] = useState<{[key: number]: boolean}>({});
   const [loading, setLoading] = useState<{[key: number]: boolean}>({});
 
@@ -41,7 +41,12 @@ export default function Predict() {
         const existing: any = {};
         const savedMap: any = {};
         data.forEach((p: any) => {
-          existing[p.match_id] = { outcome: p.predicted_outcome, confidence: p.confidence_pct };
+          existing[p.match_id] = {
+            outcome: p.predicted_outcome,
+            confidence: p.confidence_pct,
+            home_score: p.home_score ?? undefined,
+            away_score: p.away_score ?? undefined,
+          };
           savedMap[p.match_id] = true;
         });
         setPredictions(existing);
@@ -54,7 +59,7 @@ export default function Predict() {
   const handlePredict = (matchId: number, outcome: string) => {
     setPredictions(prev => ({
       ...prev,
-      [matchId]: { outcome, confidence: prev[matchId]?.confidence || 50 }
+      [matchId]: { outcome, confidence: prev[matchId]?.confidence || 50, home_score: prev[matchId]?.home_score, away_score: prev[matchId]?.away_score }
     }));
   };
 
@@ -65,18 +70,27 @@ export default function Predict() {
     }));
   };
 
+  const handleScore = (matchId: number, side: 'home_score' | 'away_score', value: number) => {
+    setPredictions(prev => ({
+      ...prev,
+      [matchId]: { ...prev[matchId], [side]: Math.max(0, Math.min(20, value)) }
+    }));
+  };
+
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
     setLoading(prev => ({ ...prev, [matchId]: true }));
-  const { error } = await supabase
-  .from('predictions')
-  .upsert({
-    user_id: user.id,
-    match_id: matchId,
-    predicted_outcome: predictions[matchId].outcome,
-    confidence: predictions[matchId].confidence,
-    confidence_pct: predictions[matchId].confidence,
-  }, { onConflict: 'user_id,match_id' });
+    const { error } = await supabase
+      .from('predictions')
+      .upsert({
+        user_id: user.id,
+        match_id: matchId,
+        predicted_outcome: predictions[matchId].outcome,
+        confidence: predictions[matchId].confidence,
+        confidence_pct: predictions[matchId].confidence,
+        home_score: predictions[matchId].home_score ?? null,
+        away_score: predictions[matchId].away_score ?? null,
+      }, { onConflict: 'user_id,match_id' });
     setLoading(prev => ({ ...prev, [matchId]: false }));
     if (!error) setSaved(prev => ({ ...prev, [matchId]: true }));
   };
@@ -86,7 +100,7 @@ export default function Predict() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
-        {/* HEADER */}
+      {/* HEADER */}
       <section style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>⚽ World Cup 2026</h1>
         <p style={{ color: '#6B7280', fontSize: '14px' }}>Predict match outcomes before kick-off. Lock in your confidence.</p>
@@ -117,9 +131,9 @@ export default function Predict() {
                 <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.away}</span>
               </div>
 
-              {/* OUTCOME BUTTONS */}
               {!locked && (
                 <>
+                  {/* OUTCOME BUTTONS */}
                   <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
                     {[
                       { value: 'home', label: `${match.home} Win` },
@@ -139,6 +153,42 @@ export default function Predict() {
                       </button>
                     ))}
                   </div>
+
+                  {/* EXACT SCORE */}
+                  {pred?.outcome && (
+                    <div style={{ marginBottom: '16px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '12px' }}>
+                      <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '10px', textAlign: 'center' }}>
+                        🎯 Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+25 bonus pts if correct!)</span>
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                        {/* Home Score */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.home}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <button onClick={() => handleScore(match.id, 'home_score', (pred.home_score ?? 0) - 1)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
+                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.home_score ?? 0}</span>
+                            <button onClick={() => handleScore(match.id, 'home_score', (pred.home_score ?? 0) + 1)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
+                          </div>
+                        </div>
+
+                        <span style={{ fontSize: '20px', color: '#6B7280' }}>:</span>
+
+                        {/* Away Score */}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.away}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <button onClick={() => handleScore(match.id, 'away_score', (pred.away_score ?? 0) - 1)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
+                            <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{pred.away_score ?? 0}</span>
+                            <button onClick={() => handleScore(match.id, 'away_score', (pred.away_score ?? 0) + 1)}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* CONFIDENCE SLIDER */}
                   {pred?.outcome && (
@@ -174,7 +224,11 @@ export default function Predict() {
               {locked && pred?.outcome && (
                 <div style={{ backgroundColor: '#1A3A20', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
                   <span style={{ fontSize: '13px', color: '#6EE7B7' }}>
-                    Your pick: <strong>{pred.outcome === 'home' ? match.home : pred.outcome === 'away' ? match.away : 'Draw'}</strong> · {pred.confidence}% confidence
+                    Your pick: <strong>{pred.outcome === 'home' ? match.home : pred.outcome === 'away' ? match.away : 'Draw'}</strong>
+                    {pred.home_score !== undefined && pred.away_score !== undefined && (
+                      <span> · Score: <strong>{pred.home_score} – {pred.away_score}</strong></span>
+                    )}
+                    {' '}· {pred.confidence}% confidence
                   </span>
                 </div>
               )}
