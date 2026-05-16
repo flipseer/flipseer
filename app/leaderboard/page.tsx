@@ -2,6 +2,11 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 type Leader = {
   id: string
   username: string
@@ -11,59 +16,108 @@ type Leader = {
   accuracy_pct: number
   rank: string
   rank_icon: string
+  country: string
   position: number
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const COUNTRIES = [
+  { code: '', label: '🌍 Global' },
+  { code: 'IN', label: '🇮🇳 India' },
+  { code: 'BR', label: '🇧🇷 Brazil' },
+  { code: 'GB', label: '🇬🇧 UK' },
+  { code: 'US', label: '🇺🇸 USA' },
+  { code: 'NG', label: '🇳🇬 Nigeria' },
+  { code: 'AR', label: '🇦🇷 Argentina' },
+  { code: 'DE', label: '🇩🇪 Germany' },
+  { code: 'FR', label: '🇫🇷 France' },
+  { code: 'ES', label: '🇪🇸 Spain' },
+]
 
 export default function LeaderboardPage() {
   const [leaders, setLeaders] = useState<Leader[]>([])
   const [loading, setLoading] = useState(true)
+  const [activeCountry, setActiveCountry] = useState('')
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
-      const { data, error } = await supabase
+      setLoading(true)
+      let query = supabase
         .from('leaderboard')
         .select('*')
         .limit(50)
+
+      if (activeCountry) {
+        query = query.eq('country', activeCountry)
+      }
+
+      const { data, error } = await query
       if (!error && data) setLeaders(data)
       setLoading(false)
     }
     fetchLeaderboard()
-  }, [])
+  }, [activeCountry])
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-green-400">⚽ Leaderboard</h1>
-          <p className="text-gray-400 mt-1">Top predictors for World Cup 2026</p>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0D1F0F', color: 'white', fontFamily: 'Arial, sans-serif', padding: '0 0 60px' }}>
+      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '40px 20px 0' }}>
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', color: '#2E9E5E', marginBottom: '8px' }}>⚽ Leaderboard</h1>
+          <p style={{ color: '#6B7280', fontSize: '14px' }}>Top predictors for World Cup 2026</p>
         </div>
+
+        {/* Country Tabs */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px', justifyContent: 'center' }}>
+          {COUNTRIES.map(c => (
+            <button
+              key={c.code}
+              onClick={() => setActiveCountry(c.code)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '999px',
+                border: '1px solid',
+                borderColor: activeCountry === c.code ? '#2E9E5E' : '#1A7A4A',
+                backgroundColor: activeCountry === c.code ? '#1A7A4A' : 'transparent',
+                color: activeCountry === c.code ? 'white' : '#9CA3AF',
+                fontSize: '12px',
+                cursor: 'pointer',
+                fontWeight: activeCountry === c.code ? 'bold' : 'normal',
+              }}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* List */}
         {loading ? (
-          <div className="text-center text-gray-400 py-20">Loading...</div>
+          <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px' }}>Loading...</div>
         ) : leaders.length === 0 ? (
-          <div className="text-center text-gray-400 py-20">No predictions yet. Be the first! 🎯</div>
+          <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px' }}>
+            No predictors yet for this region. Be the first! 🎯
+          </div>
         ) : (
-          <div className="space-y-3">
-            {leaders.map((leader) => (
-              <div key={leader.id} className={`flex items-center gap-4 p-4 rounded-xl border ${
-                leader.position === 1 ? 'border-yellow-400 bg-yellow-400/10' :
-                leader.position === 2 ? 'border-gray-300 bg-gray-300/10' :
-                leader.position === 3 ? 'border-orange-400 bg-orange-400/10' :
-                'border-gray-700 bg-gray-900'}`}>
-                <div className="text-xl font-bold w-8 text-center">
-                  {leader.position === 1 ? '🥇' : leader.position === 2 ? '🥈' : leader.position === 3 ? '🥉' : `#${leader.position}`}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {leaders.map((leader, i) => (
+              <div key={leader.id} style={{
+                display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px',
+                borderRadius: '12px', border: '1px solid',
+                borderColor: i === 0 ? '#F59E0B' : i === 1 ? '#9CA3AF' : i === 2 ? '#F97316' : '#1A7A4A',
+                backgroundColor: i === 0 ? 'rgba(245,158,11,0.08)' : i === 1 ? 'rgba(156,163,175,0.08)' : i === 2 ? 'rgba(249,115,22,0.08)' : '#0D2B14',
+              }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', width: '32px', textAlign: 'center' }}>
+                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold">{leader.username || 'Anonymous'}</div>
-                  <div className="text-sm text-gray-400">{leader.rank_icon} {leader.rank} · {leader.prediction_count} predictions</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{leader.username || 'Anonymous'}</div>
+                  <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '2px' }}>
+                    {leader.rank_icon} {leader.rank} · {leader.prediction_count} predictions
+                    {leader.country && ` · ${leader.country}`}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-green-400 font-bold text-lg">{leader.total_points} pts</div>
-                  <div className="text-sm text-gray-400">{leader.accuracy_pct}% acc</div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ color: '#2E9E5E', fontWeight: 'bold', fontSize: '18px' }}>{leader.total_points} pts</div>
+                  <div style={{ fontSize: '12px', color: '#6B7280' }}>{leader.accuracy_pct}% acc</div>
                 </div>
               </div>
             ))}
