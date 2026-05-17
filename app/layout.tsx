@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer', url: 'https://flipseer.com' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
+  verification: {
+},
   metadataBase: new URL('https://flipseer.com'),
   alternates: {
     canonical: 'https://flipseer.com',
