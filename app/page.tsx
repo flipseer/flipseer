@@ -35,8 +35,7 @@ const COMING_SOON = [
   { icon: '🌍', title: 'La Liga & Serie A', desc: 'Full coverage of Spanish and Italian football', date: 'Sep 2026' },
   { icon: '⭐', title: 'Flipseer Pro', desc: 'Advanced analytics, AI insights, exclusive badges', date: 'Jul 2026' },
   { icon: '🤝', title: 'Brand Partnerships', desc: 'Exclusive rewards from top football brands', date: 'Late 2026' },
-  { icon: '🏏', title: 'Cricket & More', desc: 'IPL, T20 World Cup — beyond football', date: '2027' },
-];
+  ];
 
 export default function Home() {
   const [email, setEmail] = useState('');
