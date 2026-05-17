@@ -30,6 +30,14 @@ const FALLBACK_TICKER = [
   { country: 'Japan', username: 'Kenji', match: 'Germany vs Japan', pick: 'Japan Win', confidence: 60, upset: true },
 ];
 
+const COMING_SOON = [
+  { icon: '🏆', title: 'EPL & Champions League', desc: "Predict every match across Europe's biggest leagues", date: 'Aug 2026' },
+  { icon: '🌍', title: 'La Liga & Serie A', desc: 'Full coverage of Spanish and Italian football', date: 'Sep 2026' },
+  { icon: '⭐', title: 'Flipseer Pro', desc: 'Advanced analytics, AI insights, exclusive badges', date: 'Jul 2026' },
+  { icon: '🤝', title: 'Brand Partnerships', desc: 'Exclusive rewards from top football brands', date: 'Late 2026' },
+  { icon: '🏏', title: 'Cricket & More', desc: 'IPL, T20 World Cup — beyond football', date: '2027' },
+];
+
 export default function Home() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -84,12 +92,6 @@ export default function Home() {
     };
     fetchTicker();
   }, []);
-
-  const handleSubmit = async () => {
-    if (!email) return;
-    await supabase.from('waitlist').insert([{ email }]);
-    setSubmitted(true);
-  };
 
   const doubled = [...tickerItems, ...tickerItems];
 
@@ -230,6 +232,81 @@ export default function Home() {
               <div style={{ fontSize: '14px', color: '#9CA3AF', fontWeight: 'bold' }}>{item.text}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* WHAT'S COMING */}
+      <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 80px' }}>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>ROADMAP</p>
+        <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '8px' }}>
+          🚀 What's Coming
+        </h2>
+        <p style={{ textAlign: 'center', color: '#6B7280', fontSize: '14px', marginBottom: '32px' }}>
+          Flipseer is just getting started. The World Cup is only the beginning.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+          {COMING_SOON.map(({ icon, title, desc, date }) => (
+            <div key={title} style={{
+              backgroundColor: '#0D2B14',
+              border: '1px solid #1A7A4A',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              transition: 'border-color 0.2s',
+            }}>
+              <div style={{ fontSize: '28px', minWidth: '44px', textAlign: 'center' }}>{icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', marginBottom: '3px' }}>{title}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>{desc}</div>
+              </div>
+              <div style={{
+                fontSize: '11px',
+                color: '#2E9E5E',
+                fontWeight: 'bold',
+                backgroundColor: '#0D1F0F',
+                border: '1px solid #1A7A4A',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                whiteSpace: 'nowrap',
+              }}>
+                {date}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* NOTIFY ME */}
+        <div style={{
+          textAlign: 'center',
+          padding: '28px 20px',
+          backgroundColor: '#0D2B14',
+          border: '1px solid #2E9E5E',
+          borderRadius: '16px',
+          boxShadow: '0 0 24px rgba(46,158,94,0.1)',
+        }}>
+          <div style={{ fontSize: '28px', marginBottom: '8px' }}>🔔</div>
+          <p style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '6px' }}>
+            Be first when new leagues launch
+          </p>
+          <p style={{ fontSize: '13px', color: '#6B7280', marginBottom: '16px' }}>
+            EPL, Champions League, La Liga — your reputation carries over.
+          </p>
+          <a href="/auth" style={{
+            display: 'inline-block',
+            backgroundColor: '#1A7A4A',
+            color: 'white',
+            padding: '12px 32px',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 0 20px rgba(46,158,94,0.2)',
+          }}>
+            Join Now — It's Free →
+          </a>
         </div>
       </section>
 
