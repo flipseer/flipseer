@@ -54,11 +54,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-  verification: {
-    // Add your Google Search Console verification code here
-    // google: 'your-google-verification-code',
-  },
-  category: 'sports',
+    category: 'sports',
 };
 
 const structuredData = {
