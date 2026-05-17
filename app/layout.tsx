@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer', url: 'https://flipseer.com' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
+  <head>
+  <meta name="google-site-verification" content="paste_your_code_here" />
   metadataBase: new URL('https://flipseer.com'),
   alternates: {
     canonical: 'https://flipseer.com',
