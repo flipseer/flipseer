@@ -2,26 +2,102 @@ import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
-  title: 'Flipseer — Build Your Forecasting Reputation in Football',
-  description: 'Predict World Cup 2026 matches, earn reputation points, build your permanent Forecast Journal and climb global & national leaderboards.',
+  title: 'Flipseer — Build Your Football Reputation | World Cup 2026 Predictor',
+  description: 'Predict World Cup 2026 matches, earn reputation points, and build your permanent football legacy. Free to join. No betting. No gambling. Pure football forecasting.',
+  keywords: 'world cup 2026 predictions, football predictor, football forecasting, predict football matches, world cup predictor, football reputation, football prediction game, predict world cup 2026',
+  authors: [{ name: 'Flipseer', url: 'https://flipseer.com' }],
+  creator: 'Flipseer',
+  publisher: 'Flipseer',
+  metadataBase: new URL('https://flipseer.com'),
+  alternates: {
+    canonical: 'https://flipseer.com',
+  },
   openGraph: {
-    title: 'Flipseer — Build Your Forecasting Reputation in Football',
-    description: 'Where correct calls earn you status among real fans.',
-    images: [{ url: 'https://flipseer.com/api/og/home', width: 1200, height: 630 }],
+    title: 'Flipseer — Your Football Legacy Starts Here',
+    description: 'Predict World Cup 2026 matches before kick-off. Earn reputation points. Build a permanent record of your football intelligence. Free. No betting. Ever.',
     url: 'https://flipseer.com',
+    siteName: 'Flipseer',
+    images: [
+      {
+        url: 'https://flipseer.com/api/og/home',
+        width: 1200,
+        height: 630,
+        alt: 'Flipseer — Build Your Football Reputation',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Flipseer — Build Your Forecasting Reputation',
-    description: 'Where correct calls earn you status among real fans.',
+    title: 'Flipseer — Build Your Football Reputation | World Cup 2026',
+    description: 'Predict World Cup 2026. Earn points. Build your permanent football legacy. Free. No betting. Ever.',
     images: ['https://flipseer.com/api/og/home'],
+    creator: '@flipseer',
+    site: '@flipseer',
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  verification: {
+    // Add your Google Search Console verification code here
+    // google: 'your-google-verification-code',
+  },
+  category: 'sports',
+};
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Flipseer',
+  url: 'https://flipseer.com',
+  description: 'The permanent public record of your football intelligence. Predict World Cup 2026 matches, earn reputation points, and build your football legacy.',
+  applicationCategory: 'SportsApplication',
+  operatingSystem: 'Web',
+  browserRequirements: 'Requires JavaScript',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+  },
+  creator: {
+    '@type': 'Organization',
+    name: 'Flipseer',
+    url: 'https://flipseer.com',
+  },
+  featureList: [
+    'World Cup 2026 match predictions',
+    'Global leaderboards',
+    'National leaderboards',
+    'Exact score predictions',
+    'Permanent forecast journal',
+    'Reputation points system',
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+
+        {/* PostHog Analytics */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,7 +136,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             © 2026 Flipseer · Pure football reputation · No betting · No AI tips
           </p>
         </footer>
-
       </body>
     </html>
   );
