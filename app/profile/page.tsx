@@ -82,13 +82,10 @@ export default function Profile() {
 
       {/* POINTS + STATS */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '24px 20px' }}>
-        {/* Big points */}
         <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '20px', padding: '28px', textAlign: 'center', marginBottom: '16px', boxShadow: '0 0 32px rgba(46,158,94,0.15)' }}>
           <div style={{ fontSize: '56px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', lineHeight: 1 }}>{profile?.total_points ?? 0}</div>
           <div style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '3px', marginTop: '8px' }}>TOTAL POINTS</div>
         </div>
-
-        {/* Stats grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
           {[
             { label: 'Predictions', value: profile?.prediction_count ?? 0, icon: '🎯' },
@@ -152,7 +149,7 @@ export default function Profile() {
       {/* FORECAST JOURNAL */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>📖 Forecast Journal</h2>
-        <PredictionHistory userId={userId} />
+        <PredictionHistory userId={userId} username={profile?.username || 'forecaster'} />
       </section>
 
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
@@ -162,9 +159,173 @@ export default function Profile() {
   );
 }
 
-function PredictionHistory({ userId }: { userId: string }) {
+// ─────────────────────────────────────────
+// SHARE CARD MODAL
+// ─────────────────────────────────────────
+function ShareCard({ prediction, match, username, onClose }: {
+  prediction: any;
+  match: { home: string; away: string };
+  username: string;
+  onClose: () => void;
+}) {
+  const outcomeLabel = prediction.predicted_outcome === 'home' ? match.home : prediction.predicted_outcome === 'away' ? match.away : 'Draw';
+  const hasResult = prediction.points_earned !== null && prediction.points_earned !== undefined;
+  const won = prediction.points_earned > 0;
+
+  const shareText = hasResult
+    ? `⚽ I predicted ${outcomeLabel} in ${match.home} vs ${match.away} with ${prediction.confidence_pct}% confidence — and ${won ? `earned +${prediction.points_earned} pts! ✅` : 'got it wrong this time ❌'}\n\nBuild your football reputation at flipseer.com 🏆`
+    : `⚽ I just predicted ${outcomeLabel} in ${match.home} vs ${match.away} with ${prediction.confidence_pct}% confidence!\n\nBuild your permanent football reputation at flipseer.com 🏆 #WorldCup2026`;
+
+  const shareUrl = 'https://flipseer.com';
+  const encodedText = encodeURIComponent(shareText);
+  const encodedUrl = encodeURIComponent(shareUrl);
+
+  const platforms = [
+    {
+      name: 'X',
+      label: '𝕏',
+      bg: '#000000',
+      url: `https://twitter.com/intent/tweet?text=${encodedText}`,
+    },
+    {
+      name: 'Facebook',
+      label: 'f',
+      bg: '#1877F2',
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,
+    },
+    {
+      name: 'WhatsApp',
+      label: '📱',
+      bg: '#25D366',
+      url: `https://wa.me/?text=${encodedText}`,
+    },
+    {
+      name: 'LinkedIn',
+      label: 'in',
+      bg: '#0A66C2',
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${encodedText}`,
+    },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000, padding: '20px',
+    }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: '400px',
+          backgroundColor: '#0D1F0F',
+          border: '1px solid #2E9E5E',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 0 60px rgba(46,158,94,0.3)',
+        }}
+      >
+        {/* CARD HEADER */}
+        <div style={{ background: 'linear-gradient(135deg, #1A7A4A, #2E9E5E)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', letterSpacing: '1px' }}>⚽ FLIPSEER</span>
+          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', backgroundColor: 'rgba(0,0,0,0.2)', padding: '3px 10px', borderRadius: '999px' }}>World Cup 2026</span>
+        </div>
+
+        {/* CARD BODY */}
+        <div style={{ padding: '24px' }}>
+
+          {/* Match */}
+          <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '1px', marginBottom: '8px', fontWeight: 'bold' }}>MATCH PREDICTION</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{match.home}</span>
+            <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', padding: '4px 10px', borderRadius: '999px' }}>vs</span>
+            <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{match.away}</span>
+          </div>
+
+          {/* Prediction details */}
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '3px' }}>MY PICK</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{outcomeLabel}</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '3px' }}>CONFIDENCE</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{prediction.confidence_pct}%</div>
+              </div>
+            </div>
+
+            {/* Result badge */}
+            {hasResult ? (
+              <div style={{ textAlign: 'center', backgroundColor: won ? 'rgba(46,158,94,0.15)' : 'rgba(127,29,29,0.15)', border: `1px solid ${won ? '#2E9E5E' : '#7F1D1D'}`, borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 'bold', color: won ? '#6EE7B7' : '#FCA5A5' }}>
+                {won ? `+${prediction.points_earned} pts earned ✅` : '0 pts · Missed this one ❌'}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid #374151', borderRadius: '8px', padding: '8px', fontSize: '13px', color: '#6B7280' }}>
+                ⏳ Awaiting result · Match not played yet
+              </div>
+            )}
+          </div>
+
+          {/* Username + URL */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ fontSize: '13px', color: '#9CA3AF' }}>
+              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>@{username}</span> on Flipseer
+            </div>
+            <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: 'bold' }}>flipseer.com</div>
+          </div>
+
+          {/* SHARE LABEL */}
+          <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '1px', marginBottom: '12px', textAlign: 'center', fontWeight: 'bold' }}>SHARE YOUR PREDICTION</div>
+
+          {/* PLATFORM BUTTONS */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            {platforms.map(({ name, label, bg, url }) => (
+              <a
+                key={name}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  flex: 1,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                  backgroundColor: bg,
+                  color: 'white',
+                  padding: '12px 8px',
+                  borderRadius: '12px',
+                  textDecoration: 'none',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  boxShadow: `0 4px 12px ${bg}40`,
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>{label}</span>
+                <span style={{ fontSize: '10px', fontWeight: 'normal', opacity: 0.9 }}>{name}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* CLOSE */}
+        <div style={{ padding: '0 24px 20px', textAlign: 'center' }}>
+          <button onClick={onClose} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '8px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', width: '100%' }}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────
+// PREDICTION HISTORY
+// ─────────────────────────────────────────
+function PredictionHistory({ userId, username }: { userId: string; username: string }) {
   const [preds, setPreds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareCard, setShareCard] = useState<any>(null);
 
   const MATCHES: { [key: number]: { home: string; away: string } } = {
     1: { home: 'Mexico', away: 'South Africa' },
@@ -195,9 +356,7 @@ function PredictionHistory({ userId }: { userId: string }) {
     fetchPreds();
   }, [userId]);
 
-  if (loading) return (
-    <div style={{ textAlign: 'center', padding: '32px', color: '#6B7280' }}>Loading journal...</div>
-  );
+  if (loading) return <div style={{ textAlign: 'center', padding: '32px', color: '#6B7280' }}>Loading journal...</div>;
 
   if (preds.length === 0) return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
@@ -211,64 +370,77 @@ function PredictionHistory({ userId }: { userId: string }) {
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {preds.map((p) => {
-        const match = MATCHES[p.match_id];
-        const outcomeLabel = p.predicted_outcome === 'home' ? match?.home : p.predicted_outcome === 'away' ? match?.away : 'Draw';
-        const hasResult = p.points_earned !== null && p.points_earned !== undefined;
-        const won = p.points_earned > 0;
-        return (
-          <div key={p.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${hasResult ? (won ? '#2E9E5E' : '#7F1D1D') : '#1A7A4A'}`, borderRadius: '14px', padding: '18px 20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{match?.home} vs {match?.away}</span>
-              {hasResult ? (
-                <span style={{ fontSize: '12px', backgroundColor: won ? '#1A7A4A' : '#7F1D1D', color: won ? '#6EE7B7' : '#FCA5A5', padding: '3px 12px', borderRadius: '999px', fontWeight: 'bold' }}>
-                  {won ? `+${p.points_earned} pts ✅` : '0 pts ❌'}
-                </span>
-              ) : (
-                <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '3px 10px', borderRadius: '999px' }}>Pending ⏳</span>
-              )}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <div>
-                <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Pick: </span>
-                <span style={{ fontSize: '14px', color: '#2E9E5E', fontWeight: 'bold' }}>{outcomeLabel}</span>
+    <>
+      {/* SHARE CARD MODAL */}
+      {shareCard && (
+        <ShareCard
+          prediction={shareCard.prediction}
+          match={shareCard.match}
+          username={username}
+          onClose={() => setShareCard(null)}
+        />
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {preds.map((p) => {
+          const match = MATCHES[p.match_id];
+          const outcomeLabel = p.predicted_outcome === 'home' ? match?.home : p.predicted_outcome === 'away' ? match?.away : 'Draw';
+          const hasResult = p.points_earned !== null && p.points_earned !== undefined;
+          const won = p.points_earned > 0;
+
+          return (
+            <div key={p.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${hasResult ? (won ? '#2E9E5E' : '#7F1D1D') : '#1A7A4A'}`, borderRadius: '14px', padding: '18px 20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{match?.home} vs {match?.away}</span>
+                {hasResult ? (
+                  <span style={{ fontSize: '12px', backgroundColor: won ? '#1A7A4A' : '#7F1D1D', color: won ? '#6EE7B7' : '#FCA5A5', padding: '3px 12px', borderRadius: '999px', fontWeight: 'bold' }}>
+                    {won ? `+${p.points_earned} pts ✅` : '0 pts ❌'}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '3px 10px', borderRadius: '999px' }}>Pending ⏳</span>
+                )}
               </div>
-              <div>
-                <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Confidence: </span>
-                <span style={{ fontSize: '14px', color: '#2E9E5E', fontWeight: 'bold' }}>{p.confidence_pct}%</span>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div>
+                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Pick: </span>
+                  <span style={{ fontSize: '14px', color: '#2E9E5E', fontWeight: 'bold' }}>{outcomeLabel}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Confidence: </span>
+                  <span style={{ fontSize: '14px', color: '#2E9E5E', fontWeight: 'bold' }}>{p.confidence_pct}%</span>
+                </div>
+              </div>
+
+              {/* BOTTOM ROW — Date + Share Button */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#4B5563' }}>
+                  {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+
+                {/* SHARE BUTTON */}
+                <button
+                  onClick={() => setShareCard({ prediction: p, match })}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    backgroundColor: '#1A7A4A',
+                    color: 'white',
+                    border: 'none',
+                    padding: '7px 16px',
+                    borderRadius: '999px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: '0 0 12px rgba(46,158,94,0.3)',
+                  }}
+                >
+                  🔗 Share
+                </button>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '11px', color: '#4B5563' }}>
-                {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </div>
-             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com')}`}
-    target="_blank" rel="noopener noreferrer"
-    style={{ backgroundColor: '#000000', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-    𝕏
-  </a>
-  <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent('https://flipseer.com')}`}
-    target="_blank" rel="noopener noreferrer"
-    style={{ backgroundColor: '#1877F2', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-    f
-  </a>
-  <a href={`https://t.me/share/url?url=${encodeURIComponent('https://flipseer.com')}&text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ flipseer.com')}`}
-    target="_blank" rel="noopener noreferrer"
-    style={{ backgroundColor: '#229ED9', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-    ✈️
-  </a>
-  <a href={`https://wa.me/?text=${encodeURIComponent('I predicted ' + outcomeLabel + ' in ' + match?.home + ' vs ' + match?.away + ' with ' + p.confidence_pct + '% confidence! 🎯⚽ Build your football forecasting reputation at flipseer.com')}`}
-    target="_blank" rel="noopener noreferrer"
-    style={{ backgroundColor: '#25D366', color: 'white', padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 'bold', textDecoration: 'none' }}>
-    📱
-  </a>
-</div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
