@@ -8,9 +8,10 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer', url: 'https://flipseer.com' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
-  verification: {
-  google: 'Fgc5Hkwl-XqzDX0J1cNPt7BJArRdubLkFOR0TSGVeqE',
-},
+ posthog.init('phc_qPBtk56WM587foV2FeyweAeWvKGxxxxxxxxxxxxxxxxxx', {
+  api_host: 'https://us.i.posthog.com',
+  person_profiles: 'identified_only',
+}),
   metadataBase: new URL('https://flipseer.com'),
   alternates: {
     canonical: 'https://flipseer.com',
