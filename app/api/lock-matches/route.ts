@@ -1,27 +1,33 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const runtime = 'nodejs'
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get('authorization')
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const cutoff = new Date(Date.now() + 2 * 60 * 1000).toISOString()
+
+    const { data, error } = await supabase
+      .from('matches')
+      .update({ status: 'locked' })
+      .eq('status', 'upcoming')
+      .lte('kickoff', cutoff)
+      .select()
+
+    if (error) throw error
+
+    return NextResponse.json({ locked: data?.length ?? 0 })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
-
-  const { data, error } = await supabase
-    .from('matches')
-    .update({ status: 'locked' })
-    .eq('status', 'upcoming')
-    .lte('kickoff', new Date(Date.now() + 2 * 60 * 1000).toISOString())
-    .select()
-
-  if (error) {
-    return NextResponse.json({ error }, { status: 500 })
-  }
-
-  return NextResponse.json({ locked: data?.length ?? 0, matches: data })
 }
