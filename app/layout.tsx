@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer', url: 'https://flipseer.com' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
- posthog.init('npx -y @posthog/wizard@latest', {
+ posthog.init('phc_qPBtk56WM587foV2FeyweAeWvKG6HvjMofiHcd3MNWSk', {
   api_host: 'https://us.i.posthog.com',
   person_profiles: 'identified_only',
 }),
