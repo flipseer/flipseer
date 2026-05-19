@@ -31,7 +31,7 @@ type CommunityStats = {
 
 // ─── Countdown hook ───────────────────────────────────────────────────────────
 function useCountdown(kickoff: string) {
-  const LOCK_BEFORE_MS = 2 * 60 * 1000; // lock 2 min before kickoff
+  const LOCK_BEFORE_MS = 2 * 60 * 1000;
 
   const compute = useCallback(() => {
     const diff = new Date(kickoff).getTime() - Date.now();
@@ -41,11 +41,7 @@ function useCountdown(kickoff: string) {
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
     const s = totalSecs % 60;
-    const label = h > 0
-      ? `${h}h ${m}m ${s}s`
-      : m > 0
-      ? `${m}m ${s}s`
-      : `${s}s`;
+    const label = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
     return { locked: false, label };
   }, [kickoff]);
 
@@ -63,15 +59,8 @@ function useCountdown(kickoff: string) {
 
 // ─── Single match card ────────────────────────────────────────────────────────
 function MatchCard({
-  match,
-  pred,
-  isSaved,
-  isLoading,
-  comm,
-  onPredict,
-  onConfidence,
-  onScore,
-  onSave,
+  match, pred, isSaved, isLoading, comm,
+  onPredict, onConfidence, onScore, onSave,
 }: {
   match: typeof WC_MATCHES[0];
   pred: any;
@@ -96,6 +85,9 @@ function MatchCard({
   const drawPct = comm ? getPct(comm.draw, comm.total) : 0;
   const awayPct = comm ? getPct(comm.away, comm.total) : 0;
 
+  const homeVal = pred?.predicted_home_score ?? 0;
+  const awayVal = pred?.predicted_away_score ?? 0;
+
   return (
     <div style={{
       backgroundColor: '#0D2B14',
@@ -109,38 +101,18 @@ function MatchCard({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <span style={{ fontSize: '12px', color: '#6B7280' }}>Group {match.group} · {kickoffDate}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-          {/* Countdown — shown until locked */}
           {!locked && timeLeft && (
-            <span style={{
-              fontSize: '11px',
-              backgroundColor: '#1C3A1A',
-              color: '#F59E0B',
-              padding: '2px 8px',
-              borderRadius: '4px',
-              fontWeight: 'bold',
-            }}>
+            <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
               ⏱ Locks in {timeLeft}
             </span>
           )}
           {locked && (
-            <span style={{
-              fontSize: '11px',
-              backgroundColor: '#7F1D1D',
-              color: '#FCA5A5',
-              padding: '2px 8px',
-              borderRadius: '4px',
-            }}>
+            <span style={{ fontSize: '11px', backgroundColor: '#7F1D1D', color: '#FCA5A5', padding: '2px 8px', borderRadius: '4px' }}>
               🔒 LOCKED
             </span>
           )}
           {isSaved && !locked && (
-            <span style={{
-              fontSize: '11px',
-              backgroundColor: '#1A7A4A',
-              color: '#6EE7B7',
-              padding: '2px 8px',
-              borderRadius: '4px',
-            }}>
+            <span style={{ fontSize: '11px', backgroundColor: '#1A7A4A', color: '#6EE7B7', padding: '2px 8px', borderRadius: '4px' }}>
               ✅ SAVED
             </span>
           )}
@@ -174,7 +146,7 @@ function MatchCard({
         </div>
       )}
 
-      {/* ── ACTIVE PREDICTION FORM (only when not locked) ── */}
+      {/* ── ACTIVE PREDICTION FORM ── */}
       {!locked && (
         <>
           {/* OUTCOME BUTTONS */}
@@ -199,30 +171,41 @@ function MatchCard({
             ))}
           </div>
 
-          {/* EXACT SCORE */}
+          {/* EXACT SCORE — colon fixed between two score blocks */}
           {pred?.outcome && (
             <div style={{ marginBottom: '16px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '12px' }}>
               <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '10px', textAlign: 'center' }}>
                 🎯 Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+25 bonus pts if correct!)</span>
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                {(['predicted_home_score', 'predicted_away_score'] as const).map((side, i) => {
-                  const team = i === 0 ? match.home : match.away;
-                  const val = i === 0 ? pred.predicted_home_score ?? 0 : pred.predicted_away_score ?? 0;
-                  return (
-                    <div key={side} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{team}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <button onClick={() => onScore(match.id, side, val - 1)}
-                          style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
-                        <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{val}</span>
-                        <button onClick={() => onScore(match.id, side, val + 1)}
-                          style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
-                      </div>
-                    </div>
-                  );
-                })}
-                <span style={{ fontSize: '20px', color: '#6B7280', alignSelf: 'center' }}>:</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+
+                {/* HOME SCORE */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.home}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button onClick={() => onScore(match.id, 'predicted_home_score', homeVal - 1)}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
+                    <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{homeVal}</span>
+                    <button onClick={() => onScore(match.id, 'predicted_home_score', homeVal + 1)}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
+                  </div>
+                </div>
+
+                {/* COLON — centred between scores */}
+                <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#6B7280', marginTop: '16px' }}>:</span>
+
+                {/* AWAY SCORE */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.away}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <button onClick={() => onScore(match.id, 'predicted_away_score', awayVal - 1)}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>−</button>
+                    <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{awayVal}</span>
+                    <button onClick={() => onScore(match.id, 'predicted_away_score', awayVal + 1)}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
@@ -386,14 +369,11 @@ export default function Predict() {
 
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
-
-    // ── Double-check lock on submission (server-side guard) ──
     const match = WC_MATCHES.find(m => m.id === matchId);
     if (match && new Date() >= new Date(new Date(match.kickoff).getTime() - 2 * 60 * 1000)) {
       alert('⚠️ Predictions are locked for this match.');
       return;
     }
-
     setLoading(prev => ({ ...prev, [matchId]: true }));
     const { error } = await supabase
       .from('predictions')
@@ -406,7 +386,6 @@ export default function Predict() {
         predicted_home_score: predictions[matchId].predicted_home_score ?? null,
         predicted_away_score: predictions[matchId].predicted_away_score ?? null,
       }, { onConflict: 'user_id,match_id' });
-
     setLoading(prev => ({ ...prev, [matchId]: false }));
     if (!error) {
       setSaved(prev => ({ ...prev, [matchId]: true }));
@@ -420,14 +399,10 @@ export default function Predict() {
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-
-      {/* HEADER */}
       <section style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>⚽ World Cup 2026</h1>
         <p style={{ color: '#6B7280', fontSize: '14px' }}>Predict match outcomes before kick-off. Lock in your confidence.</p>
       </section>
-
-      {/* MATCHES */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
         {WC_MATCHES.map((match) => (
           <MatchCard
@@ -444,7 +419,6 @@ export default function Predict() {
           />
         ))}
       </section>
-
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
         <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
       </footer>
