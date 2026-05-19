@@ -35,6 +35,7 @@ export default function Navbar() {
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         <a href="/predict" style={linkStyle}>Predict</a>
         <a href="/leaderboard" style={linkStyle}>🏆 Leaderboard</a>
+        <a href="/groups" style={linkStyle}>👥 Groups</a>
         {user ? (
           <a href="/profile" style={activeStyle}>My Profile</a>
         ) : (
