@@ -64,6 +64,13 @@ export default function Profile() {
     </main>
   );
 
+  const streak = profile?.streak ?? 0;
+  const bestStreak = profile?.best_streak ?? 0;
+
+  // Streak fire intensity
+  const streakColor = streak >= 5 ? '#F59E0B' : streak >= 3 ? '#FB923C' : '#2E9E5E';
+  const streakLabel = streak >= 7 ? '🔥 ON FIRE!' : streak >= 5 ? '⚡ Hot Streak!' : streak >= 3 ? '📈 On a Roll!' : streak >= 1 ? '✅ Active' : '—';
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
       <style>{`nav + nav { display: none; }`}</style>
@@ -75,6 +82,15 @@ export default function Profile() {
         <p style={{ color: '#2E9E5E', fontSize: '14px', marginBottom: '12px', fontWeight: 'bold' }}>
           {profile?.rank_icon || '🥉'} {profile?.rank || 'Rookie'} Forecaster
         </p>
+        {/* Streak badge in hero */}
+        {streak > 0 && (
+          <div style={{ display: 'inline-block', backgroundColor: '#1C3A1A', border: `1px solid ${streakColor}`, borderRadius: '999px', padding: '4px 16px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', color: streakColor, fontWeight: 'bold' }}>
+              🔥 {streak} match streak {streakLabel}
+            </span>
+          </div>
+        )}
+        <br />
         <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: '1px solid #1A7A4A', color: '#6B7280', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>
           Sign Out
         </button>
@@ -98,6 +114,81 @@ export default function Profile() {
               <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>{label}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── STREAKS SECTION ── */}
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🔥 Streaks & Bonuses</h2>
+        <div style={{ backgroundColor: '#0D2B14', border: `1px solid ${streak > 0 ? streakColor : '#1A7A4A'}`, borderRadius: '14px', padding: '20px', boxShadow: streak >= 3 ? `0 0 20px ${streakColor}30` : 'none' }}>
+
+          {/* Current streak + best streak */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ backgroundColor: '#0D1F0F', borderRadius: '12px', padding: '16px', textAlign: 'center', border: `1px solid ${streakColor}` }}>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: streakColor, fontFamily: 'Georgia, serif' }}>
+                {streak}
+              </div>
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>CURRENT STREAK</div>
+              {streak > 0 && (
+                <div style={{ fontSize: '12px', color: streakColor, marginTop: '4px', fontWeight: 'bold' }}>
+                  {streakLabel}
+                </div>
+              )}
+            </div>
+            <div style={{ backgroundColor: '#0D1F0F', borderRadius: '12px', padding: '16px', textAlign: 'center', border: '1px solid #1A7A4A' }}>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>
+                {bestStreak}
+              </div>
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>BEST STREAK</div>
+              {bestStreak > 0 && (
+                <div style={{ fontSize: '12px', color: '#F59E0B', marginTop: '4px', fontWeight: 'bold' }}>
+                  🏆 Personal Best
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Streak progress bar */}
+          {streak > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
+                <span>Streak progress</span>
+                <span style={{ color: streakColor }}>{streak}/10 🔥</span>
+              </div>
+              <div style={{ backgroundColor: '#1A3A1A', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${Math.min((streak / 10) * 100, 100)}%`,
+                  height: '100%',
+                  backgroundColor: streakColor,
+                  borderRadius: '999px',
+                  transition: 'width 0.5s ease',
+                }} />
+              </div>
+            </div>
+          )}
+
+          {/* Bonus multipliers */}
+          <div style={{ borderTop: '1px solid #1A3A1A', paddingTop: '16px' }}>
+            <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '10px', letterSpacing: '1px' }}>BONUS MULTIPLIERS</div>
+            {[
+              { label: 'Correct outcome', pts: '+10 pts', color: '#2E9E5E', active: true },
+              { label: 'Exact score', pts: '+25 pts', color: '#3B82F6', active: true },
+              { label: 'Upset prediction ✅', pts: '+15 pts', color: '#F59E0B', active: true },
+              { label: '3-match streak 🔥', pts: '+30%', color: '#FB923C', active: streak >= 3 },
+              { label: '5-match streak ⚡', pts: '+75%', color: '#F59E0B', active: streak >= 5 },
+              { label: '7-match streak 👑', pts: '+150%', color: '#EF4444', active: streak >= 7 },
+            ].map(({ label, pts, color, active }) => (
+              <div key={label} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '8px 0', borderBottom: '1px solid #1A3A1A', opacity: active ? 1 : 0.4,
+              }}>
+                <span style={{ fontSize: '13px', color: active ? 'white' : '#6B7280' }}>{label}</span>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: active ? color : '#6B7280', backgroundColor: active ? `${color}20` : 'transparent', padding: '2px 10px', borderRadius: '999px' }}>
+                  {pts}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -181,69 +272,26 @@ function ShareCard({ prediction, match, username, onClose }: {
   const encodedUrl = encodeURIComponent(shareUrl);
 
   const platforms = [
-    {
-      name: 'X',
-      label: '𝕏',
-      bg: '#000000',
-      url: `https://twitter.com/intent/tweet?text=${encodedText}`,
-    },
-    {
-      name: 'Facebook',
-      label: 'f',
-      bg: '#1877F2',
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`,
-    },
-    {
-      name: 'WhatsApp',
-      label: '📱',
-      bg: '#25D366',
-      url: `https://wa.me/?text=${encodedText}`,
-    },
-    {
-      name: 'LinkedIn',
-      label: 'in',
-      bg: '#0A66C2',
-      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${encodedText}`,
-    },
+    { name: 'X', label: '𝕏', bg: '#000000', url: `https://twitter.com/intent/tweet?text=${encodedText}` },
+    { name: 'Facebook', label: 'f', bg: '#1877F2', url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}` },
+    { name: 'WhatsApp', label: '📱', bg: '#25D366', url: `https://wa.me/?text=${encodedText}` },
+    { name: 'LinkedIn', label: 'in', bg: '#0A66C2', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${encodedText}` },
   ];
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000, padding: '20px',
-    }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: '400px',
-          backgroundColor: '#0D1F0F',
-          border: '1px solid #2E9E5E',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          boxShadow: '0 0 60px rgba(46,158,94,0.3)',
-        }}
-      >
-        {/* CARD HEADER */}
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', backgroundColor: '#0D1F0F', border: '1px solid #2E9E5E', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px rgba(46,158,94,0.3)' }}>
         <div style={{ background: 'linear-gradient(135deg, #1A7A4A, #2E9E5E)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', letterSpacing: '1px' }}>⚽ FLIPSEER</span>
           <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', backgroundColor: 'rgba(0,0,0,0.2)', padding: '3px 10px', borderRadius: '999px' }}>World Cup 2026</span>
         </div>
-
-        {/* CARD BODY */}
         <div style={{ padding: '24px' }}>
-
-          {/* Match */}
           <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '1px', marginBottom: '8px', fontWeight: 'bold' }}>MATCH PREDICTION</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{match.home}</span>
             <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', padding: '4px 10px', borderRadius: '999px' }}>vs</span>
             <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{match.away}</span>
           </div>
-
-          {/* Prediction details */}
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
               <div>
@@ -255,8 +303,6 @@ function ShareCard({ prediction, match, username, onClose }: {
                 <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{prediction.confidence_pct}%</div>
               </div>
             </div>
-
-            {/* Result badge */}
             {hasResult ? (
               <div style={{ textAlign: 'center', backgroundColor: won ? 'rgba(46,158,94,0.15)' : 'rgba(127,29,29,0.15)', border: `1px solid ${won ? '#2E9E5E' : '#7F1D1D'}`, borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 'bold', color: won ? '#6EE7B7' : '#FCA5A5' }}>
                 {won ? `+${prediction.points_earned} pts earned ✅` : '0 pts · Missed this one ❌'}
@@ -267,48 +313,23 @@ function ShareCard({ prediction, match, username, onClose }: {
               </div>
             )}
           </div>
-
-          {/* Username + URL */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div style={{ fontSize: '13px', color: '#9CA3AF' }}>
               <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>@{username}</span> on Flipseer
             </div>
             <div style={{ fontSize: '12px', color: '#6B7280', fontWeight: 'bold' }}>flipseer.com</div>
           </div>
-
-          {/* SHARE LABEL */}
           <div style={{ fontSize: '11px', color: '#6B7280', letterSpacing: '1px', marginBottom: '12px', textAlign: 'center', fontWeight: 'bold' }}>SHARE YOUR PREDICTION</div>
-
-          {/* PLATFORM BUTTONS */}
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             {platforms.map(({ name, label, bg, url }) => (
-              <a
-                key={name}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  flex: 1,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                  backgroundColor: bg,
-                  color: 'white',
-                  padding: '12px 8px',
-                  borderRadius: '12px',
-                  textDecoration: 'none',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  boxShadow: `0 4px 12px ${bg}40`,
-                  transition: 'opacity 0.2s',
-                }}
-              >
+              <a key={name} href={url} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', backgroundColor: bg, color: 'white', padding: '12px 8px', borderRadius: '12px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', boxShadow: `0 4px 12px ${bg}40` }}>
                 <span style={{ fontSize: '18px' }}>{label}</span>
                 <span style={{ fontSize: '10px', fontWeight: 'normal', opacity: 0.9 }}>{name}</span>
               </a>
             ))}
           </div>
         </div>
-
-        {/* CLOSE */}
         <div style={{ padding: '0 24px 20px', textAlign: 'center' }}>
           <button onClick={onClose} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '8px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', width: '100%' }}>
             Close
@@ -371,23 +392,15 @@ function PredictionHistory({ userId, username }: { userId: string; username: str
 
   return (
     <>
-      {/* SHARE CARD MODAL */}
       {shareCard && (
-        <ShareCard
-          prediction={shareCard.prediction}
-          match={shareCard.match}
-          username={username}
-          onClose={() => setShareCard(null)}
-        />
+        <ShareCard prediction={shareCard.prediction} match={shareCard.match} username={username} onClose={() => setShareCard(null)} />
       )}
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {preds.map((p) => {
           const match = MATCHES[p.match_id];
           const outcomeLabel = p.predicted_outcome === 'home' ? match?.home : p.predicted_outcome === 'away' ? match?.away : 'Draw';
           const hasResult = p.points_earned !== null && p.points_earned !== undefined;
           const won = p.points_earned > 0;
-
           return (
             <div key={p.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${hasResult ? (won ? '#2E9E5E' : '#7F1D1D') : '#1A7A4A'}`, borderRadius: '14px', padding: '18px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -400,7 +413,6 @@ function PredictionHistory({ userId, username }: { userId: string; username: str
                   <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '3px 10px', borderRadius: '999px' }}>Pending ⏳</span>
                 )}
               </div>
-
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div>
                   <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Pick: </span>
@@ -411,29 +423,12 @@ function PredictionHistory({ userId, username }: { userId: string; username: str
                   <span style={{ fontSize: '14px', color: '#2E9E5E', fontWeight: 'bold' }}>{p.confidence_pct}%</span>
                 </div>
               </div>
-
-              {/* BOTTOM ROW — Date + Share Button */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '11px', color: '#4B5563' }}>
                   {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </div>
-
-                {/* SHARE BUTTON */}
-                <button
-                  onClick={() => setShareCard({ prediction: p, match })}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                    backgroundColor: '#1A7A4A',
-                    color: 'white',
-                    border: 'none',
-                    padding: '7px 16px',
-                    borderRadius: '999px',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    boxShadow: '0 0 12px rgba(46,158,94,0.3)',
-                  }}
-                >
+                <button onClick={() => setShareCard({ prediction: p, match })}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', padding: '7px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 12px rgba(46,158,94,0.3)' }}>
                   🔗 Share
                 </button>
               </div>
