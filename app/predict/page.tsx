@@ -222,7 +222,7 @@ function MatchCard({
                     </div>
                   );
                 })}
-                <span style={{ fontSize: '20px', color: '#6B7280', alignSelf: 'center', marginTop: '16px' }}>:</span>
+                <span style={{ fontSize: '20px', color: '#6B7280', alignSelf: 'center' }}>:</span>
               </div>
             </div>
           )}
