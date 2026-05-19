@@ -42,33 +42,87 @@ export default function Profile() {
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [savingCountry, setSavingCountry] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const getProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/auth'; return; }
-      setUserId(user.id);
+      try {
+        // ── Step 1: Get session (more reliable than getUser) ──
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          window.location.href = '/auth';
+          return;
+        }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      setProfile(data);
-      setSelectedCountry(data?.country || '');
+        const uid = session.user.id;
+        setUserId(uid);
 
-      // Fetch badges
-      const { data: badgeData } = await supabase
-        .from('user_badges')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('awarded_at', { ascending: false });
-      setBadges(badgeData ?? []);
+        // ── Step 2: Fetch profile using session uid ──
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', uid)
+          .single();
 
-      setLoading(false);
+        if (profileError) {
+          console.error('Profile fetch error:', profileError.message);
+          setError(profileError.message);
+          
+          // ── Step 3: If profile missing, create it ──
+          if (profileError.code === 'PGRST116') {
+            const fallbackUsername = session.user.email?.split('@')[0] || 'user';
+            const { data: newProfile } = await supabase
+              .from('profiles')
+              .insert([{
+                id: uid,
+                username: fallbackUsername,
+                reputation: 0,
+                total_points: 0,
+                prediction_count: 0,
+                correct_count: 0,
+                streak: 0,
+                best_streak: 0,
+                accuracy_pct: 0,
+                rank: 'Rookie',
+                rank_icon: '🥉',
+              }])
+              .select()
+              .single();
+            
+            if (newProfile) {
+              setProfile(newProfile);
+              setUsername(newProfile.username);
+              setSelectedCountry(newProfile.country || '');
+            }
+          }
+        } else if (profileData) {
+          setProfile(profileData);
+          // ── Key fix: set username separately so it never falls back ──
+          setUsername(profileData.username || session.user.email?.split('@')[0] || 'user');
+          setSelectedCountry(profileData.country || '');
+        }
+
+        // ── Step 4: Fetch badges ──
+        const { data: badgeData } = await supabase
+          .from('user_badges')
+          .select('*')
+          .eq('user_id', uid)
+          .order('awarded_at', { ascending: false });
+        
+        setBadges(badgeData ?? []);
+
+      } catch (err: any) {
+        console.error('Profile load error:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
+
     getProfile();
   }, []);
 
@@ -102,10 +156,20 @@ export default function Profile() {
       {/* HERO */}
       <section style={{ textAlign: 'center', padding: '50px 20px 32px', background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)' }}>
         <div style={{ width: '88px', height: '88px', background: 'linear-gradient(135deg, #2E9E5E, #1A7A4A)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '40px', boxShadow: '0 0 24px rgba(46,158,94,0.3)' }}>⚽</div>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '4px' }}>@{profile?.username || 'forecaster'}</h1>
+        
+        {/* ── FIXED: uses username state, never falls back to 'forecaster' ── */}
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '4px' }}>@{username}</h1>
+        
         <p style={{ color: '#2E9E5E', fontSize: '14px', marginBottom: '12px', fontWeight: 'bold' }}>
           {profile?.rank_icon || '🥉'} {profile?.rank || 'Rookie'} Forecaster
         </p>
+
+        {error && (
+          <div style={{ backgroundColor: '#7F1D1D', border: '1px solid #EF4444', borderRadius: '8px', padding: '8px 16px', marginBottom: '12px', fontSize: '12px', color: '#FCA5A5', maxWidth: '400px', margin: '0 auto 12px' }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         {streak > 0 && (
           <div style={{ display: 'inline-block', backgroundColor: '#1C3A1A', border: `1px solid ${streakColor}`, borderRadius: '999px', padding: '4px 16px', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', color: streakColor, fontWeight: 'bold' }}>
@@ -113,7 +177,6 @@ export default function Profile() {
             </span>
           </div>
         )}
-        {/* Badge count in hero */}
         {badges.length > 0 && (
           <div style={{ display: 'inline-block', backgroundColor: '#1C1A3A', border: '1px solid #3B82F6', borderRadius: '999px', padding: '4px 16px', marginBottom: '12px', marginLeft: '8px' }}>
             <span style={{ fontSize: '13px', color: '#93C5FD', fontWeight: 'bold' }}>
@@ -194,7 +257,7 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* ── BADGES SECTION ── */}
+      {/* BADGES SECTION */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🏅 Your Badges</h2>
         {badges.length === 0 ? (
@@ -218,29 +281,12 @@ export default function Profile() {
               };
               const color = badgeColors[b.badge_type] ?? '#2E9E5E';
               return (
-                <div key={b.id} style={{
-                  backgroundColor: '#0D2B14',
-                  border: `1px solid ${color}40`,
-                  borderRadius: '12px',
-                  padding: '14px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '10px',
-                  boxShadow: `0 0 12px ${color}20`,
-                }}>
+                <div key={b.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${color}40`, borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px', boxShadow: `0 0 12px ${color}20` }}>
                   <div style={{ fontSize: '28px', lineHeight: 1 }}>{b.badge_icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', color, marginBottom: '2px' }}>
-                      {b.badge_label}
-                    </div>
-                    {match && (
-                      <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>
-                        {match.home} vs {match.away}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '10px', color: '#4B5563' }}>
-                      {new Date(b.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color, marginBottom: '2px' }}>{b.badge_label}</div>
+                    {match && <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>{match.home} vs {match.away}</div>}
+                    <div style={{ fontSize: '10px', color: '#4B5563' }}>{new Date(b.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
                   </div>
                 </div>
               );
@@ -296,7 +342,7 @@ export default function Profile() {
       {/* FORECAST JOURNAL */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 40px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>📖 Forecast Journal</h2>
-        <PredictionHistory userId={userId} username={profile?.username || 'forecaster'} />
+        <PredictionHistory userId={userId} username={username} />
       </section>
 
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
