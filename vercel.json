@@ -1,8 +1,7 @@
 {
   "crons": [
-    {
-      "path": "/api/lock-matches",
-      "schedule": "* * * * *"
-    }
+    { "path": "/api/lock-matches", "schedule": "* * * * *" },
+    { "path": "/api/notify-matches", "schedule": "*/10 * * * *" },
+    { "path": "/api/process-results", "schedule": "*/5 * * * *" }
   ]
 }
