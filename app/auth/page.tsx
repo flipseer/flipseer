@@ -26,12 +26,32 @@ export default function Auth() {
       else { window.location.href = '/profile'; }
     } else {
       if (!username) { setMessage('Username is required'); setLoading(false); return; }
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) { setMessage(error.message); }
-      else if (data.user) {
-        await supabase.from('profiles').insert([{ id: data.user.id, username, reputation: 0 }]);
 
-        // Send welcome email via Resend
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setMessage(error.message);
+      } else if (data.user) {
+
+        // ── Create full profile with all fields initialized ──
+        const { error: profileError } = await supabase.from('profiles').insert([{
+          id: data.user.id,
+          username,
+          reputation: 0,
+          total_points: 0,
+          prediction_count: 0,
+          correct_count: 0,
+          streak: 0,
+          best_streak: 0,
+          accuracy_pct: 0,
+          rank: 'Rookie',
+          rank_icon: '🥉',
+        }]);
+
+        if (profileError) {
+          console.error('Profile creation failed:', profileError.message);
+        }
+
+        // ── Send welcome email via Resend ──
         try {
           await fetch('/api/welcome', {
             method: 'POST',
@@ -78,6 +98,9 @@ export default function Auth() {
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_'))}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
               />
+              <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>
+                This becomes your permanent public identity — choose wisely
+              </p>
             </div>
           )}
 
@@ -101,6 +124,7 @@ export default function Auth() {
               placeholder="minimum 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
               style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
@@ -116,7 +140,7 @@ export default function Auth() {
           <button
             onClick={handleAuth}
             disabled={loading}
-            style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
+            style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Please wait...' : isLogin ? 'Sign In →' : 'Create Account →'}
           </button>
 
@@ -125,7 +149,7 @@ export default function Auth() {
             <span style={{ color: '#6B7280', fontSize: '13px' }}>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => { setIsLogin(!isLogin); setMessage(''); }}
                 style={{ background: 'none', border: 'none', color: '#2E9E5E', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
                 {isLogin ? 'Sign Up' : 'Sign In'}
               </button>
