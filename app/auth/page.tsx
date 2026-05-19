@@ -12,8 +12,21 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  const handleForgotPassword = async () => {
+    if (!email) { setMessage('Enter your email address first'); return; }
+    setLoading(true);
+    setMessage('');
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://flipseer.com/reset-password',
+    });
+    if (error) { setMessage(error.message); }
+    else { setMessage('✅ Password reset link sent! Check your inbox.'); }
+    setLoading(false);
+  };
 
   const handleAuth = async () => {
     if (!email || !password) return;
@@ -31,8 +44,6 @@ export default function Auth() {
       if (error) {
         setMessage(error.message);
       } else if (data.user) {
-
-        // ── Create full profile with all fields initialized ──
         const { error: profileError } = await supabase.from('profiles').insert([{
           id: data.user.id,
           username,
@@ -51,7 +62,7 @@ export default function Auth() {
           console.error('Profile creation failed:', profileError.message);
         }
 
-        // ── Fire and forget welcome email — never blocks signup ──
+        // Fire and forget welcome email
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -59,12 +70,69 @@ export default function Auth() {
         }).catch(e => console.error('Welcome email failed silently:', e));
 
         setMessage('✅ Account created! Check your email to confirm.');
-        window.location.href = '/profile';
       }
     }
     setLoading(false);
   };
 
+  // ── FORGOT PASSWORD VIEW ──
+  if (isForgot) {
+    return (
+      <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px' }}>
+
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔐</div>
+              <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Reset Password</h1>
+              <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>
+                Enter your email and we'll send a reset link
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Email</label>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {message && (
+              <div style={{ backgroundColor: message.startsWith('✅') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+                {message}
+              </div>
+            )}
+
+            <button
+              onClick={handleForgotPassword}
+              disabled={loading}
+              style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1, marginBottom: '16px' }}>
+              {loading ? 'Sending...' : 'Send Reset Link →'}
+            </button>
+
+            <div style={{ textAlign: 'center' }}>
+              <button
+                onClick={() => { setIsForgot(false); setMessage(''); }}
+                style={{ background: 'none', border: 'none', color: '#2E9E5E', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+                ← Back to Sign In
+              </button>
+            </div>
+
+          </div>
+        </div>
+        <footer style={{ padding: '20px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
+          <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · No betting. Pure football reputation.</p>
+        </footer>
+      </main>
+    );
+  }
+
+  // ── SIGN IN / SIGN UP VIEW ──
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
@@ -72,8 +140,8 @@ export default function Auth() {
 
           {/* TOGGLE */}
           <div style={{ display: 'flex', marginBottom: '32px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '4px' }}>
-            <button onClick={() => setIsLogin(true)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign In</button>
-            <button onClick={() => setIsLogin(false)} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: !isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign Up</button>
+            <button onClick={() => { setIsLogin(true); setMessage(''); }} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign In</button>
+            <button onClick={() => { setIsLogin(false); setMessage(''); }} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: !isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign Up</button>
           </div>
 
           {/* HEADING */}
@@ -114,7 +182,7 @@ export default function Auth() {
           </div>
 
           {/* PASSWORD */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '8px' }}>
             <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Password</label>
             <input
               type="password"
@@ -125,6 +193,19 @@ export default function Auth() {
               style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
+
+          {/* FORGOT PASSWORD LINK */}
+          {isLogin && (
+            <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+              <button
+                onClick={() => { setIsForgot(true); setMessage(''); }}
+                style={{ background: 'none', border: 'none', color: '#2E9E5E', cursor: 'pointer', fontSize: '12px' }}>
+                Forgot password?
+              </button>
+            </div>
+          )}
+
+          {!isLogin && <div style={{ marginBottom: '20px' }} />}
 
           {/* MESSAGE */}
           {message && (
