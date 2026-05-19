@@ -51,18 +51,15 @@ export default function Auth() {
           console.error('Profile creation failed:', profileError.message);
         }
 
-        // ── Send welcome email via Resend ──
-        try {
-          await fetch('/api/welcome', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username }),
-          });
-        } catch (e) {
-          console.error('Welcome email failed:', e);
-        }
+        // ── Fire and forget welcome email — never blocks signup ──
+        fetch('/api/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, username }),
+        }).catch(e => console.error('Welcome email failed silently:', e));
 
         setMessage('✅ Account created! Check your email to confirm.');
+        window.location.href = '/profile';
       }
     }
     setLoading(false);
