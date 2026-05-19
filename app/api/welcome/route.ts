@@ -1,14 +1,16 @@
-import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
     const { email, username } = await req.json();
 
+    const { Resend } = await import('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
     await resend.emails.send({
-      from: 'Flipseer <contact@flipseer.com>',
+      from: 'Flipseer <noreply@flipseer.com>',
       to: email,
       subject: '⚽ Welcome to Flipseer — Your Football Legacy Starts Now',
       html: `
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
               ⏱ June 11 — The whistle blows
             </p>
             <p style="color:#6B7280;font-size:13px;margin:0">
-              8 group stage matches to predict before kick-off
+              64 matches to predict before kick-off
             </p>
           </div>
 
@@ -77,8 +79,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Welcome email error:', error);
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
