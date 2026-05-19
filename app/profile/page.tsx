@@ -22,8 +22,24 @@ const COUNTRIES = [
   { code: 'OTHER', label: '🌍 Other' },
 ];
 
+const MATCHES: { [key: number]: { home: string; away: string } } = {
+  1: { home: 'Mexico', away: 'South Africa' },
+  2: { home: 'USA', away: 'Canada' },
+  3: { home: 'Brazil', away: 'Croatia' },
+  4: { home: 'Argentina', away: 'Algeria' },
+  5: { home: 'France', away: 'Senegal' },
+  6: { home: 'England', away: 'Croatia' },
+  7: { home: 'Germany', away: 'Japan' },
+  8: { home: 'Spain', away: 'Morocco' },
+  9: { home: 'Portugal', away: 'DR Congo' },
+  10: { home: 'Netherlands', away: 'Ecuador' },
+  11: { home: 'Italy', away: 'Peru' },
+  12: { home: 'Colombia', away: 'Cameroon' },
+};
+
 export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
+  const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('');
   const [savingCountry, setSavingCountry] = useState(false);
@@ -34,6 +50,7 @@ export default function Profile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { window.location.href = '/auth'; return; }
       setUserId(user.id);
+
       const { data } = await supabase
         .from('profiles')
         .select('*')
@@ -41,6 +58,15 @@ export default function Profile() {
         .single();
       setProfile(data);
       setSelectedCountry(data?.country || '');
+
+      // Fetch badges
+      const { data: badgeData } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('awarded_at', { ascending: false });
+      setBadges(badgeData ?? []);
+
       setLoading(false);
     };
     getProfile();
@@ -66,8 +92,6 @@ export default function Profile() {
 
   const streak = profile?.streak ?? 0;
   const bestStreak = profile?.best_streak ?? 0;
-
-  // Streak fire intensity
   const streakColor = streak >= 5 ? '#F59E0B' : streak >= 3 ? '#FB923C' : '#2E9E5E';
   const streakLabel = streak >= 7 ? '🔥 ON FIRE!' : streak >= 5 ? '⚡ Hot Streak!' : streak >= 3 ? '📈 On a Roll!' : streak >= 1 ? '✅ Active' : '—';
 
@@ -82,11 +106,18 @@ export default function Profile() {
         <p style={{ color: '#2E9E5E', fontSize: '14px', marginBottom: '12px', fontWeight: 'bold' }}>
           {profile?.rank_icon || '🥉'} {profile?.rank || 'Rookie'} Forecaster
         </p>
-        {/* Streak badge in hero */}
         {streak > 0 && (
           <div style={{ display: 'inline-block', backgroundColor: '#1C3A1A', border: `1px solid ${streakColor}`, borderRadius: '999px', padding: '4px 16px', marginBottom: '12px' }}>
             <span style={{ fontSize: '13px', color: streakColor, fontWeight: 'bold' }}>
               🔥 {streak} match streak {streakLabel}
+            </span>
+          </div>
+        )}
+        {/* Badge count in hero */}
+        {badges.length > 0 && (
+          <div style={{ display: 'inline-block', backgroundColor: '#1C1A3A', border: '1px solid #3B82F6', borderRadius: '999px', padding: '4px 16px', marginBottom: '12px', marginLeft: '8px' }}>
+            <span style={{ fontSize: '13px', color: '#93C5FD', fontWeight: 'bold' }}>
+              🏅 {badges.length} badge{badges.length !== 1 ? 's' : ''}
             </span>
           </div>
         )}
@@ -117,38 +148,22 @@ export default function Profile() {
         </div>
       </section>
 
-      {/* ── STREAKS SECTION ── */}
+      {/* STREAKS SECTION */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🔥 Streaks & Bonuses</h2>
         <div style={{ backgroundColor: '#0D2B14', border: `1px solid ${streak > 0 ? streakColor : '#1A7A4A'}`, borderRadius: '14px', padding: '20px', boxShadow: streak >= 3 ? `0 0 20px ${streakColor}30` : 'none' }}>
-
-          {/* Current streak + best streak */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
             <div style={{ backgroundColor: '#0D1F0F', borderRadius: '12px', padding: '16px', textAlign: 'center', border: `1px solid ${streakColor}` }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: streakColor, fontFamily: 'Georgia, serif' }}>
-                {streak}
-              </div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: streakColor, fontFamily: 'Georgia, serif' }}>{streak}</div>
               <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>CURRENT STREAK</div>
-              {streak > 0 && (
-                <div style={{ fontSize: '12px', color: streakColor, marginTop: '4px', fontWeight: 'bold' }}>
-                  {streakLabel}
-                </div>
-              )}
+              {streak > 0 && <div style={{ fontSize: '12px', color: streakColor, marginTop: '4px', fontWeight: 'bold' }}>{streakLabel}</div>}
             </div>
             <div style={{ backgroundColor: '#0D1F0F', borderRadius: '12px', padding: '16px', textAlign: 'center', border: '1px solid #1A7A4A' }}>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>
-                {bestStreak}
-              </div>
+              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>{bestStreak}</div>
               <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>BEST STREAK</div>
-              {bestStreak > 0 && (
-                <div style={{ fontSize: '12px', color: '#F59E0B', marginTop: '4px', fontWeight: 'bold' }}>
-                  🏆 Personal Best
-                </div>
-              )}
+              {bestStreak > 0 && <div style={{ fontSize: '12px', color: '#F59E0B', marginTop: '4px', fontWeight: 'bold' }}>🏆 Personal Best</div>}
             </div>
           </div>
-
-          {/* Streak progress bar */}
           {streak > 0 && (
             <div style={{ marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
@@ -156,18 +171,10 @@ export default function Profile() {
                 <span style={{ color: streakColor }}>{streak}/10 🔥</span>
               </div>
               <div style={{ backgroundColor: '#1A3A1A', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${Math.min((streak / 10) * 100, 100)}%`,
-                  height: '100%',
-                  backgroundColor: streakColor,
-                  borderRadius: '999px',
-                  transition: 'width 0.5s ease',
-                }} />
+                <div style={{ width: `${Math.min((streak / 10) * 100, 100)}%`, height: '100%', backgroundColor: streakColor, borderRadius: '999px', transition: 'width 0.5s ease' }} />
               </div>
             </div>
           )}
-
-          {/* Bonus multipliers */}
           <div style={{ borderTop: '1px solid #1A3A1A', paddingTop: '16px' }}>
             <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '10px', letterSpacing: '1px' }}>BONUS MULTIPLIERS</div>
             {[
@@ -178,18 +185,68 @@ export default function Profile() {
               { label: '5-match streak ⚡', pts: '+75%', color: '#F59E0B', active: streak >= 5 },
               { label: '7-match streak 👑', pts: '+150%', color: '#EF4444', active: streak >= 7 },
             ].map(({ label, pts, color, active }) => (
-              <div key={label} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '8px 0', borderBottom: '1px solid #1A3A1A', opacity: active ? 1 : 0.4,
-              }}>
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #1A3A1A', opacity: active ? 1 : 0.4 }}>
                 <span style={{ fontSize: '13px', color: active ? 'white' : '#6B7280' }}>{label}</span>
-                <span style={{ fontSize: '13px', fontWeight: 'bold', color: active ? color : '#6B7280', backgroundColor: active ? `${color}20` : 'transparent', padding: '2px 10px', borderRadius: '999px' }}>
-                  {pts}
-                </span>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', color: active ? color : '#6B7280', backgroundColor: active ? `${color}20` : 'transparent', padding: '2px 10px', borderRadius: '999px' }}>{pts}</span>
               </div>
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ── BADGES SECTION ── */}
+      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🏅 Your Badges</h2>
+        {badges.length === 0 ? (
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '32px', textAlign: 'center' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏅</div>
+            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '4px' }}>No badges yet</p>
+            <p style={{ color: '#4B5563', fontSize: '12px' }}>Badges are awarded after match results — predict correctly to earn them!</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+            {badges.map((b) => {
+              const match = b.match_id ? MATCHES[b.match_id] : null;
+              const badgeColors: { [key: string]: string } = {
+                score_master: '#3B82F6',
+                upset_king: '#8B5CF6',
+                match_hero: '#F59E0B',
+                bold_caller: '#EF4444',
+                hot_streak_5: '#FB923C',
+                hot_streak_7: '#F59E0B',
+                hot_streak_10: '#EF4444',
+              };
+              const color = badgeColors[b.badge_type] ?? '#2E9E5E';
+              return (
+                <div key={b.id} style={{
+                  backgroundColor: '#0D2B14',
+                  border: `1px solid ${color}40`,
+                  borderRadius: '12px',
+                  padding: '14px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  boxShadow: `0 0 12px ${color}20`,
+                }}>
+                  <div style={{ fontSize: '28px', lineHeight: 1 }}>{b.badge_icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color, marginBottom: '2px' }}>
+                      {b.badge_label}
+                    </div>
+                    {match && (
+                      <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>
+                        {match.home} vs {match.away}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '10px', color: '#4B5563' }}>
+                      {new Date(b.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* RANK PROGRESS */}
@@ -223,8 +280,7 @@ export default function Profile() {
           <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '12px' }}>Set your country to appear on national leaderboards.</p>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
             {COUNTRIES.map(c => (
-              <button key={c.code}
-                onClick={() => setSelectedCountry(c.code)}
+              <button key={c.code} onClick={() => setSelectedCountry(c.code)}
                 style={{ padding: '6px 12px', borderRadius: '999px', border: '1px solid', borderColor: selectedCountry === c.code ? '#2E9E5E' : '#1A7A4A', backgroundColor: selectedCountry === c.code ? '#1A7A4A' : 'transparent', color: selectedCountry === c.code ? 'white' : '#9CA3AF', fontSize: '12px', cursor: 'pointer' }}>
                 {c.label}
               </button>
@@ -262,22 +318,18 @@ function ShareCard({ prediction, match, username, onClose }: {
   const outcomeLabel = prediction.predicted_outcome === 'home' ? match.home : prediction.predicted_outcome === 'away' ? match.away : 'Draw';
   const hasResult = prediction.points_earned !== null && prediction.points_earned !== undefined;
   const won = prediction.points_earned > 0;
-
   const shareText = hasResult
     ? `⚽ I predicted ${outcomeLabel} in ${match.home} vs ${match.away} with ${prediction.confidence_pct}% confidence — and ${won ? `earned +${prediction.points_earned} pts! ✅` : 'got it wrong this time ❌'}\n\nBuild your football reputation at flipseer.com 🏆`
     : `⚽ I just predicted ${outcomeLabel} in ${match.home} vs ${match.away} with ${prediction.confidence_pct}% confidence!\n\nBuild your permanent football reputation at flipseer.com 🏆 #WorldCup2026`;
-
   const shareUrl = 'https://flipseer.com';
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(shareUrl);
-
   const platforms = [
     { name: 'X', label: '𝕏', bg: '#000000', url: `https://twitter.com/intent/tweet?text=${encodedText}` },
     { name: 'Facebook', label: 'f', bg: '#1877F2', url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}` },
     { name: 'WhatsApp', label: '📱', bg: '#25D366', url: `https://wa.me/?text=${encodedText}` },
     { name: 'LinkedIn', label: 'in', bg: '#0A66C2', url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}&summary=${encodedText}` },
   ];
-
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', backgroundColor: '#0D1F0F', border: '1px solid #2E9E5E', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px rgba(46,158,94,0.3)' }}>
@@ -331,9 +383,7 @@ function ShareCard({ prediction, match, username, onClose }: {
           </div>
         </div>
         <div style={{ padding: '0 24px 20px', textAlign: 'center' }}>
-          <button onClick={onClose} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '8px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', width: '100%' }}>
-            Close
-          </button>
+          <button onClick={onClose} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '8px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Close</button>
         </div>
       </div>
     </div>
@@ -347,21 +397,6 @@ function PredictionHistory({ userId, username }: { userId: string; username: str
   const [preds, setPreds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [shareCard, setShareCard] = useState<any>(null);
-
-  const MATCHES: { [key: number]: { home: string; away: string } } = {
-    1: { home: 'Mexico', away: 'South Africa' },
-    2: { home: 'USA', away: 'Canada' },
-    3: { home: 'Brazil', away: 'Croatia' },
-    4: { home: 'Argentina', away: 'Algeria' },
-    5: { home: 'France', away: 'Senegal' },
-    6: { home: 'England', away: 'Croatia' },
-    7: { home: 'Germany', away: 'Japan' },
-    8: { home: 'Spain', away: 'Morocco' },
-    9: { home: 'Portugal', away: 'DR Congo' },
-    10: { home: 'Netherlands', away: 'Ecuador' },
-    11: { home: 'Italy', away: 'Peru' },
-    12: { home: 'Colombia', away: 'Cameroon' },
-  };
 
   useEffect(() => {
     if (!userId) return;
