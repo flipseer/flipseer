@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       for (const user of users ?? []) {
         if (!user.email) continue
         await resend.emails.send({
-          from: 'Flipseer <contact@flipseer.com>',
+          from: 'Flipseer <noreply@flipseer.com>',
           to: user.email,
           subject: `⚽ ${match.home_team} vs ${match.away_team} — 2 hours to predict!`,
           html: `
