@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
+// ── FIXED: Changed POST to GET so Vercel cron can call it ──
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
       .not('winner', 'is', null)
 
     if (error) throw error
+
     if (!matches?.length) {
       return NextResponse.json({ processed: 0 })
     }
@@ -34,7 +36,6 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ processed: processed.length })
-
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
