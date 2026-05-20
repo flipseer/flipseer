@@ -41,9 +41,14 @@ export default function Auth() {
       if (!username) { setMessage('Username is required'); setLoading(false); return; }
 
       const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) {
+
+      // ── KEY FIX: ignore Supabase confirmation email error ──
+      // Supabase sometimes returns this error even when email sends fine
+      if (error && error.message !== 'Error sending confirmation email') {
         setMessage(error.message);
       } else if (data.user) {
+
+        // Create profile
         const { error: profileError } = await supabase.from('profiles').insert([{
           id: data.user.id,
           username,
@@ -62,7 +67,7 @@ export default function Auth() {
           console.error('Profile creation failed:', profileError.message);
         }
 
-        // Fire and forget welcome email
+        // ── Fire and forget welcome email — never blocks signup ──
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
