@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     await resend.emails.send({
-      from: 'Flipseer <contact@flipseer.com>',
+      from: 'Flipseer <noreply@flipseer.com>',
       to: email,
       subject: '⚽ Welcome to Flipseer — Your Football Legacy Starts Now',
       html: `
