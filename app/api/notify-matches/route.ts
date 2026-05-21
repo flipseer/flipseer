@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     const resend = new Resend(process.env.RESEND_API_KEY)
 
     let sent = 0
-    const errors = []
+    const errors: string[] = []
 
     for (const match of matches) {
       // ── Send in batches of 50 to avoid rate limits ──
