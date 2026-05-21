@@ -49,7 +49,7 @@ export default function Auth() {
       } else if (data.user) {
 
         // Create profile
-        const { error: profileError } = await supabase.from('profiles').insert([{
+        const { error: profileError } = await supabase.from('profiles').upsert([{
           id: data.user.id,
           username,
           reputation: 0,
@@ -61,7 +61,7 @@ export default function Auth() {
           accuracy_pct: 0,
           rank: 'Rookie',
           rank_icon: '🥉',
-        }]);
+        }], { onConflict: 'id' });
 
         if (profileError) {
           console.error('Profile creation failed:', profileError.message);
