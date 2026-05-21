@@ -15,12 +15,38 @@ export default function ResetPassword() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Supabase puts the token in the URL hash
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // ── Method 1: Listen for PASSWORD_RECOVERY event ──
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
         setReady(true);
       }
+      // Also handle SIGNED_IN with recovery token
+      if (event === 'SIGNED_IN' && session) {
+        setReady(true);
+      }
     });
+
+    // ── Method 2: Check URL hash for token directly ──
+    // Supabase puts #access_token=xxx&type=recovery in URL
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery')) {
+      setReady(true);
+    }
+
+    // ── Method 3: Check URL search params ──
+    // Some Supabase versions use ?token=xxx&type=recovery
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('type') === 'recovery') {
+      setReady(true);
+    }
+
+    // ── Method 4: Check existing session ──
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setReady(true);
+      }
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -66,6 +92,12 @@ export default function ResetPassword() {
               <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '8px' }}>
                 If this takes too long, try clicking the link in your email again.
               </p>
+              {/* ── Fallback manual trigger ── */}
+              <button
+                onClick={() => setReady(true)}
+                style={{ marginTop: '16px', backgroundColor: 'transparent', border: '1px solid #1A7A4A', color: '#2E9E5E', padding: '8px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                Continue anyway →
+              </button>
             </div>
           ) : (
             <>
