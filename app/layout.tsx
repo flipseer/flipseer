@@ -127,7 +127,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/how-to-play" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>How to Play</a>
             <a href="/predict" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Predict</a>
             <a href="/leaderboard" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Leaderboard</a>
-          </div>
+            <a href="/privacy" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Privacy Policy</a>
+            <a href="/terms" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Terms of Service</a>
+            </div>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
             © 2026 Flipseer · Pure football reputation · No betting · No AI tips
           </p>
