@@ -190,6 +190,24 @@ export default function Profile() {
         </button>
       </section>
 
+      {/* ── COUNTRY REMINDER BANNER ── */}
+      {!profile?.country && (
+        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 0' }}>
+          <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '12px', padding: '14px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '20px' }}>🌍</span>
+              <div>
+                <div style={{ color: '#F59E0B', fontWeight: 'bold', fontSize: '14px' }}>Set your country!</div>
+                <div style={{ color: '#9CA3AF', fontSize: '12px' }}>Appear on the national leaderboard and represent your nation</div>
+              </div>
+            </div>
+            <a href="#country-selector" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+              Set Country →
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* POINTS + STATS */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '24px 20px' }}>
         <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '20px', padding: '28px', textAlign: 'center', marginBottom: '16px', boxShadow: '0 0 32px rgba(46,158,94,0.15)' }}>
@@ -320,7 +338,7 @@ export default function Profile() {
       </section>
 
       {/* COUNTRY SELECTOR */}
-      <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
+      <section id="country-selector" style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🌍 Your Country</h2>
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px' }}>
           <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '12px' }}>Set your country to appear on national leaderboards.</p>
