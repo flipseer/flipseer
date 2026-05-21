@@ -8,9 +8,15 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const groupId = searchParams.get('group_id')
+    const country = searchParams.get('country') // ← NEW
+
+    // ── Build cache key including country ──
     const cacheKey = groupId
       ? `leaderboard:group:${groupId}`
+      : country
+      ? `leaderboard:country:${country}`
       : 'leaderboard:global'
+
     const ttl = TTL.LEADERBOARD
 
     const data = await getCached(
@@ -21,6 +27,7 @@ export async function GET(req: Request) {
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         )
 
+        // ── Group leaderboard ──
         if (groupId) {
           const { data: members } = await supabase
             .from('group_members')
@@ -40,9 +47,23 @@ export async function GET(req: Request) {
           return data
         }
 
+        // ── Country leaderboard ── NEW
+        if (country) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, total_points, streak, rank, rank_icon, accuracy_pct, country, prediction_count, correct_count')
+            .eq('country', country)
+            .order('total_points', { ascending: false })
+            .limit(50)
+
+          if (error) throw error
+          return data
+        }
+
+        // ── Global leaderboard ──
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, username, total_points, streak, rank, rank_icon, accuracy_pct, country')
+          .select('id, username, total_points, streak, rank, rank_icon, accuracy_pct, country, prediction_count, correct_count')
           .order('total_points', { ascending: false })
           .limit(100)
 
@@ -55,6 +76,7 @@ export async function GET(req: Request) {
     return NextResponse.json(data, {
       headers: { 'X-Cache': 'HIT' }
     })
+
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
