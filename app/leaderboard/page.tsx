@@ -1,11 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 type Leader = {
   id: string
@@ -17,7 +11,6 @@ type Leader = {
   rank: string
   rank_icon: string
   country: string
-  position: number
 }
 
 const COUNTRIES = [
@@ -41,17 +34,18 @@ export default function LeaderboardPage() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true)
-      let query = supabase
-        .from('leaderboard')
-        .select('*')
-        .limit(50)
+      try {
+        // ── FIXED: Use cached API instead of direct Supabase ──
+        const url = activeCountry
+          ? `/api/leaderboard?country=${activeCountry}`
+          : `/api/leaderboard`
 
-      if (activeCountry) {
-        query = query.eq('country', activeCountry)
+        const res = await fetch(url)
+        const data = await res.json()
+        if (data && !data.error) setLeaders(data)
+      } catch (err) {
+        console.error('Leaderboard fetch error:', err)
       }
-
-      const { data, error } = await query
-      if (!error && data) setLeaders(data)
       setLoading(false)
     }
     fetchLeaderboard()
