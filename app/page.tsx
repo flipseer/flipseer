@@ -13,6 +13,10 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'Netherlands': '🇳🇱', 'Italy': '🇮🇹', 'Mexico': '🇲🇽', 'USA': '🇺🇸',
   'Nigeria': '🇳🇬', 'Senegal': '🇸🇳', 'Morocco': '🇲🇦', 'Japan': '🇯🇵',
   'South Korea': '🇰🇷', 'Australia': '🇦🇺', 'Canada': '🇨🇦', 'Other': '🌍',
+  'IN': '🇮🇳', 'BR': '🇧🇷', 'AR': '🇦🇷', 'FR': '🇫🇷',
+  'DE': '🇩🇪', 'GB': '🇬🇧', 'ES': '🇪🇸', 'PT': '🇵🇹',
+  'NL': '🇳🇱', 'IT': '🇮🇹', 'MX': '🇲🇽', 'US': '🇺🇸',
+  'NG': '🇳🇬', 'SN': '🇸🇳', 'MA': '🇲🇦', 'JP': '🇯🇵',
 };
 
 const FALLBACK_TICKER = [
@@ -26,13 +30,25 @@ const FALLBACK_TICKER = [
   { country: 'Japan', username: 'Kenji', pick: 'Japan Win', confidence: 60, upset: true },
 ];
 
+// ── Dummy leaderboard shown until 100 real users ──
+const DUMMY_LEADERBOARD = [
+  { rank: 1, flag: '🇧🇷', country: 'Brazil', forecasters: '12,584', points: '2,458,930', you: false },
+  { rank: 2, flag: '🇬🇧', country: 'England', forecasters: '9,876', points: '2,125,440', you: false },
+  { rank: 3, flag: '🇦🇷', country: 'Argentina', forecasters: '8,765', points: '1,998,320', you: false },
+  { rank: 4, flag: '🇫🇷', country: 'France', forecasters: '7,654', points: '1,765,210', you: false },
+  { rank: 5, flag: '🇩🇪', country: 'Germany', forecasters: '6,789', points: '1,543,890', you: false },
+  { rank: 6, flag: '🇮🇳', country: 'India', forecasters: '5,432', points: '1,245,670', you: true },
+];
+
 const COMING_SOON = [
   { icon: '🏆', title: 'EPL & Champions League', desc: "Europe's biggest stages. Your biggest calls.", date: 'Aug 2026' },
-  { icon: '🇪🇸', title: 'La Liga & Serie A', desc: 'El Clásico. Derby della Madonnina. Predict them all.', date: 'Sep 2026' },
+  { icon: '🇪🇸', title: 'La Liga & Serie A', desc: 'El Clasico. Derby della Madonnina. Predict them all.', date: 'Sep 2026' },
   { icon: '🇩🇪', title: 'Bundesliga & Ligue 1', desc: 'Der Klassiker. PSG. The rivalries never end.', date: 'Oct 2026' },
   { icon: '⭐', title: 'Flipseer Pro', desc: 'Advanced analytics, deeper insights, elite badges.', date: 'Jul 2026' },
-  { icon: '🤝', title: 'Brand Partnerships', desc: 'Exclusive rewards from the world\'s top football brands.', date: 'Late 2026' },
+  { icon: '🤝', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
 ];
+
+const REAL_USER_THRESHOLD = 100 // Switch to real data after this many users
 
 export default function Home() {
   const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER);
@@ -40,7 +56,11 @@ export default function Home() {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
+  const [leaderboard, setLeaderboard] = useState(DUMMY_LEADERBOARD);
+  const [isRealData, setIsRealData] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
 
+  // ── Countdown ──
   useEffect(() => {
     const target = new Date('2026-06-11T00:00:00Z');
     const interval = setInterval(() => {
@@ -55,6 +75,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // ── Live ticker ──
   useEffect(() => {
     const fetchTicker = async () => {
       const { data } = await supabase
@@ -77,6 +98,59 @@ export default function Home() {
     };
     fetchTicker();
   }, []);
+
+  // ── Smart leaderboard — real data after threshold ──
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        // Check total user count first
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+
+        const userCount = count || 0
+        setTotalUsers(userCount)
+
+        // Only show real data if enough users
+        if (userCount >= REAL_USER_THRESHOLD) {
+          const res = await fetch('/api/leaderboard')
+          const data = await res.json()
+
+          if (data && data.length >= 5) {
+            // Build country leaderboard from user data
+            const countryMap: { [key: string]: { points: number, forecasters: number } } = {}
+            data.forEach((user: any) => {
+              const country = user.country || 'Other'
+              if (!countryMap[country]) countryMap[country] = { points: 0, forecasters: 0 }
+              countryMap[country].points += user.total_points || 0
+              countryMap[country].forecasters += 1
+            })
+
+            const sorted = Object.entries(countryMap)
+              .sort((a, b) => b[1].points - a[1].points)
+              .slice(0, 6)
+              .map(([country, stats], i) => ({
+                rank: i + 1,
+                flag: COUNTRY_FLAGS[country] || '🌍',
+                country,
+                forecasters: stats.forecasters.toLocaleString(),
+                points: stats.points.toLocaleString(),
+                you: false,
+              }))
+
+            if (sorted.length >= 3) {
+              setLeaderboard(sorted)
+              setIsRealData(true)
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Leaderboard fetch error:', err)
+        // Keep dummy data on error
+      }
+    }
+    fetchLeaderboard()
+  }, [])
 
   const doubled = [...tickerItems, ...tickerItems];
 
@@ -107,18 +181,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* HERO — EMOTIONAL */}
-      <section style={{
-        textAlign: 'center',
-        padding: '90px 20px 60px',
-        maxWidth: '960px',
-        margin: '0 auto',
-        position: 'relative',
-      }}>
-        {/* Ambient glow */}
+      {/* HERO */}
+      <section style={{ textAlign: 'center', padding: '90px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Countdown — tension builder */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
@@ -126,7 +192,6 @@ export default function Home() {
           </span>
         </div>
 
-        {/* THE HEADLINE — raw emotion */}
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '56px', lineHeight: '1.15', marginBottom: '28px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           History is about<br />to be made.<br />
           <span style={{ color: '#2E9E5E' }}>Will you be on record?</span>
@@ -141,7 +206,6 @@ export default function Home() {
           Not a bet. Not a tip. A record of who you are as a football mind.
         </p>
 
-        {/* CTA */}
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '64px' }}>
           <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)', letterSpacing: '0.5px' }}>
             Claim Your Record Now →
@@ -151,11 +215,10 @@ export default function Home() {
           </a>
         </div>
 
-        {/* Emotional stats */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
           {[
             { value: '64', label: 'Matches to Predict' },
-            { value: '32', label: 'Nations at War' },
+            { value: '32', label: 'Nations' },
             { value: '0', label: 'Bets. Ever.' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', animation: `countup 0.6s ease ${i * 0.2}s both` }}>
@@ -166,14 +229,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TENSION SECTION — THE FEELING */}
+      {/* TENSION SECTION */}
       <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '28px' }}>YOU KNOW THIS FEELING</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {[
               { moment: '"I said Brazil wins this. Nobody believed me."', emotion: 'Vindication' },
-              { moment: '"I called the exact score. 2–1. Before anyone."', emotion: 'Glory' },
+              { moment: '"I called the exact score. 2-1. Before anyone."', emotion: 'Glory' },
               { moment: '"My country vs yours. I\'ll put my reputation on it."', emotion: 'National Pride' },
               { moment: '"This upset is coming. I feel it in my bones."', emotion: 'Instinct' },
             ].map(({ moment, emotion }) => (
@@ -195,7 +258,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* RIVALRY SECTION */}
+      {/* RIVALRY / LEADERBOARD SECTION */}
       <section style={{ padding: '72px 20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>NATIONAL PRIDE</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '38px', marginBottom: '12px' }}>
@@ -207,33 +270,38 @@ export default function Home() {
           India vs Brazil. England vs Argentina. The rivalry is real.
         </p>
 
-        {/* Mock leaderboard */}
+        {/* Smart leaderboard */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
           <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
             <span>RANK · NATION</span>
-            <span>FORECASTERS · POINTS</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {isRealData ? (
+                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>🟢 LIVE</span>
+              ) : (
+                <span style={{ color: '#6B7280', fontSize: '10px' }}>PREVIEW</span>
+              )}
+              FORECASTERS · POINTS
+            </span>
           </div>
-          {[
-            { rank: 1, flag: '🇧🇷', country: 'Brazil', forecasters: '12,584', points: '2,458,930', you: false },
-            { rank: 2, flag: '🇬🇧', country: 'England', forecasters: '9,876', points: '2,125,440', you: false },
-            { rank: 3, flag: '🇦🇷', country: 'Argentina', forecasters: '8,765', points: '1,998,320', you: false },
-            { rank: 4, flag: '🇫🇷', country: 'France', forecasters: '7,654', points: '1,765,210', you: false },
-            { rank: 5, flag: '🇩🇪', country: 'Germany', forecasters: '6,789', points: '1,543,890', you: false },
-            { rank: 6, flag: '🇮🇳', country: 'India', forecasters: '5,432', points: '1,245,670', you: true },
-          ].map(({ rank, flag, country, forecasters, points, you }) => (
+          {leaderboard.map(({ rank, flag, country, forecasters, points, you }) => (
             <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A', backgroundColor: you ? 'rgba(46,158,94,0.08)' : 'transparent' }}>
               <span style={{ fontSize: '14px', color: you ? '#2E9E5E' : '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
               <span style={{ fontSize: '20px', marginRight: '10px' }}>{flag}</span>
-              <span style={{ flex: 1, fontSize: '15px', color: you ? '#2E9E5E' : 'white', fontWeight: you ? 'bold' : 'normal' }}>{country} {you && '← YOU'}</span>
+              <span style={{ flex: 1, fontSize: '15px', color: you ? '#2E9E5E' : 'white', fontWeight: you ? 'bold' : 'normal' }}>{country} {you && '<- YOU'}</span>
               <span style={{ fontSize: '12px', color: '#6B7280', marginRight: '16px' }}>{forecasters}</span>
               <span style={{ fontSize: '13px', color: you ? '#2E9E5E' : '#9CA3AF', fontWeight: 'bold' }}>{points} pts</span>
             </div>
           ))}
         </div>
-        <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic' }}>Every prediction you make moves India up the table.</p>
+        {!isRealData && (
+          <p style={{ fontSize: '12px', color: '#4B5563', fontStyle: 'italic', marginBottom: '8px' }}>
+            Live rankings activate when {REAL_USER_THRESHOLD - totalUsers > 0 ? `${REAL_USER_THRESHOLD - totalUsers} more forecasters join` : 'enough forecasters join'} — be one of the first!
+          </p>
+        )}
+        <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic' }}>Every prediction you make moves your nation up the table.</p>
       </section>
 
-      {/* GLORY MOMENTS */}
+      {/* HOW IT WORKS */}
       <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px', textAlign: 'center' }}>HOW IT WORKS</p>
@@ -256,7 +324,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* NO BETTING — TRUST BUILDER */}
+      {/* NO BETTING */}
       <section style={{ padding: '72px 20px', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>THE PROMISE</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '16px' }}>
@@ -283,13 +351,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* WHAT'S COMING */}
+      {/* ROADMAP */}
       <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <p style={{ textAlign: 'center', fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>ROADMAP</p>
           <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>🚀 The World Cup is just the start.</h2>
           <p style={{ textAlign: 'center', color: '#6B7280', fontSize: '14px', marginBottom: '32px' }}>
-            EPL. Champions League. El Clásico. Der Klassiker.<br />Your reputation builds forever.
+            EPL. Champions League. El Clasico. Der Klassiker.<br />Your reputation builds forever.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
             {COMING_SOON.map(({ icon, title, desc, date }) => (
@@ -306,7 +374,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FINAL CTA — EMOTIONAL */}
+      {/* FINAL CTA */}
       <section style={{ textAlign: 'center', padding: '80px 20px 100px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ fontSize: '56px', marginBottom: '20px' }}>🏆</div>
@@ -315,7 +383,7 @@ export default function Home() {
           <span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
         </h2>
         <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>
-          The forecasters who start now will have a 24-match head start.<br />
+          The forecasters who start now will have a head start.<br />
           Your legacy clock is ticking.
         </p>
         <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)', letterSpacing: '0.5px' }}>
