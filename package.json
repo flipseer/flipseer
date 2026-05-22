@@ -15,7 +15,7 @@
     "react": "^18",
     "react-dom": "^18",
     "@vercel/og": "^0.6.2",
-    "resend": "^3.0.0"
+    "resend": "^3.0.0",
     "@sentry/nextjs": "^8.0.0"
   },
   "devDependencies": {
