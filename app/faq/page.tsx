@@ -57,8 +57,7 @@ export default function FAQ() {
         ))}
 
         <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '8px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold' }}>
-            Start Predicting →
+          <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '8px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold' }}>            Start Predicting →
           </a>
         </div>
 
