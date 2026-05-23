@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // rest of your profile creation logic stays exactly the same...
       const { data: profile } = await supabase
         .from('profiles')
         .select('id, username')
@@ -35,11 +34,45 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (!profile) {
-        // ... your existing new user logic unchanged
+        const googleName = data.user.user_metadata?.full_name || ''
+        const emailPrefix = data.user.email?.split('@')[0] || 'user'
+        const baseUsername = googleName
+          ? googleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+          : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, '')
+        let username = baseUsername.slice(0, 20)
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('username', username)
+          .single()
+        if (existing) {
+          username = `${username}_${Math.floor(Math.random() * 9999)}`
+        }
+        await supabase.from('profiles').upsert([{
+          id: data.user.id,
+          username,
+          reputation: 0,
+          total_points: 0,
+          prediction_count: 0,
+          correct_count: 0,
+          streak: 0,
+          best_streak: 0,
+          accuracy_pct: 0,
+          rank: 'Rookie',
+          rank_icon: '🥉',
+        }], { onConflict: 'id' })
+        try {
+          await fetch(`${origin}/api/welcome`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: data.user.email, username }),
+          })
+        } catch (e) {
+          console.error('Welcome email failed:', e)
+        }
       }
 
-      const response = NextResponse.redirect(`${origin}${next}`)
-      return response
+      return NextResponse.redirect(`${origin}${next}`)
     }
 
     console.error('exchangeCodeForSession error:', error)
