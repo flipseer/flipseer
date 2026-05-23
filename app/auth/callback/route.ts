@@ -61,6 +61,19 @@ export async function GET(request: NextRequest) {
           rank: 'Rookie',
           rank_icon: '🥉',
         }], { onConflict: 'id' })
+
+        // ── Award Founding Forecaster badge ──
+        const isBeforeLaunch = new Date() < new Date('2026-06-11T19:00:00-06:00')
+        if (isBeforeLaunch) {
+          await supabase.from('user_badges').insert({
+            user_id: data.user.id,
+            badge_type: 'founding_forecaster',
+            badge_label: 'Founding Forecaster',
+            badge_icon: '🏅',
+            awarded_at: new Date().toISOString(),
+          })
+        }
+
         try {
           await fetch(`${origin}/api/welcome`, {
             method: 'POST',
