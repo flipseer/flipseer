@@ -62,7 +62,7 @@ export default function Home() {
 
   // ── Countdown ──
   useEffect(() => {
-    const target = new Date('2026-06-11T00:00:00Z');
+    const target = new Date('2026-06-12T01:00:00Z');
     const interval = setInterval(() => {
       const now = new Date();
       const diff = target.getTime() - now.getTime();
