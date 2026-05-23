@@ -1,11 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 // ── Match type from DB ──
 type Match = {
@@ -86,7 +83,6 @@ function MatchCard({
   const homeVal = pred?.predicted_home_score ?? 0;
   const awayVal = pred?.predicted_away_score ?? 0;
 
-  // ── Share prediction ──
   const handleShare = async () => {
     if (!pred?.outcome) return;
     const pickLabel = pred.outcome === 'home'
@@ -95,7 +91,6 @@ function MatchCard({
       ? `${match.away_team} Win`
       : 'Draw';
 
-    const ogUrl = `https://flipseer.com/api/og?username=${username}&home=${encodeURIComponent(match.home_team)}&away=${encodeURIComponent(match.away_team)}&pick=${encodeURIComponent(pickLabel)}&confidence=${pred.confidence}`;
     const shareUrl = `https://flipseer.com/u/${username}`;
     const text = `⚽ I just predicted ${match.home_team} vs ${match.away_team}\n🎯 ${pickLabel} · ${pred.confidence}% confidence\nMy World Cup 2026 record → ${shareUrl}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -117,7 +112,6 @@ function MatchCard({
       padding: '20px',
       marginBottom: '16px',
     }}>
-
       {/* MATCH HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} · {kickoffDate}</span>
@@ -261,7 +255,7 @@ function MatchCard({
         </>
       )}
 
-      {/* ── LOCKED STATE + SHARE ── */}
+      {/* LOCKED STATE + SHARE */}
       {locked && (
         <div style={{ backgroundColor: '#1A3A20', padding: '12px', borderRadius: '8px' }}>
           {pred?.outcome ? (
@@ -275,7 +269,6 @@ function MatchCard({
                   {' '}· {pred.confidence}% confidence
                 </span>
               </div>
-              {/* ── SHARE BUTTON (shows after saving) ── */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleShare}
                   style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
@@ -296,7 +289,7 @@ function MatchCard({
         </div>
       )}
 
-      {/* ── SHARE AFTER SAVING (not locked yet) ── */}
+      {/* SHARE AFTER SAVING (not locked yet) */}
       {isSaved && !locked && pred?.outcome && (
         <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
           <button onClick={handleShare}
@@ -327,12 +320,11 @@ export default function Predict() {
 
   useEffect(() => {
     const init = async () => {
-      // ── Auth check ──
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/auth'; return; }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/auth'; return; }
+      const user = session.user;
       setUser(user);
 
-      // ── Get username from profile ──
       const { data: profile } = await supabase
         .from('profiles')
         .select('username')
@@ -340,17 +332,15 @@ export default function Predict() {
         .single();
       if (profile?.username) setUsername(profile.username);
 
-      // ✅ FIX: Fetch REAL matches from DB instead of hardcoded list
       setMatchesLoading(true);
       const { data: matchData } = await supabase
         .from('matches')
         .select('id, api_id, home_team, away_team, kickoff, status, league')
         .in('status', ['upcoming', 'locked'])
-        .order('kickoff', { ascending: true })
+        .order('kickoff', { ascending: true });
       setMatches(matchData || []);
       setMatchesLoading(false);
 
-      // ── Load existing predictions ──
       const { data: predData } = await supabase
         .from('predictions')
         .select('*')
@@ -372,7 +362,6 @@ export default function Predict() {
         setSaved(savedMap);
       }
 
-      // ── Community stats ──
       const { data: commData } = await supabase
         .from('predictions')
         .select('match_id, predicted_outcome');
@@ -415,7 +404,6 @@ export default function Predict() {
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
 
-    // ✅ FIX: Check kickoff from real DB match
     const match = matches.find(m => m.id === matchId);
     if (match && new Date() >= new Date(new Date(match.kickoff).getTime() - 2 * 60 * 1000)) {
       alert('⚠️ Predictions are locked for this match.');
@@ -424,12 +412,11 @@ export default function Predict() {
 
     setLoading(prev => ({ ...prev, [matchId]: true }));
 
-    // ✅ FIX: Save real DB match_id
     const { error } = await supabase
       .from('predictions')
       .upsert({
         user_id: user.id,
-        match_id: matchId, // ← real DB ID now
+        match_id: matchId,
         predicted_outcome: predictions[matchId].outcome,
         confidence_pct: predictions[matchId].confidence,
         predicted_home_score: predictions[matchId].predicted_home_score ?? null,
