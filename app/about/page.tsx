@@ -179,8 +179,7 @@ export default function About() {
           Every correct prediction. Every upset called. Every exact score.<br />
           Written into your permanent profile. Forever.
         </p>
-        <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 48px', borderRadius: '10px', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px', boxShadow: '0 0 32px rgba(46,158,94,0.3)' }}>
-          Start Building Your Legacy →
+        <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 48px', borderRadius: '10px', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px', boxShadow: '0 0 32px rgba(46,158,94,0.3)' }}>          Start Building Your Legacy →
         </a>
       </section>
 
