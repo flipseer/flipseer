@@ -1,11 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '🇮🇳', 'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷',
@@ -30,7 +27,6 @@ const FALLBACK_TICKER = [
   { country: 'Japan', username: 'Kenji', pick: 'Japan Win', confidence: 60, upset: true },
 ];
 
-// ── Dummy leaderboard shown until 100 real users ──
 const DUMMY_LEADERBOARD = [
   { rank: 1, flag: '🇧🇷', country: 'Brazil', forecasters: '12,584', points: '2,458,930', you: false },
   { rank: 2, flag: '🇬🇧', country: 'England', forecasters: '9,876', points: '2,125,440', you: false },
@@ -48,7 +44,7 @@ const COMING_SOON = [
   { icon: '🤝', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
 ];
 
-const REAL_USER_THRESHOLD = 100 // Switch to real data after this many users
+const REAL_USER_THRESHOLD = 100;
 
 export default function Home() {
   const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER);
@@ -60,7 +56,7 @@ export default function Home() {
   const [isRealData, setIsRealData] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  // ── Countdown ──
+  // ── Countdown — June 11 2026 19:00 Mexico City = June 12 01:00 UTC ──
   useEffect(() => {
     const target = new Date('2026-06-12T01:00:00Z');
     const interval = setInterval(() => {
@@ -99,32 +95,29 @@ export default function Home() {
     fetchTicker();
   }, []);
 
-  // ── Smart leaderboard — real data after threshold ──
+  // ── Smart leaderboard ──
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        // Check total user count first
         const { count } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact', head: true })
+          .select('*', { count: 'exact', head: true });
 
-        const userCount = count || 0
-        setTotalUsers(userCount)
+        const userCount = count || 0;
+        setTotalUsers(userCount);
 
-        // Only show real data if enough users
         if (userCount >= REAL_USER_THRESHOLD) {
-          const res = await fetch('/api/leaderboard')
-          const data = await res.json()
+          const res = await fetch('/api/leaderboard');
+          const data = await res.json();
 
           if (data && data.length >= 5) {
-            // Build country leaderboard from user data
-            const countryMap: { [key: string]: { points: number, forecasters: number } } = {}
+            const countryMap: { [key: string]: { points: number, forecasters: number } } = {};
             data.forEach((user: any) => {
-              const country = user.country || 'Other'
-              if (!countryMap[country]) countryMap[country] = { points: 0, forecasters: 0 }
-              countryMap[country].points += user.total_points || 0
-              countryMap[country].forecasters += 1
-            })
+              const country = user.country || 'Other';
+              if (!countryMap[country]) countryMap[country] = { points: 0, forecasters: 0 };
+              countryMap[country].points += user.total_points || 0;
+              countryMap[country].forecasters += 1;
+            });
 
             const sorted = Object.entries(countryMap)
               .sort((a, b) => b[1].points - a[1].points)
@@ -136,21 +129,20 @@ export default function Home() {
                 forecasters: stats.forecasters.toLocaleString(),
                 points: stats.points.toLocaleString(),
                 you: false,
-              }))
+              }));
 
             if (sorted.length >= 3) {
-              setLeaderboard(sorted)
-              setIsRealData(true)
+              setLeaderboard(sorted);
+              setIsRealData(true);
             }
           }
         }
       } catch (err) {
-        console.error('Leaderboard fetch error:', err)
-        // Keep dummy data on error
+        console.error('Leaderboard fetch error:', err);
       }
-    }
-    fetchLeaderboard()
-  }, [])
+    };
+    fetchLeaderboard();
+  }, []);
 
   const doubled = [...tickerItems, ...tickerItems];
 
@@ -207,7 +199,7 @@ export default function Home() {
         </p>
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '64px' }}>
-          <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)', letterSpacing: '0.5px' }}>
+          <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)', letterSpacing: '0.5px' }}>
             Claim Your Record Now →
           </a>
           <a href="/how-to-play" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
@@ -270,7 +262,6 @@ export default function Home() {
           India vs Brazil. England vs Argentina. The rivalry is real.
         </p>
 
-        {/* Smart leaderboard */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
           <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
             <span>RANK · NATION</span>
@@ -386,7 +377,7 @@ export default function Home() {
           The forecasters who start now will have a head start.<br />
           Your legacy clock is ticking.
         </p>
-        <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)', letterSpacing: '0.5px' }}>
+        <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)', letterSpacing: '0.5px' }}>
           Start Your Legacy Now →
         </a>
         <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free. No betting. No risk. Just football.</p>
