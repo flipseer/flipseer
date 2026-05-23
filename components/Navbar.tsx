@@ -1,17 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -30,7 +35,6 @@ export default function Navbar() {
       <a href="/" style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', textDecoration: 'none', letterSpacing: '1px' }}>
         ⚽ FLIPSEER
       </a>
-
       {/* LINKS */}
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         <a href="/predict" style={linkStyle}>Predict</a>
