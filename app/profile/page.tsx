@@ -1,11 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 const COUNTRIES = [
   { code: 'IN', label: '🇮🇳 India' },
@@ -50,9 +47,8 @@ export default function Profile() {
   useEffect(() => {
     const getProfile = async () => {
       try {
-        // ── Step 1: Get session (more reliable than getUser) ──
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
+
         if (sessionError || !session) {
           window.location.href = '/auth';
           return;
@@ -61,7 +57,6 @@ export default function Profile() {
         const uid = session.user.id;
         setUserId(uid);
 
-        // ── Step 2: Fetch profile using session uid ──
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -69,11 +64,11 @@ export default function Profile() {
           .single();
 
         if (profileError) {
-  console.error('Profile fetch error:', profileError.message);
-  if (profileError.code !== 'PGRST116') {
-    setError(profileError.message);
-  }          
-          // ── Step 3: If profile missing, create it ──
+          console.error('Profile fetch error:', profileError.message);
+          if (profileError.code !== 'PGRST116') {
+            setError(profileError.message);
+          }
+
           if (profileError.code === 'PGRST116') {
             const fallbackUsername = session.user.email?.split('@')[0] || 'user';
             const { data: newProfile } = await supabase
@@ -93,7 +88,7 @@ export default function Profile() {
               }])
               .select()
               .single();
-            
+
             if (newProfile) {
               setProfile(newProfile);
               setUsername(newProfile.username);
@@ -102,18 +97,16 @@ export default function Profile() {
           }
         } else if (profileData) {
           setProfile(profileData);
-          // ── Key fix: set username separately so it never falls back ──
           setUsername(profileData.username || session.user.email?.split('@')[0] || 'user');
           setSelectedCountry(profileData.country || '');
         }
 
-        // ── Step 4: Fetch badges ──
         const { data: badgeData } = await supabase
           .from('user_badges')
           .select('*')
           .eq('user_id', uid)
           .order('awarded_at', { ascending: false });
-        
+
         setBadges(badgeData ?? []);
 
       } catch (err: any) {
@@ -157,10 +150,7 @@ export default function Profile() {
       {/* HERO */}
       <section style={{ textAlign: 'center', padding: '50px 20px 32px', background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)' }}>
         <div style={{ width: '88px', height: '88px', background: 'linear-gradient(135deg, #2E9E5E, #1A7A4A)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '40px', boxShadow: '0 0 24px rgba(46,158,94,0.3)' }}>⚽</div>
-        
-        {/* ── FIXED: uses username state, never falls back to 'forecaster' ── */}
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '4px' }}>@{username}</h1>
-        
         <p style={{ color: '#2E9E5E', fontSize: '14px', marginBottom: '12px', fontWeight: 'bold' }}>
           {profile?.rank_icon || '🥉'} {profile?.rank || 'Rookie'} Forecaster
         </p>
@@ -191,7 +181,7 @@ export default function Profile() {
         </button>
       </section>
 
-      {/* ── COUNTRY REMINDER BANNER ── */}
+      {/* COUNTRY REMINDER BANNER */}
       {!profile?.country && (
         <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 0' }}>
           <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '12px', padding: '14px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
