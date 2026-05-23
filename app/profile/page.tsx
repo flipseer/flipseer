@@ -69,9 +69,10 @@ export default function Profile() {
           .single();
 
         if (profileError) {
-          console.error('Profile fetch error:', profileError.message);
-          setError(profileError.message);
-          
+  console.error('Profile fetch error:', profileError.message);
+  if (profileError.code !== 'PGRST116') {
+    setError(profileError.message);
+  }          
           // ── Step 3: If profile missing, create it ──
           if (profileError.code === 'PGRST116') {
             const fallbackUsername = session.user.email?.split('@')[0] || 'user';
