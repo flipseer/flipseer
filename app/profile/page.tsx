@@ -14,11 +14,22 @@ const COUNTRIES = [
   { code: 'DE', label: '🇩🇪 Germany' },
   { code: 'FR', label: '🇫🇷 France' },
   { code: 'ES', label: '🇪🇸 Spain' },
+  { code: 'PT', label: '🇵🇹 Portugal' },
+  { code: 'IT', label: '🇮🇹 Italy' },
   { code: 'MX', label: '🇲🇽 Mexico' },
+  { code: 'ID', label: '🇮🇩 Indonesia' },
+  { code: 'NL', label: '🇳🇱 Netherlands' },
+  { code: 'TR', label: '🇹🇷 Turkey' },
+  { code: 'SA', label: '🇸🇦 Saudi Arabia' },
+  { code: 'MA', label: '🇲🇦 Morocco' },
+  { code: 'JP', label: '🇯🇵 Japan' },
+  { code: 'KR', label: '🇰🇷 South Korea' },
+  { code: 'CO', label: '🇨🇴 Colombia' },
+  { code: 'CL', label: '🇨🇱 Chile' },
+  { code: 'PL', label: '🇵🇱 Poland' },
   { code: 'ZA', label: '🇿🇦 South Africa' },
   { code: 'OTHER', label: '🌍 Other' },
 ];
-
 const MATCHES: { [key: number]: { home: string; away: string } } = {
   1: { home: 'Mexico', away: 'South Africa' },
   2: { home: 'USA', away: 'Canada' },
