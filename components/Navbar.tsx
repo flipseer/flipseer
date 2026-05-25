@@ -32,7 +32,7 @@ export default function Navbar() {
       zIndex: 100,
     }}>
       {/* LOGO */}
-      <a href="/" style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', textDecoration: 'none', letterSpacing: '1px' }}>
+      <a href="/" style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', textDecoration: 'none', letterSpacing: '1px' }}>
         ⚽ FLIPSEER
       </a>
       {/* LINKS */}
@@ -53,8 +53,8 @@ export default function Navbar() {
 const linkStyle: React.CSSProperties = {
   color: '#9CA3AF',
   textDecoration: 'none',
-  fontSize: '13px',
-  padding: '6px 12px',
+  fontSize: '15px',
+  padding: '8px 15px',
   borderRadius: '8px',
   border: '1px solid transparent',
   transition: 'all 0.2s',
@@ -63,8 +63,8 @@ const linkStyle: React.CSSProperties = {
 const activeStyle: React.CSSProperties = {
   color: '#2E9E5E',
   textDecoration: 'none',
-  fontSize: '13px',
-  padding: '6px 12px',
+  fontSize: '15px',
+  padding: '8px 15px',
   borderRadius: '8px',
   border: '1px solid #1A7A4A',
   fontWeight: 'bold',
