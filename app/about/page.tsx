@@ -115,7 +115,7 @@ export default function About() {
           {
             icon: '👑',
             title: 'Destiny Path',
-            rating: 'The LinkedIn of Football Reputation',
+            rating: 'Football's Reputation Marketplace',
             desc: 'A platform where your football intelligence is publicly verified, professionally presented, and permanently recorded. Your Flipseer profile becomes your football CV.',
             color: '#A855F7',
           },
