@@ -129,9 +129,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/leaderboard" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Leaderboard</a>
             <a href="/privacy" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Privacy Policy</a>
             <a href="/terms" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Terms of Service</a>
-            </div>
+<a href="/disclaimer" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Disclaimer</a>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            © 2026 Flipseer · Pure football reputation · No betting · No AI tips
+            © 2026 Flipseer · Pure football reputation · No betting · 
           </p>
         </footer>
       </body>
