@@ -129,7 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/disclaimer" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Disclaimer</a>
           </div>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            © 2026 Flipseer · Pure football reputation · No betting · No AI tips
+            © 2026 Flipseer · Pure football reputation · No betting ·
           </p>
         </footer>
       </body>
