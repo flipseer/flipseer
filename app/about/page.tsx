@@ -25,7 +25,7 @@ export default function About() {
         </h2>
         <div style={{ color: '#9CA3AF', fontSize: '16px', lineHeight: '1.9', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <p>
-            Football fans have always predicted matches — in living rooms, WhatsApp groups, offices, and stadiums. But those predictions disappear. No record. No proof. No legacy.
+            Football fans have always predicted matches — in living rooms, groups, offices, and stadiums. But those predictions disappear. No record. No proof. No legacy.
           </p>
           <p>
             Flipseer was built to change that. We give every football fan a permanent, verifiable record of their football intelligence — built match by match, tournament by tournament, decade by decade.
