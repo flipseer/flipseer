@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
-    category: 'sports',
+  category: 'sports',
 };
 
 const structuredData = {
@@ -87,13 +87,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-
-        {/* PostHog Analytics */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -129,9 +126,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/leaderboard" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Leaderboard</a>
             <a href="/privacy" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Privacy Policy</a>
             <a href="/terms" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Terms of Service</a>
-<a href="/disclaimer" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Disclaimer</a>
+            <a href="/disclaimer" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Disclaimer</a>
+          </div>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            © 2026 Flipseer · Pure football reputation · No betting · 
+            © 2026 Flipseer · Pure football reputation · No betting · No AI tips
           </p>
         </footer>
       </body>
