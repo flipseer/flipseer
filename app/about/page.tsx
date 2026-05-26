@@ -9,7 +9,7 @@ export default function About() {
         <div style={{ fontSize: '56px', marginBottom: '20px' }}>⚽</div>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>ABOUT FLIPSEER</p>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '44px', lineHeight: '1.2', marginBottom: '20px', maxWidth: '700px', margin: '0 auto 20px' }}>
-          The LinkedIn of<br />
+          <br />
           <span style={{ color: '#2E9E5E' }}>Football's Reputation Marketplace.</span>
         </h1>
         <p style={{ fontSize: '18px', color: '#9CA3AF', maxWidth: '600px', margin: '0 auto', lineHeight: '1.7' }}>
