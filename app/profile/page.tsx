@@ -364,11 +364,7 @@ export default function Profile() {
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>📖 Forecast Journal</h2>
         <PredictionHistory userId={userId} username={username} />
       </section>
-
-      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
-      </footer>
-    </main>
+     </main>
   );
 }
 
