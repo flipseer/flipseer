@@ -1,5 +1,6 @@
 'use client';
-
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
 export default function About() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
