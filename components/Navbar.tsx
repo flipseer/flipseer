@@ -6,7 +6,6 @@ const supabase = createClient();
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -37,28 +36,12 @@ export default function Navbar() {
         ⚽ FLIPSEER
       </a>
 
-      {/* DESKTOP LINKS */}
+      {/* NAV LINKS */}
       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
-
-        {/* ✅ World Cup 2026 — highlighted link */}
-        <a href="/world-cup-2026" style={{
-          color: '#F59E0B',
-          textDecoration: 'none',
-          fontSize: '14px',
-          padding: '7px 12px',
-          borderRadius: '8px',
-          border: '1px solid #F59E0B',
-          fontWeight: 'bold',
-          backgroundColor: 'rgba(245,158,11,0.08)',
-          whiteSpace: 'nowrap',
-        }}>
-          🏆 WC 2026
-        </a>
-
         <a href="/predict" style={linkStyle}>Predict</a>
+        <a href="/world-cup-2026" style={linkStyle}>World Cup 2026</a>
         <a href="/leaderboard" style={linkStyle}>🥇 Leaderboard</a>
         <a href="/groups" style={linkStyle}>👥 Groups</a>
-
         {user ? (
           <a href="/profile" style={activeStyle}>My Profile</a>
         ) : (
