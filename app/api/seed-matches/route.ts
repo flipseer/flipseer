@@ -9,99 +9,99 @@ export const maxDuration = 60
 const WC2026_MATCHES = [
   // ── GROUP A ──
   { home: 'Mexico', away: 'South Africa', date: '2026-06-11T19:30:00', group: 'Group A' },
-  { home: 'South Korea', away: 'Czech Republic', date: '2026-06-11T19:30:00', group: 'Group A' },
+  { home: 'South Korea', away: 'Czech Republic', date: '2026-06-11T22:30:00', group: 'Group A' },
   { home: 'Mexico', away: 'South Korea', date: '2026-06-16T20:00:00', group: 'Group A' },
-  { home: 'South Africa', away: 'Czech Republic', date: '2026-06-16T20:00:00', group: 'Group A' },
+  { home: 'South Africa', away: 'Czech Republic', date: '2026-06-16T23:00:00', group: 'Group A' },
   { home: 'Mexico', away: 'Czech Republic', date: '2026-06-20T20:00:00', group: 'Group A' },
   { home: 'South Africa', away: 'South Korea', date: '2026-06-20T20:00:00', group: 'Group A' },
 
   // ── GROUP B ──
   { home: 'Canada', away: 'Bosnia and Herzegovina', date: '2026-06-12T00:00:00', group: 'Group B' },
+  { home: 'Switzerland', away: 'Qatar', date: '2026-06-12T03:00:00', group: 'Group B' },
   { home: 'Canada', away: 'Switzerland', date: '2026-06-16T20:00:00', group: 'Group B' },
+  { home: 'Qatar', away: 'Bosnia and Herzegovina', date: '2026-06-16T23:00:00', group: 'Group B' },
   { home: 'Canada', away: 'Qatar', date: '2026-06-21T20:00:00', group: 'Group B' },
   { home: 'Switzerland', away: 'Bosnia and Herzegovina', date: '2026-06-21T20:00:00', group: 'Group B' },
-  { home: 'Canada', away: 'Switzerland', date: '2026-06-25T20:00:00', group: 'Group B' },
-  { home: 'Qatar', away: 'Bosnia and Herzegovina', date: '2026-06-25T20:00:00', group: 'Group B' },
 
   // ── GROUP C ──
   { home: 'Brazil', away: 'Morocco', date: '2026-06-12T20:00:00', group: 'Group C' },
+  { home: 'Haiti', away: 'Scotland', date: '2026-06-12T23:00:00', group: 'Group C' },
   { home: 'Brazil', away: 'Scotland', date: '2026-06-17T20:00:00', group: 'Group C' },
-  { home: 'Brazil', away: 'Haiti', date: '2026-06-21T20:00:00', group: 'Group C' },
-  { home: 'Brazil', away: 'Scotland', date: '2026-06-24T20:00:00', group: 'Group C' },
-  { home: 'Morocco', away: 'Haiti', date: '2026-06-24T20:00:00', group: 'Group C' },
-  { home: 'Morocco', away: 'Scotland', date: '2026-06-27T20:00:00', group: 'Group C' },
+  { home: 'Morocco', away: 'Haiti', date: '2026-06-17T23:00:00', group: 'Group C' },
+  { home: 'Brazil', away: 'Haiti', date: '2026-06-24T20:00:00', group: 'Group C' },
+  { home: 'Morocco', away: 'Scotland', date: '2026-06-24T20:00:00', group: 'Group C' },
 
   // ── GROUP D ──
   { home: 'United States', away: 'Paraguay', date: '2026-06-12T20:00:00', group: 'Group D' },
+  { home: 'Australia', away: 'Türkiye', date: '2026-06-12T23:00:00', group: 'Group D' },
   { home: 'United States', away: 'Türkiye', date: '2026-06-17T20:00:00', group: 'Group D' },
-  { home: 'United States', away: 'Australia', date: '2026-06-21T20:00:00', group: 'Group D' },
+  { home: 'Paraguay', away: 'Australia', date: '2026-06-17T23:00:00', group: 'Group D' },
+  { home: 'United States', away: 'Australia', date: '2026-06-24T20:00:00', group: 'Group D' },
   { home: 'Paraguay', away: 'Türkiye', date: '2026-06-24T20:00:00', group: 'Group D' },
-  { home: 'United States', away: 'Paraguay', date: '2026-06-27T20:00:00', group: 'Group D' },
-  { home: 'Australia', away: 'Türkiye', date: '2026-06-27T20:00:00', group: 'Group D' },
 
   // ── GROUP E ──
   { home: 'Germany', away: 'Curaçao', date: '2026-06-13T20:00:00', group: 'Group E' },
+  { home: 'Ivory Coast', away: 'Ecuador', date: '2026-06-13T23:00:00', group: 'Group E' },
   { home: 'Germany', away: 'Ecuador', date: '2026-06-17T20:00:00', group: 'Group E' },
-  { home: 'Germany', away: 'Ivory Coast', date: '2026-06-22T20:00:00', group: 'Group E' },
-  { home: 'Germany', away: 'Curaçao', date: '2026-06-25T20:00:00', group: 'Group E' },
-  { home: 'Ecuador', away: 'Ivory Coast', date: '2026-06-25T20:00:00', group: 'Group E' },
-  { home: 'Ecuador', away: 'Curaçao', date: '2026-06-27T20:00:00', group: 'Group E' },
+  { home: 'Curaçao', away: 'Ivory Coast', date: '2026-06-17T23:00:00', group: 'Group E' },
+  { home: 'Germany', away: 'Ivory Coast', date: '2026-06-25T20:00:00', group: 'Group E' },
+  { home: 'Ecuador', away: 'Curaçao', date: '2026-06-25T20:00:00', group: 'Group E' },
 
   // ── GROUP F ──
   { home: 'Netherlands', away: 'Japan', date: '2026-06-15T20:00:00', group: 'Group F' },
+  { home: 'Tunisia', away: 'Sweden', date: '2026-06-15T23:00:00', group: 'Group F' },
   { home: 'Netherlands', away: 'Sweden', date: '2026-06-19T20:00:00', group: 'Group F' },
-  { home: 'Netherlands', away: 'Tunisia', date: '2026-06-24T20:00:00', group: 'Group F' },
-  { home: 'Japan', away: 'Tunisia', date: '2026-06-25T20:00:00', group: 'Group F' },
-  { home: 'Sweden', away: 'Tunisia', date: '2026-06-27T20:00:00', group: 'Group F' },
-  { home: 'Netherlands', away: 'Japan', date: '2026-06-27T20:00:00', group: 'Group F' },
+  { home: 'Japan', away: 'Tunisia', date: '2026-06-19T23:00:00', group: 'Group F' },
+  { home: 'Netherlands', away: 'Tunisia', date: '2026-06-27T20:00:00', group: 'Group F' },
+  { home: 'Japan', away: 'Sweden', date: '2026-06-27T20:00:00', group: 'Group F' },
 
   // ── GROUP G ──
   { home: 'Belgium', away: 'Egypt', date: '2026-06-15T20:00:00', group: 'Group G' },
+  { home: 'Iran', away: 'New Zealand', date: '2026-06-15T23:00:00', group: 'Group G' },
   { home: 'Belgium', away: 'Iran', date: '2026-06-20T20:00:00', group: 'Group G' },
-  { home: 'Belgium', away: 'New Zealand', date: '2026-06-24T20:00:00', group: 'Group G' },
-  { home: 'Egypt', away: 'Iran', date: '2026-06-25T20:00:00', group: 'Group G' },
-  { home: 'Egypt', away: 'New Zealand', date: '2026-06-27T20:00:00', group: 'Group G' },
-  { home: 'Iran', away: 'New Zealand', date: '2026-06-27T20:00:00', group: 'Group G' },
+  { home: 'Egypt', away: 'New Zealand', date: '2026-06-20T23:00:00', group: 'Group G' },
+  { home: 'Belgium', away: 'New Zealand', date: '2026-06-27T20:00:00', group: 'Group G' },
+  { home: 'Egypt', away: 'Iran', date: '2026-06-27T20:00:00', group: 'Group G' },
 
   // ── GROUP H ──
   { home: 'Spain', away: 'Cape Verde', date: '2026-06-14T20:00:00', group: 'Group H' },
+  { home: 'Saudi Arabia', away: 'Uruguay', date: '2026-06-14T23:00:00', group: 'Group H' },
   { home: 'Spain', away: 'Uruguay', date: '2026-06-19T20:00:00', group: 'Group H' },
-  { home: 'Spain', away: 'Saudi Arabia', date: '2026-06-23T20:00:00', group: 'Group H' },
-  { home: 'Uruguay', away: 'Saudi Arabia', date: '2026-06-26T20:00:00', group: 'Group H' },
-  { home: 'Spain', away: 'Uruguay', date: '2026-06-27T20:00:00', group: 'Group H' },
-  { home: 'Saudi Arabia', away: 'Cape Verde', date: '2026-06-27T20:00:00', group: 'Group H' },
+  { home: 'Cape Verde', away: 'Saudi Arabia', date: '2026-06-19T23:00:00', group: 'Group H' },
+  { home: 'Spain', away: 'Saudi Arabia', date: '2026-06-27T20:00:00', group: 'Group H' },
+  { home: 'Uruguay', away: 'Cape Verde', date: '2026-06-27T20:00:00', group: 'Group H' },
 
   // ── GROUP I ──
   { home: 'France', away: 'Senegal', date: '2026-06-14T20:00:00', group: 'Group I' },
+  { home: 'Norway', away: 'Iraq', date: '2026-06-14T23:00:00', group: 'Group I' },
   { home: 'France', away: 'Norway', date: '2026-06-18T20:00:00', group: 'Group I' },
-  { home: 'France', away: 'Iraq', date: '2026-06-23T20:00:00', group: 'Group I' },
-  { home: 'France', away: 'Senegal', date: '2026-06-26T20:00:00', group: 'Group I' },
-  { home: 'Norway', away: 'Iraq', date: '2026-06-26T20:00:00', group: 'Group I' },
-  { home: 'Senegal', away: 'Iraq', date: '2026-06-27T20:00:00', group: 'Group I' },
+  { home: 'Senegal', away: 'Iraq', date: '2026-06-18T23:00:00', group: 'Group I' },
+  { home: 'France', away: 'Iraq', date: '2026-06-26T20:00:00', group: 'Group I' },
+  { home: 'Senegal', away: 'Norway', date: '2026-06-26T20:00:00', group: 'Group I' },
 
   // ── GROUP J ──
   { home: 'Argentina', away: 'Algeria', date: '2026-06-13T20:00:00', group: 'Group J' },
+  { home: 'Austria', away: 'Jordan', date: '2026-06-13T23:00:00', group: 'Group J' },
   { home: 'Argentina', away: 'Austria', date: '2026-06-18T20:00:00', group: 'Group J' },
-  { home: 'Argentina', away: 'Jordan', date: '2026-06-22T20:00:00', group: 'Group J' },
-  { home: 'Argentina', away: 'Austria', date: '2026-06-25T20:00:00', group: 'Group J' },
-  { home: 'Algeria', away: 'Jordan', date: '2026-06-25T20:00:00', group: 'Group J' },
-  { home: 'Austria', away: 'Jordan', date: '2026-06-27T20:00:00', group: 'Group J' },
+  { home: 'Algeria', away: 'Jordan', date: '2026-06-18T23:00:00', group: 'Group J' },
+  { home: 'Argentina', away: 'Jordan', date: '2026-06-25T20:00:00', group: 'Group J' },
+  { home: 'Algeria', away: 'Austria', date: '2026-06-25T20:00:00', group: 'Group J' },
 
   // ── GROUP K ──
   { home: 'Portugal', away: 'Uzbekistan', date: '2026-06-14T20:00:00', group: 'Group K' },
+  { home: 'Colombia', away: 'DR Congo', date: '2026-06-14T23:00:00', group: 'Group K' },
   { home: 'Portugal', away: 'Colombia', date: '2026-06-19T20:00:00', group: 'Group K' },
-  { home: 'Portugal', away: 'DR Congo', date: '2026-06-23T20:00:00', group: 'Group K' },
-  { home: 'Portugal', away: 'Colombia', date: '2026-06-27T20:00:00', group: 'Group K' },
-  { home: 'Uzbekistan', away: 'DR Congo', date: '2026-06-27T20:00:00', group: 'Group K' },
-  { home: 'Colombia', away: 'DR Congo', date: '2026-06-27T20:00:00', group: 'Group K' },
+  { home: 'Uzbekistan', away: 'DR Congo', date: '2026-06-19T23:00:00', group: 'Group K' },
+  { home: 'Portugal', away: 'DR Congo', date: '2026-06-27T20:00:00', group: 'Group K' },
+  { home: 'Uzbekistan', away: 'Colombia', date: '2026-06-27T20:00:00', group: 'Group K' },
 
   // ── GROUP L ──
   { home: 'England', away: 'Croatia', date: '2026-06-13T20:00:00', group: 'Group L' },
+  { home: 'Ghana', away: 'Panama', date: '2026-06-13T23:00:00', group: 'Group L' },
   { home: 'England', away: 'Ghana', date: '2026-06-18T20:00:00', group: 'Group L' },
-  { home: 'England', away: 'Panama', date: '2026-06-22T20:00:00', group: 'Group L' },
-  { home: 'England', away: 'Croatia', date: '2026-06-26T20:00:00', group: 'Group L' },
-  { home: 'Ghana', away: 'Panama', date: '2026-06-26T20:00:00', group: 'Group L' },
-  { home: 'Croatia', away: 'Panama', date: '2026-06-27T20:00:00', group: 'Group L' },
+  { home: 'Croatia', away: 'Panama', date: '2026-06-18T23:00:00', group: 'Group L' },
+  { home: 'England', away: 'Panama', date: '2026-06-26T20:00:00', group: 'Group L' },
+  { home: 'Croatia', away: 'Ghana', date: '2026-06-26T20:00:00', group: 'Group L' },
 ]
 
 export async function GET(request: NextRequest) {
