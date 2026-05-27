@@ -1,6 +1,5 @@
 'use client';
-import type { Metadata } from 'next'
-export const metadata: Metadata = {
+
 export default function About() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
@@ -116,8 +115,8 @@ export default function About() {
           {
             icon: '👑',
             title: 'Destiny Path',
-            rating: 'Football's Reputation Marketplace',
-            desc: 'A platform where your football intelligence is publicly verified, professionally presented, and permanently recorded. Your Flipseer profile becomes your football CV.',
+            rating: "The World's Football Reputation Platform",
+            desc: 'A platform where your football intelligence is publicly verified, professionally presented, and permanently recorded. Your Flipseer profile becomes your football identity.',
             color: '#A855F7',
           },
         ].map(({ icon, title, rating, desc, color }) => (
@@ -141,11 +140,11 @@ export default function About() {
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '32px', textAlign: 'center' }}>The journey ahead</h2>
 
           {[
-            { phase: 'Phase 1', date: 'June 2026', title: 'World Cup Launch', desc: '64 matches. Global leaderboards. Building the first wave of football forecasters.', done: false, current: true },
-            { phase: 'Phase 2', date: 'Aug 2026', title: 'EPL & Champions League', desc: 'Europe\'s biggest leagues. Your reputation builds year-round, not just tournaments.', done: false, current: false },
-            { phase: 'Phase 3', date: 'Jul 2026', title: 'Flipseer Pro', desc: 'Advanced analytics, AI insights, exclusive badges, and premium features.', done: false, current: false },
-            { phase: 'Phase 4', date: 'Sep 2026', title: 'La Liga, Serie A, Bundesliga', desc: 'Full European football coverage. The complete football reputation platform.', done: false, current: false },
-            { phase: 'Phase 5', date: '2027+', title: 'Brand Partnerships & Legacy', desc: 'Sponsorships, verified forecaster badges, and the football reputation economy.', done: false, current: false },
+            { phase: 'Phase 1', date: 'June 2026', title: 'World Cup Launch', desc: '64 matches. Global leaderboards. Building the first wave of football forecasters.', current: true },
+            { phase: 'Phase 2', date: 'Aug 2026', title: 'EPL & Champions League', desc: 'Europe\'s biggest leagues. Your reputation builds year-round, not just tournaments.', current: false },
+            { phase: 'Phase 3', date: 'Jul 2026', title: 'Flipseer Pro', desc: 'Advanced analytics, deeper insights, exclusive badges, and premium features.', current: false },
+            { phase: 'Phase 4', date: 'Sep 2026', title: 'La Liga, Serie A, Bundesliga', desc: 'Full European football coverage. The complete football reputation platform.', current: false },
+            { phase: 'Phase 5', date: '2027+', title: 'Brand Partnerships & Legacy', desc: 'Sponsorships, verified forecaster badges, and the football reputation economy.', current: false },
           ].map(({ phase, date, title, desc, current }) => (
             <div key={phase} style={{ display: 'flex', gap: '20px', marginBottom: '24px', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '40px' }}>
@@ -171,21 +170,38 @@ export default function About() {
       <section style={{ textAlign: 'center', padding: '80px 24px', maxWidth: '700px', margin: '0 auto' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '24px' }}>OUR MANIFESTO</p>
         <blockquote style={{ fontFamily: 'Georgia, serif', fontSize: '22px', lineHeight: '1.7', color: 'white', fontStyle: 'italic', marginBottom: '32px' }}>
-          "Football is not just a game. It's history.<br/>
-          And history deserves a record.<br/>
+          "Football is not just a game. It's history.<br />
+          And history deserves a record.<br />
           <span style={{ color: '#2E9E5E' }}>Flipseer is that record.</span>"
         </blockquote>
         <p style={{ color: '#6B7280', fontSize: '15px', lineHeight: '1.8', marginBottom: '40px' }}>
           Every correct prediction. Every upset called. Every exact score.<br />
           Written into your permanent profile. Forever.
         </p>
-        <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 48px', borderRadius: '10px', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px', boxShadow: '0 0 32px rgba(46,158,94,0.3)' }}>          Start Building Your Legacy →
+        <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 48px', borderRadius: '10px', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px', boxShadow: '0 0 32px rgba(46,158,94,0.3)' }}>
+          Start Building Your Legacy →
         </a>
       </section>
 
-      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation. No betting. Ever.</p>
-      </footer>
+      {/* LEGAL LINKS */}
+      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 24px' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            {[
+              { label: '📄 Privacy Policy', href: '/privacy' },
+              { label: '📋 Terms of Service', href: '/terms' },
+              { label: '⚠️ Disclaimer', href: '/disclaimer' },
+            ].map(({ label, href }) => (
+              <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '8px', padding: '8px 16px', color: '#9CA3AF', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
+                {label}
+              </a>
+            ))}
+          </div>
+          <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
+            © 2026 Flipseer · No betting. Ever.
+          </p>
+        </div>
+      </section>
 
     </main>
   );
