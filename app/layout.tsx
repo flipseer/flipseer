@@ -9,22 +9,13 @@ export const metadata: Metadata = {
   creator: 'Flipseer',
   publisher: 'Flipseer',
   metadataBase: new URL('https://flipseer.com'),
-  alternates: {
-    canonical: 'https://flipseer.com',
-  },
+  alternates: { canonical: 'https://flipseer.com' },
   openGraph: {
     title: 'Flipseer — Your Football Legacy Starts Here',
     description: 'Predict World Cup 2026 matches before kick-off. Earn reputation points. Build a permanent record of your football intelligence. Free. No betting. Ever.',
     url: 'https://flipseer.com',
     siteName: 'Flipseer',
-    images: [
-      {
-        url: 'https://flipseer.com/api/og/home',
-        width: 1200,
-        height: 630,
-        alt: 'Flipseer — Build Your Football Reputation',
-      },
-    ],
+    images: [{ url: 'https://flipseer.com/api/og/home', width: 1200, height: 630, alt: 'Flipseer — Build Your Football Reputation' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -63,16 +54,8 @@ const structuredData = {
   applicationCategory: 'SportsApplication',
   operatingSystem: 'Web',
   browserRequirements: 'Requires JavaScript',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-  },
-  creator: {
-    '@type': 'Organization',
-    name: 'Flipseer',
-    url: 'https://flipseer.com',
-  },
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  creator: { '@type': 'Organization', name: 'Flipseer', url: 'https://flipseer.com' },
   featureList: [
     'World Cup 2026 match predictions',
     'Global leaderboards',
@@ -119,20 +102,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span style={{ color: '#2E9E5E', fontWeight: 'bold', fontSize: '16px' }}>⚽ FLIPSEER</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <a href="/about" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>About</a>
-            <a href="/faq" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>FAQ</a>
-            <a href="/how-to-play" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>How to Play</a>
-            <a href="/predict" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Predict</a>
-            <a href="/leaderboard" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Leaderboard</a>
-            <a href="/privacy" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Privacy Policy</a>
-            <a href="/terms" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Terms of Service</a>
-            <a href="/disclaimer" style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '14px' }}>Disclaimer</a>
+            <a href="/about" style={footerLink}>About</a>
+            <a href="/faq" style={footerLink}>FAQ</a>
+            <a href="/how-to-play" style={footerLink}>How to Play</a>
+            <a href="/predict" style={footerLink}>Predict</a>
+            <a href="/world-cup-2026" style={footerLink}>World Cup 2026</a>
+            <a href="/leaderboard" style={footerLink}>Leaderboard</a>
+            <a href="/privacy" style={footerLink}>Privacy Policy</a>
+            <a href="/terms" style={footerLink}>Terms of Service</a>
+            <a href="/disclaimer" style={footerLink}>Disclaimer</a>
           </div>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            © 2026 Flipseer · Pure football reputation · No betting ·
+            © 2026 Flipseer · Pure football reputation · No betting · No gambling · Ever.
           </p>
         </footer>
       </body>
     </html>
   );
 }
+
+const footerLink: React.CSSProperties = {
+  color: '#9CA3AF',
+  textDecoration: 'none',
+  fontSize: '14px',
+};
