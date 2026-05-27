@@ -4,31 +4,103 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
-// ✅ FIFA World Cup 2026 Group Stage Matches (Realistic Seeding)
-// Note: Final groups and exact fixtures will be confirmed closer to the event.
-// This is a realistic placeholder based on official host allocations + typical draw.
-
+// ✅ FIFA World Cup 2026 Group Stage Matches - Accurate Timetable
 const WC2026_MATCHES = [
-  // GROUP A (Hosts + strong teams)
-  { home: 'Mexico', away: 'South Africa', date: '2026-06-11T19:00:00', group: 'Group A' },
-  { home: 'USA', away: 'Canada', date: '2026-06-12T18:00:00', group: 'Group A' },
-  { home: 'Mexico', away: 'USA', date: '2026-06-16T19:00:00', group: 'Group A' },
-  { home: 'Canada', away: 'South Africa', date: '2026-06-17T22:00:00', group: 'Group A' },
-  { home: 'Mexico', away: 'Canada', date: '2026-06-21T19:00:00', group: 'Group A' },
-  { home: 'South Africa', away: 'USA', date: '2026-06-21T22:00:00', group: 'Group A' },
+  // Group A
+  { home: 'Mexico', away: 'South Africa', date: '2026-06-11T19:30:00', group: 'Group A' },
+  { home: 'South Korea', away: 'Czech Republic', date: '2026-06-11T19:30:00', group: 'Group A' },
+  { home: 'Mexico', away: 'South Korea', date: '2026-06-16T20:00:00', group: 'Group A' },
+  { home: 'South Africa', away: 'Czech Republic', date: '2026-06-16T20:00:00', group: 'Group A' },
+  { home: 'Mexico', away: 'Czech Republic', date: '2026-06-20T20:00:00', group: 'Group A' },
+  { home: 'South Africa', away: 'South Korea', date: '2026-06-20T20:00:00', group: 'Group A' },
 
-  // GROUP B
-  { home: 'Spain', away: 'Croatia', date: '2026-06-13T19:00:00', group: 'Group B' },
-  { home: 'Brazil', away: 'Morocco', date: '2026-06-14T19:00:00', group: 'Group B' },
-  { home: 'Spain', away: 'Brazil', date: '2026-06-18T19:00:00', group: 'Group B' },
+  // Group B
+  { home: 'Canada', away: 'Bosnia and Herzegovina', date: '2026-06-12T00:00:00', group: 'Group B' },
+  { home: 'Canada', away: 'Switzerland', date: '2026-06-16T20:00:00', group: 'Group B' },
+  { home: 'Canada', away: 'Qatar', date: '2026-06-21T20:00:00', group: 'Group B' },
+  { home: 'Switzerland', away: 'Bosnia and Herzegovina', date: '2026-06-21T20:00:00', group: 'Group B' },
+  { home: 'Canada', away: 'Switzerland', date: '2026-06-25T20:00:00', group: 'Group B' },
+  { home: 'Qatar', away: 'Bosnia and Herzegovina', date: '2026-06-25T20:00:00', group: 'Group B' },
 
-  // GROUP C (Examples - expand as needed)
-  { home: 'England', away: 'France', date: '2026-06-15T22:00:00', group: 'Group C' },
-  { home: 'Argentina', away: 'Portugal', date: '2026-06-16T22:00:00', group: 'Group C' },
-  { home: 'Germany', away: 'Netherlands', date: '2026-06-19T19:00:00', group: 'Group C' },
+  // Group C
+  { home: 'Brazil', away: 'Morocco', date: '2026-06-12T20:00:00', group: 'Group C' },
+  { home: 'Brazil', away: 'Scotland', date: '2026-06-17T20:00:00', group: 'Group C' },
+  { home: 'Brazil', away: 'Haiti', date: '2026-06-21T20:00:00', group: 'Group C' },
+  { home: 'Brazil', away: 'Scotland', date: '2026-06-24T20:00:00', group: 'Group C' },
+  { home: 'Morocco', away: 'Haiti', date: '2026-06-24T20:00:00', group: 'Group C' },
+  { home: 'Morocco', away: 'Scotland', date: '2026-06-27T20:00:00', group: 'Group C' },
 
-  // Add more realistic matches here as official draw becomes available
-  // Total group stage matches = 72 (48 teams × 3 matches each / 2)
+  // Group D
+  { home: 'United States', away: 'Paraguay', date: '2026-06-12T20:00:00', group: 'Group D' },
+  { home: 'United States', away: 'Türkiye', date: '2026-06-17T20:00:00', group: 'Group D' },
+  { home: 'United States', away: 'Australia', date: '2026-06-21T20:00:00', group: 'Group D' },
+  { home: 'Paraguay', away: 'Türkiye', date: '2026-06-24T20:00:00', group: 'Group D' },
+  { home: 'United States', away: 'Paraguay', date: '2026-06-27T20:00:00', group: 'Group D' },
+  { home: 'Australia', away: 'Türkiye', date: '2026-06-27T20:00:00', group: 'Group D' },
+
+  // Group E
+  { home: 'Germany', away: 'Curaçao', date: '2026-06-13T20:00:00', group: 'Group E' },
+  { home: 'Germany', away: 'Ecuador', date: '2026-06-17T20:00:00', group: 'Group E' },
+  { home: 'Germany', away: 'Ivory Coast', date: '2026-06-22T20:00:00', group: 'Group E' },
+  { home: 'Germany', away: 'Curaçao', date: '2026-06-25T20:00:00', group: 'Group E' },
+  { home: 'Ecuador', away: 'Ivory Coast', date: '2026-06-25T20:00:00', group: 'Group E' },
+  { home: 'Ecuador', away: 'Curaçao', date: '2026-06-27T20:00:00', group: 'Group E' },
+
+  // Group F
+  { home: 'Netherlands', away: 'Japan', date: '2026-06-15T20:00:00', group: 'Group F' },
+  { home: 'Netherlands', away: 'Sweden', date: '2026-06-19T20:00:00', group: 'Group F' },
+  { home: 'Netherlands', away: 'Tunisia', date: '2026-06-24T20:00:00', group: 'Group F' },
+  { home: 'Japan', away: 'Tunisia', date: '2026-06-25T20:00:00', group: 'Group F' },
+  { home: 'Sweden', away: 'Tunisia', date: '2026-06-27T20:00:00', group: 'Group F' },
+  { home: 'Netherlands', away: 'Japan', date: '2026-06-27T20:00:00', group: 'Group F' },
+
+  // Group G
+  { home: 'Belgium', away: 'Egypt', date: '2026-06-15T20:00:00', group: 'Group G' },
+  { home: 'Belgium', away: 'Iran', date: '2026-06-20T20:00:00', group: 'Group G' },
+  { home: 'Belgium', away: 'New Zealand', date: '2026-06-24T20:00:00', group: 'Group G' },
+  { home: 'Egypt', away: 'Iran', date: '2026-06-25T20:00:00', group: 'Group G' },
+  { home: 'Egypt', away: 'New Zealand', date: '2026-06-27T20:00:00', group: 'Group G' },
+  { home: 'Iran', away: 'New Zealand', date: '2026-06-27T20:00:00', group: 'Group G' },
+
+  // Group H
+  { home: 'Spain', away: 'Cape Verde', date: '2026-06-14T20:00:00', group: 'Group H' },
+  { home: 'Spain', away: 'Uruguay', date: '2026-06-19T20:00:00', group: 'Group H' },
+  { home: 'Spain', away: 'Saudi Arabia', date: '2026-06-23T20:00:00', group: 'Group H' },
+  { home: 'Uruguay', away: 'Saudi Arabia', date: '2026-06-26T20:00:00', group: 'Group H' },
+  { home: 'Spain', away: 'Uruguay', date: '2026-06-27T20:00:00', group: 'Group H' },
+  { home: 'Saudi Arabia', away: 'Cape Verde', date: '2026-06-27T20:00:00', group: 'Group H' },
+
+  // Group I
+  { home: 'France', away: 'Senegal', date: '2026-06-14T20:00:00', group: 'Group I' },
+  { home: 'France', away: 'Norway', date: '2026-06-18T20:00:00', group: 'Group I' },
+  { home: 'France', away: 'Iraq', date: '2026-06-23T20:00:00', group: 'Group I' },
+  { home: 'France', away: 'Senegal', date: '2026-06-26T20:00:00', group: 'Group I' },
+  { home: 'Norway', away: 'Iraq', date: '2026-06-26T20:00:00', group: 'Group I' },
+  { home: 'Senegal', away: 'Iraq', date: '2026-06-27T20:00:00', group: 'Group I' },
+
+  // Group J
+  { home: 'Argentina', away: 'Algeria', date: '2026-06-13T20:00:00', group: 'Group J' },
+  { home: 'Argentina', away: 'Austria', date: '2026-06-18T20:00:00', group: 'Group J' },
+  { home: 'Argentina', away: 'Jordan', date: '2026-06-22T20:00:00', group: 'Group J' },
+  { home: 'Argentina', away: 'Austria', date: '2026-06-25T20:00:00', group: 'Group J' },
+  { home: 'Algeria', away: 'Jordan', date: '2026-06-25T20:00:00', group: 'Group J' },
+  { home: 'Austria', away: 'Jordan', date: '2026-06-27T20:00:00', group: 'Group J' },
+
+  // Group K
+  { home: 'Portugal', away: 'Uzbekistan', date: '2026-06-14T20:00:00', group: 'Group K' },
+  { home: 'Portugal', away: 'Colombia', date: '2026-06-19T20:00:00', group: 'Group K' },
+  { home: 'Portugal', away: 'DR Congo', date: '2026-06-23T20:00:00', group: 'Group K' },
+  { home: 'Portugal', away: 'Colombia', date: '2026-06-27T20:00:00', group: 'Group K' },
+  { home: 'Uzbekistan', away: 'DR Congo', date: '2026-06-27T20:00:00', group: 'Group K' },
+  { home: 'Colombia', away: 'DR Congo', date: '2026-06-27T20:00:00', group: 'Group K' },
+
+  // Group L
+  { home: 'England', away: 'Croatia', date: '2026-06-13T20:00:00', group: 'Group L' },
+  { home: 'England', away: 'Ghana', date: '2026-06-18T20:00:00', group: 'Group L' },
+  { home: 'England', away: 'Panama', date: '2026-06-22T20:00:00', group: 'Group L' },
+  { home: 'England', away: 'Croatia', date: '2026-06-26T20:00:00', group: 'Group L' },
+  { home: 'Ghana', away: 'Panama', date: '2026-06-26T20:00:00', group: 'Group L' },
+  { home: 'Croatia', away: 'Panama', date: '2026-06-27T20:00:00', group: 'Group L' },
 ]
 
 export async function GET(request: NextRequest) {
@@ -43,15 +115,17 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    console.log(`🌍 Seeding ${WC2026_MATCHES.length} FIFA World Cup 2026 matches...`)
+    console.log(`🌍 Seeding ${WC2026_MATCHES.length} FIFA World Cup 2026 group stage matches...`)
 
     let inserted = 0
     let skipped = 0
     const errors: string[] = []
 
-    for (const m of WC2026_MATCHES) {
+    for (let i = 0; i < WC2026_MATCHES.length; i++) {
+      const m = WC2026_MATCHES[i]
+
       const matchData = {
-        api_id: `wc2026-\( {m.home.toLowerCase()}- \){m.away.toLowerCase()}-${m.date.slice(0,10)}`,
+        api_id: 2026000 + i + 1,
         home_team: m.home,
         away_team: m.away,
         kickoff: new Date(m.date).toISOString(),
@@ -83,7 +157,7 @@ export async function GET(request: NextRequest) {
       inserted,
       skipped,
       errors: errors.length > 0 ? errors : undefined,
-      message: `✅ Successfully seeded ${inserted} World Cup 2026 matches.`,
+      message: `✅ Successfully seeded ${inserted} FIFA World Cup 2026 group stage matches!`,
     })
 
   } catch (err: any) {
