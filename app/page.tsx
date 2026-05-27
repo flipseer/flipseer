@@ -1,8 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase-browser';
+import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '🇮🇳', 'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷',
@@ -48,6 +51,7 @@ const REAL_USER_THRESHOLD = 100;
 
 export default function Home() {
   const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER);
+  const [mounted, setMounted] = useState(false); // ✅ Fix: hydration
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -56,7 +60,10 @@ export default function Home() {
   const [isRealData, setIsRealData] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  // ── Countdown — June 11 2026 19:00 Mexico City = June 12 01:00 UTC ──
+  // ✅ Fix: set mounted to prevent hydration mismatch
+  useEffect(() => { setMounted(true); }, []);
+
+  // ── Countdown ──
   useEffect(() => {
     const target = new Date('2026-06-12T01:00:00Z');
     const interval = setInterval(() => {
@@ -71,7 +78,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Live ticker ──
+  // ── Live ticker ✅ Fixed: threshold > 0 ──
   useEffect(() => {
     const fetchTicker = async () => {
       const { data } = await supabase
@@ -79,13 +86,16 @@ export default function Home() {
         .select('predicted_outcome, confidence_pct, match_id, profiles(username, country)')
         .order('created_at', { ascending: false })
         .limit(20);
-      if (data && data.length > 5) {
+
+      // ✅ Fix: changed > 5 to > 0 — shows real data as soon as any predictions exist
+      if (data && data.length > 0) {
         const items = data
           .filter((p: any) => p.profiles?.username)
           .map((p: any) => ({
             country: p.profiles?.country || 'Other',
             username: p.profiles?.username || 'Forecaster',
-            pick: p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw',
+            pick: p.predicted_outcome === 'home' ? 'Home Win'
+                : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw',
             confidence: p.confidence_pct || 50,
             upset: false,
           }));
@@ -109,7 +119,6 @@ export default function Home() {
         if (userCount >= REAL_USER_THRESHOLD) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
-
           if (data && data.length >= 5) {
             const countryMap: { [key: string]: { points: number, forecasters: number } } = {};
             data.forEach((user: any) => {
@@ -118,7 +127,6 @@ export default function Home() {
               countryMap[country].points += user.total_points || 0;
               countryMap[country].forecasters += 1;
             });
-
             const sorted = Object.entries(countryMap)
               .sort((a, b) => b[1].points - a[1].points)
               .slice(0, 6)
@@ -130,7 +138,6 @@ export default function Home() {
                 points: stats.points.toLocaleString(),
                 you: false,
               }));
-
             if (sorted.length >= 3) {
               setLeaderboard(sorted);
               setIsRealData(true);
@@ -177,10 +184,14 @@ export default function Home() {
       <section style={{ textAlign: 'center', padding: '90px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '40px' }}>
+        {/* ✅ Fixed countdown — suppressHydrationWarning prevents 0d 0h 0m 0s flash */}
+        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            WORLD CUP 2026 · {days}d {hours}h {minutes}m {seconds}s
+          <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
+            {mounted
+              ? `WORLD CUP 2026 · ${days}d ${hours}h ${minutes}m ${seconds}s`
+              : 'WORLD CUP 2026 · June 11, 2026'
+            }
           </span>
         </div>
 
@@ -250,7 +261,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* RIVALRY / LEADERBOARD SECTION */}
+      {/* LEADERBOARD */}
       <section style={{ padding: '72px 20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>NATIONAL PRIDE</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '38px', marginBottom: '12px' }}>
@@ -261,16 +272,14 @@ export default function Home() {
           Every prediction you make counts toward your country's leaderboard score.<br />
           India vs Brazil. England vs Argentina. The rivalry is real.
         </p>
-
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
           <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
             <span>RANK · NATION</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {isRealData ? (
-                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>🟢 LIVE</span>
-              ) : (
-                <span style={{ color: '#6B7280', fontSize: '10px' }}>PREVIEW</span>
-              )}
+              {isRealData
+                ? <span style={{ color: '#2E9E5E', fontSize: '10px' }}>🟢 LIVE</span>
+                : <span style={{ color: '#6B7280', fontSize: '10px' }}>PREVIEW</span>
+              }
               FORECASTERS · POINTS
             </span>
           </div>
@@ -319,12 +328,10 @@ export default function Home() {
       <section style={{ padding: '72px 20px', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>THE PROMISE</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '16px' }}>
-          Pure football.<br />
-          <span style={{ color: '#2E9E5E' }}>Nothing else.</span>
+          Pure football.<br /><span style={{ color: '#2E9E5E' }}>Nothing else.</span>
         </h2>
         <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '40px', lineHeight: '1.7' }}>
-          No money. No odds. No gambling. Just football intelligence.<br />
-          The beautiful game. The right way.
+          No money. No odds. No gambling. Just football intelligence.<br />The beautiful game. The right way.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
           {[
@@ -374,8 +381,7 @@ export default function Home() {
           <span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
         </h2>
         <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>
-          The forecasters who start now will have a head start.<br />
-          Your legacy clock is ticking.
+          The forecasters who start now will have a head start.<br />Your legacy clock is ticking.
         </p>
         <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)', letterSpacing: '0.5px' }}>
           Start Your Legacy Now →
