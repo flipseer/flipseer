@@ -40,8 +40,9 @@ export default function Navbar() {
       <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
         <a href="/predict" style={linkStyle}>Predict</a>
         <a href="/world-cup-2026" style={linkStyle}>World Cup 2026</a>
-        <a href="/leaderboard" style={linkStyle}>🥇 Leaderboard</a>
-        <a href="/groups" style={linkStyle}>👥 Groups</a>
+        <a href="/epl" style={linkStyle}>EPL</a>
+        <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
+        <a href="/groups" style={linkStyle}>Groups</a>
         {user ? (
           <a href="/profile" style={activeStyle}>My Profile</a>
         ) : (
