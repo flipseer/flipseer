@@ -1,11 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '🇮🇳', 'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷',
@@ -17,26 +14,19 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'DE': '🇩🇪', 'GB': '🇬🇧', 'ES': '🇪🇸', 'PT': '🇵🇹',
   'NL': '🇳🇱', 'IT': '🇮🇹', 'MX': '🇲🇽', 'US': '🇺🇸',
   'NG': '🇳🇬', 'SN': '🇸🇳', 'MA': '🇲🇦', 'JP': '🇯🇵',
+  'ID': '🇮🇩', 'ZA': '🇿🇦',
 };
 
-const FALLBACK_TICKER = [
-  { country: 'India', username: 'Praveen', pick: 'Mexico Win', confidence: 80 },
-  { country: 'Brazil', username: 'Rafael', pick: 'Brazil Win', confidence: 90 },
-  { country: 'Nigeria', username: 'Emeka', pick: 'Senegal Win', confidence: 65, upset: true },
-  { country: 'Germany', username: 'Klaus', pick: 'Draw', confidence: 55 },
-  { country: 'England', username: 'James', pick: 'England Win', confidence: 75 },
-  { country: 'Argentina', username: 'Diego', pick: 'Argentina Win', confidence: 88 },
-  { country: 'Spain', username: 'Carlos', pick: 'Spain Win', confidence: 85 },
-  { country: 'Japan', username: 'Kenji', pick: 'Japan Win', confidence: 60, upset: true },
-];
-
-const DUMMY_LEADERBOARD = [
-  { rank: 1, flag: '🇧🇷', country: 'Brazil', forecasters: '12,584', points: '2,458,930', you: false },
-  { rank: 2, flag: '🇬🇧', country: 'England', forecasters: '9,876', points: '2,125,440', you: false },
-  { rank: 3, flag: '🇦🇷', country: 'Argentina', forecasters: '8,765', points: '1,998,320', you: false },
-  { rank: 4, flag: '🇫🇷', country: 'France', forecasters: '7,654', points: '1,765,210', you: false },
-  { rank: 5, flag: '🇩🇪', country: 'Germany', forecasters: '6,789', points: '1,543,890', you: false },
-  { rank: 6, flag: '🇮🇳', country: 'India', forecasters: '5,432', points: '1,245,670', you: true },
+// ✅ No dummy ticker — shows real inspiring copy until real data loads
+const STATIC_TICKER = [
+  { text: '⚽ World Cup 2026 kicks off June 11 — 104 matches to predict' },
+  { text: '🎯 Predict exact scores for up to 108 pts per match' },
+  { text: '🌍 Represent your nation on the global leaderboard' },
+  { text: '🔒 Your predictions lock at kick-off — forever on record' },
+  { text: '🏆 No betting. No luck. Pure football intelligence.' },
+  { text: '⚡ June 11 — Mexico vs South Africa — Group A kicks off' },
+  { text: '👑 Build your permanent football reputation — free forever' },
+  { text: '📖 Every correct call earns points toward your legacy' },
 ];
 
 const COMING_SOON = [
@@ -50,17 +40,17 @@ const COMING_SOON = [
 const REAL_USER_THRESHOLD = 100;
 
 export default function Home() {
-  const [tickerItems, setTickerItems] = useState(FALLBACK_TICKER);
-  const [mounted, setMounted] = useState(false); // ✅ Fix: hydration
+  const [tickerItems, setTickerItems] = useState<any[]>([]);
+  const [useRealTicker, setUseRealTicker] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  const [leaderboard, setLeaderboard] = useState(DUMMY_LEADERBOARD);
-  const [isRealData, setIsRealData] = useState(false);
+  const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
+  const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  // ✅ Fix: set mounted to prevent hydration mismatch
   useEffect(() => { setMounted(true); }, []);
 
   // ── Countdown ──
@@ -78,41 +68,42 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Live ticker ✅ Fixed: threshold > 0 ──
+  // ── Live ticker — only show real users, never fake names ──
   useEffect(() => {
     const fetchTicker = async () => {
       const { data } = await supabase
         .from('predictions')
         .select('predicted_outcome, confidence_pct, match_id, profiles(username, country)')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
-      // ✅ Fix: changed > 5 to > 0 — shows real data as soon as any predictions exist
       if (data && data.length > 0) {
         const items = data
           .filter((p: any) => p.profiles?.username)
           .map((p: any) => ({
+            type: 'real',
             country: p.profiles?.country || 'Other',
-            username: p.profiles?.username || 'Forecaster',
+            username: p.profiles?.username,
             pick: p.predicted_outcome === 'home' ? 'Home Win'
-                : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw',
+              : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw',
             confidence: p.confidence_pct || 50,
-            upset: false,
           }));
-        if (items.length > 0) setTickerItems(items);
+        if (items.length >= 3) {
+          setTickerItems(items);
+          setUseRealTicker(true);
+        }
       }
     };
     fetchTicker();
   }, []);
 
-  // ── Smart leaderboard ──
+  // ── Leaderboard — only show real data ──
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         const { count } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
-
         const userCount = count || 0;
         setTotalUsers(userCount);
 
@@ -120,7 +111,7 @@ export default function Home() {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
           if (data && data.length >= 5) {
-            const countryMap: { [key: string]: { points: number, forecasters: number } } = {};
+            const countryMap: { [key: string]: { points: number; forecasters: number } } = {};
             data.forEach((user: any) => {
               const country = user.country || 'Other';
               if (!countryMap[country]) countryMap[country] = { points: 0, forecasters: 0 };
@@ -136,22 +127,24 @@ export default function Home() {
                 country,
                 forecasters: stats.forecasters.toLocaleString(),
                 points: stats.points.toLocaleString(),
-                you: false,
               }));
             if (sorted.length >= 3) {
-              setLeaderboard(sorted);
-              setIsRealData(true);
+              setRealLeaderboard(sorted);
+              setIsRealLeaderboard(true);
             }
           }
         }
       } catch (err) {
-        console.error('Leaderboard fetch error:', err);
+        console.error('Leaderboard error:', err);
       }
     };
     fetchLeaderboard();
   }, []);
 
-  const doubled = [...tickerItems, ...tickerItems];
+  // Build ticker display items
+  const staticDoubled = [...STATIC_TICKER, ...STATIC_TICKER];
+  const realDoubled = useRealTicker ? [...tickerItems, ...tickerItems] : [];
+  const displayTicker = useRealTicker ? realDoubled : staticDoubled;
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
@@ -163,17 +156,22 @@ export default function Home() {
         @keyframes countup { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
-      {/* LIVE TICKER */}
+      {/* ✅ TICKER — real users or inspiring copy, never fake names */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '10px 0' }}>
-        <div style={{ display: 'flex', gap: '48px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
-          {doubled.map((item, i) => (
+        <div style={{ display: 'flex', gap: '48px', animation: 'ticker 50s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
+          {displayTicker.map((item, i) => (
             <span key={i} style={{ fontSize: '13px', color: '#9CA3AF', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span>{COUNTRY_FLAGS[item.country] || '🌍'}</span>
-              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>{item.username}</span>
-              <span>called</span>
-              <span style={{ color: 'white', fontWeight: 'bold' }}>{item.pick}</span>
-              <span style={{ color: '#2E9E5E' }}>· {item.confidence}% sure</span>
-              {item.upset && <span style={{ color: '#F59E0B' }}>🔥 Bold call!</span>}
+              {item.type === 'real' ? (
+                <>
+                  <span>{COUNTRY_FLAGS[item.country] || '🌍'}</span>
+                  <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>@{item.username}</span>
+                  <span>predicted</span>
+                  <span style={{ color: 'white', fontWeight: 'bold' }}>{item.pick}</span>
+                  <span style={{ color: '#2E9E5E' }}>· {item.confidence}% confidence</span>
+                </>
+              ) : (
+                <span style={{ color: '#6B7280' }}>{item.text}</span>
+              )}
               <span style={{ color: '#1A3A20', marginLeft: '16px' }}>|</span>
             </span>
           ))}
@@ -184,14 +182,10 @@ export default function Home() {
       <section style={{ textAlign: 'center', padding: '90px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* ✅ Fixed countdown — suppressHydrationWarning prevents 0d 0h 0m 0s flash */}
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            {mounted
-              ? `WORLD CUP 2026 · ${days}d ${hours}h ${minutes}m ${seconds}s`
-              : 'WORLD CUP 2026 · June 11, 2026'
-            }
+            {mounted ? `WORLD CUP 2026 · ${days}d ${hours}h ${minutes}m ${seconds}s` : 'WORLD CUP 2026 · June 11, 2026'}
           </span>
         </div>
 
@@ -206,7 +200,7 @@ export default function Home() {
         </p>
 
         <p style={{ fontSize: '16px', color: '#4B5563', marginBottom: '48px', fontStyle: 'italic' }}>
-          Not a bet. Not a tip. A record of your football intelligence. Forever.
+          Not a bet. Not a tip. A permanent record of your football intelligence.
         </p>
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '64px' }}>
@@ -261,7 +255,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* LEADERBOARD */}
+      {/* ✅ NATIONAL PRIDE — real data only OR early adopter hook */}
       <section style={{ padding: '72px 20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>NATIONAL PRIDE</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '38px', marginBottom: '12px' }}>
@@ -272,33 +266,58 @@ export default function Home() {
           Every prediction you make counts toward your country's leaderboard score.<br />
           India vs Brazil. England vs Argentina. The rivalry is real.
         </p>
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
-          <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-            <span>RANK · NATION</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {isRealData
-                ? <span style={{ color: '#2E9E5E', fontSize: '10px' }}>🟢 LIVE</span>
-                : <span style={{ color: '#6B7280', fontSize: '10px' }}>PREVIEW</span>
-              }
-              FORECASTERS · POINTS
-            </span>
-          </div>
-          {leaderboard.map(({ rank, flag, country, forecasters, points, you }) => (
-            <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A', backgroundColor: you ? 'rgba(46,158,94,0.08)' : 'transparent' }}>
-              <span style={{ fontSize: '14px', color: you ? '#2E9E5E' : '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
-              <span style={{ fontSize: '20px', marginRight: '10px' }}>{flag}</span>
-              <span style={{ flex: 1, fontSize: '15px', color: you ? '#2E9E5E' : 'white', fontWeight: you ? 'bold' : 'normal' }}>{country} {you && '<- YOU'}</span>
-              <span style={{ fontSize: '12px', color: '#6B7280', marginRight: '16px' }}>{forecasters}</span>
-              <span style={{ fontSize: '13px', color: you ? '#2E9E5E' : '#9CA3AF', fontWeight: 'bold' }}>{points} pts</span>
+
+        {isRealLeaderboard ? (
+          // ✅ Show real leaderboard when data exists
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
+            <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
+              <span>RANK · NATION</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>🟢 LIVE</span>
+                FORECASTERS · POINTS
+              </span>
             </div>
-          ))}
-        </div>
-        {!isRealData && (
-          <p style={{ fontSize: '12px', color: '#4B5563', fontStyle: 'italic', marginBottom: '8px' }}>
-            Live rankings activate when {REAL_USER_THRESHOLD - totalUsers > 0 ? `${REAL_USER_THRESHOLD - totalUsers} more forecasters join` : 'enough forecasters join'} — be one of the first!
-          </p>
+            {realLeaderboard.map(({ rank, flag, country, forecasters, points }) => (
+              <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A' }}>
+                <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
+                <span style={{ fontSize: '20px', marginRight: '10px' }}>{flag}</span>
+                <span style={{ flex: 1, fontSize: '15px', color: 'white' }}>{country}</span>
+                <span style={{ fontSize: '12px', color: '#6B7280', marginRight: '16px' }}>{forecasters}</span>
+                <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: 'bold' }}>{points} pts</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          // ✅ Early adopter hook — no fake data
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', maxWidth: '560px', margin: '0 auto 16px', overflow: 'hidden' }}>
+            <div style={{ backgroundColor: '#050E05', padding: '14px 20px', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center' }}>
+              GLOBAL NATION LEADERBOARD — LAUNCHING JUNE 11
+            </div>
+            <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌍</div>
+              <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>
+                Your nation needs you.
+              </p>
+              <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '16px', lineHeight: '1.7' }}>
+                The national leaderboard goes live June 11.<br />
+                Early predictors shape their country's position from day one.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {['🇮🇳', '🇧🇷', '🇦🇷', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🇳🇬', '🇲🇽', '🇺🇸', '🇩🇪'].map((flag, i) => (
+                  <span key={i} style={{ fontSize: '28px' }}>{flag}</span>
+                ))}
+              </div>
+              <p style={{ fontSize: '13px', color: '#4B5563' }}>
+                {totalUsers > 0
+                  ? `${totalUsers} forecasters already registered — ${REAL_USER_THRESHOLD - totalUsers > 0 ? `${REAL_USER_THRESHOLD - totalUsers} more until live rankings` : 'rankings activating soon!'}`
+                  : 'Be among the founding forecasters. Claim your country\'s #1 spot.'
+                }
+              </p>
+            </div>
+          </div>
         )}
-        <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic' }}>Every prediction you make moves your nation up the table.</p>
+
+        <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic', marginTop: '8px' }}>Every prediction you make moves your nation up the table.</p>
       </section>
 
       {/* HOW IT WORKS */}
@@ -357,7 +376,7 @@ export default function Home() {
           <p style={{ textAlign: 'center', color: '#6B7280', fontSize: '14px', marginBottom: '32px' }}>
             EPL. Champions League. El Clasico. Der Klassiker.<br />Your reputation builds forever.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {COMING_SOON.map(({ icon, title, desc, date }) => (
               <div key={title} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ fontSize: '26px', minWidth: '40px', textAlign: 'center' }}>{icon}</div>
@@ -388,10 +407,6 @@ export default function Home() {
         </a>
         <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free to join. Always.</p>
       </section>
-
-      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A3A1A' }}>
-        <p style={{ color: '#4B5563', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation. No betting. Ever.</p>
-      </footer>
 
     </main>
   );
