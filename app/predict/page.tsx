@@ -484,4 +484,7 @@ export default function Predict() {
             />
           ))
         )}
-    
+      </section>    
+    </main>     
+  );            
+}               
