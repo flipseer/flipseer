@@ -107,6 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/how-to-play" style={footerLink}>How to Play</a>
             <a href="/predict" style={footerLink}>Predict</a>
             <a href="/world-cup-2026" style={footerLink}>World Cup 2026</a>
+            <a href="/epl" style={footerLink}>EPL Predictions</a>
             <a href="/leaderboard" style={footerLink}>Leaderboard</a>
             <a href="/privacy" style={footerLink}>Privacy Policy</a>
             <a href="/terms" style={footerLink}>Terms of Service</a>
