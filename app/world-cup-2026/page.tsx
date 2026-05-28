@@ -49,6 +49,7 @@ const TOP_COUNTRIES = [
   { flag: '🇲🇽', name: 'Mexico', slug: 'mexico', odds: 'Host Nation', color: '#2E9E5E' },
   { flag: '🇺🇸', name: 'USA', slug: 'usa', odds: 'Host Nation', color: '#3B82F6' },
   { flag: '🇨🇦', name: 'Canada', slug: 'canada', odds: 'Host Nation', color: '#EF4444' },
+  { flag: '🇮🇩', name: 'Indonesia', slug: 'indonesia', odds: 'Passionate Fanbase', color: '#EF4444' },
 ]
 
 // ✅ Correct official tournament structure
