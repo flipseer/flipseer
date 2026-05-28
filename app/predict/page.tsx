@@ -484,11 +484,4 @@ export default function Predict() {
             />
           ))
         )}
-      </section>
-
-      <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
-      </footer>
-    </main>
-  );
-}
+    
