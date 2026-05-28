@@ -21,18 +21,18 @@ export const metadata: Metadata = {
 }
 
 const GROUPS = [
-  { group: 'A', teams: ['USA', 'Mexico', 'Panama', 'Iceland'] },
-  { group: 'B', teams: ['Spain', 'Croatia', 'Morocco', 'Japan'] },
-  { group: 'C', teams: ['Brazil', 'Switzerland', 'Serbia', 'Guinea'] },
-  { group: 'D', teams: ['England', 'Slovakia', 'South Africa', 'Tunisia'] },
-  { group: 'E', teams: ['France', 'Netherlands', 'Algeria', 'Kenya'] },
-  { group: 'F', teams: ['Portugal', 'Argentina', 'Iraq', 'Paraguay'] },
-  { group: 'G', teams: ['Germany', 'Belgium', 'Australia', 'New Zealand'] },
-  { group: 'H', teams: ['Italy', 'Senegal', 'Cameroon', 'Canada'] },
-  { group: 'I', teams: ['Colombia', 'Uruguay', 'Ecuador', 'Saudi Arabia'] },
-  { group: 'J', teams: ['Nigeria', 'Egypt', 'South Korea', 'Costa Rica'] },
-  { group: 'K', teams: ['Denmark', 'Iran', 'Ghana', 'Honduras'] },
-  { group: 'L', teams: ['Poland', 'Chile', 'DR Congo', 'Thailand'] },
+  { group: 'A', teams: ['Mexico', 'South Africa', 'South Korea', 'Czechia'] },
+  { group: 'B', teams: ['Canada', 'Bosnia & Herzegovina', 'Qatar', 'Switzerland'] },
+  { group: 'C', teams: ['Brazil', 'Morocco', 'Haiti', 'Scotland'] },
+  { group: 'D', teams: ['USA', 'Paraguay', 'Australia', 'Türkiye'] },
+  { group: 'E', teams: ['Germany', 'Curaçao', 'Ivory Coast', 'Ecuador'] },
+  { group: 'F', teams: ['Netherlands', 'Japan', 'Sweden', 'Tunisia'] },
+  { group: 'G', teams: ['Belgium', 'Egypt', 'Iran', 'New Zealand'] },
+  { group: 'H', teams: ['Spain', 'Cape Verde', 'Saudi Arabia', 'Uruguay'] },
+  { group: 'I', teams: ['France', 'Senegal', 'Iraq', 'Norway'] },
+  { group: 'J', teams: ['Argentina', 'Algeria', 'Austria', 'Jordan'] },
+  { group: 'K', teams: ['Portugal', 'DR Congo', 'Uzbekistan', 'Colombia'] },
+  { group: 'L', teams: ['England', 'Croatia', 'Ghana', 'Panama'] },
 ]
 
 const TOP_COUNTRIES = [
@@ -52,11 +52,12 @@ const TOP_COUNTRIES = [
 
 const STAGES = [
   { stage: 'Group Stage', dates: 'Jun 11 – Jul 2', matches: 48, icon: '⚽' },
-  { stage: 'Round of 32', dates: 'Jul 4 – Jul 7', matches: 16, icon: '🎯' },
-  { stage: 'Round of 16', dates: 'Jul 9 – Jul 12', matches: 8, icon: '⚡' },
-  { stage: 'Quarter Finals', dates: 'Jul 15 – Jul 16', matches: 4, icon: '🔥' },
-  { stage: 'Semi Finals', dates: 'Jul 19 – Jul 20', matches: 2, icon: '👑' },
-  { stage: 'Final', dates: 'Jul 26', matches: 1, icon: '🏆' },
+  { stage: 'Round of 32', dates: 'Jun 28 – Jul 3', matches: 16, icon: '🎯' },
+  { stage: 'Round of 16', dates: 'Jul 4 – Jul 7', matches: 8, icon: '⚡' },
+  { stage: 'Quarter Finals', dates: 'Jul 9 – Jul 11', matches: 4, icon: '🔥' },
+  { stage: 'Semi Finals', dates: 'Jul 14 – Jul 15', matches: 2, icon: '👑' },
+  { stage: 'Third Place', dates: 'Jul 18', matches: 1, icon: '🥉' },
+  { stage: 'Final', dates: 'Jul 19', matches: 1, icon: '🏆' },
 ]
 
 const HOST_CITIES = [
@@ -79,11 +80,11 @@ const HOST_CITIES = [
 
 const STATS = [
   { value: '48', label: 'Group Matches' },
-  { value: '16', label: 'Knockout Matches' },
+  { value: '32', label: 'Knockout Matches' },
   { value: '32', label: 'Nations' },
   { value: '3', label: 'Host Countries' },
   { value: '16', label: 'Host Cities' },
-  { value: '45', label: 'Days of Football' },
+  { value: '39', label: 'Days of Football' },
 ]
 
 export default function WorldCup2026() {
@@ -172,10 +173,10 @@ export default function WorldCup2026() {
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>GROUP STAGE</p>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '8px' }}>
-            12 Groups. 48 Matches.
+            12 Groups. 72 Matches.
           </h2>
           <p style={{ color: '#6B7280', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>
-            Predict every group stage match before kick-off.
+            Each group has 4 teams playing 6 matches. Predict them all.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {GROUPS.map(({ group, teams }) => (
