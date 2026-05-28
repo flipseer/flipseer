@@ -2,24 +2,25 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'World Cup 2026 Predictions — Flipseer | Forecast Every Match',
-  description: 'Predict every FIFA World Cup 2026 match. 64 games. 32 nations. Build your permanent football forecasting record. Free. No betting. Ever.',
+  description: 'Predict every FIFA World Cup 2026 match. 104 matches. 48 nations. Build your permanent football forecasting record. Free. No betting. Ever.',
   keywords: 'world cup 2026 predictions, FIFA world cup 2026, world cup 2026 forecast, world cup 2026 predictor, world cup 2026 matches, world cup 2026 groups',
   openGraph: {
     title: 'World Cup 2026 — Predict Every Match on Flipseer',
-    description: '64 matches. 32 nations. Your predictions. Permanent. Public. Forever.',
+    description: '104 matches. 48 nations. Your predictions. Your record. Your legacy.',
     url: 'https://flipseer.com/world-cup-2026',
     images: [{ url: 'https://flipseer.com/api/og/home', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'World Cup 2026 Predictions — Flipseer',
-    description: '64 matches. 32 nations. Predict them all.',
+    description: '104 matches. 48 nations. Predict them all.',
   },
   alternates: {
     canonical: 'https://flipseer.com/world-cup-2026',
   },
 }
 
+// ✅ Official FIFA World Cup 2026 Groups
 const GROUPS = [
   { group: 'A', teams: ['Mexico', 'South Africa', 'South Korea', 'Czechia'] },
   { group: 'B', teams: ['Canada', 'Bosnia & Herzegovina', 'Qatar', 'Switzerland'] },
@@ -50,14 +51,15 @@ const TOP_COUNTRIES = [
   { flag: '🇨🇦', name: 'Canada', slug: 'canada', odds: 'Host Nation', color: '#EF4444' },
 ]
 
+// ✅ Correct official tournament structure
 const STAGES = [
-  { stage: 'Group Stage', dates: 'Jun 11 – Jul 2', matches: 48, icon: '⚽' },
-  { stage: 'Round of 32', dates: 'Jun 28 – Jul 3', matches: 16, icon: '🎯' },
-  { stage: 'Round of 16', dates: 'Jul 4 – Jul 7', matches: 8, icon: '⚡' },
+  { stage: 'Group Stage',  dates: 'Jun 11 – Jun 27', matches: 72, icon: '⚽' },
+  { stage: 'Round of 32', dates: 'Jun 28 – Jul 3',  matches: 16, icon: '🎯' },
+  { stage: 'Round of 16', dates: 'Jul 4 – Jul 7',   matches: 8,  icon: '⚡' },
   { stage: 'Quarter Finals', dates: 'Jul 9 – Jul 11', matches: 4, icon: '🔥' },
-  { stage: 'Semi Finals', dates: 'Jul 14 – Jul 15', matches: 2, icon: '👑' },
-  { stage: 'Third Place', dates: 'Jul 18', matches: 1, icon: '🥉' },
-  { stage: 'Final', dates: 'Jul 19', matches: 1, icon: '🏆' },
+  { stage: 'Semi Finals', dates: 'Jul 14 – Jul 15', matches: 2,  icon: '👑' },
+  { stage: 'Third Place', dates: 'Jul 18',           matches: 1,  icon: '🥉' },
+  { stage: 'Final',       dates: 'Jul 19',           matches: 1,  icon: '🏆' },
 ]
 
 const HOST_CITIES = [
@@ -71,6 +73,7 @@ const HOST_CITIES = [
   { city: 'Atlanta', stadium: 'Mercedes-Benz Stadium', capacity: '71,000' },
   { city: 'Houston', stadium: 'NRG Stadium', capacity: '72,220' },
   { city: 'Kansas City', stadium: 'Arrowhead Stadium', capacity: '76,416' },
+  { city: 'Philadelphia', stadium: 'Lincoln Financial Field', capacity: '69,796' },
   { city: 'Mexico City', stadium: 'Estadio Azteca', capacity: '87,523' },
   { city: 'Guadalajara', stadium: 'Estadio Akron', capacity: '49,850' },
   { city: 'Monterrey', stadium: 'Estadio BBVA', capacity: '53,500' },
@@ -78,13 +81,14 @@ const HOST_CITIES = [
   { city: 'Vancouver', stadium: 'BC Place', capacity: '54,500' },
 ]
 
+// ✅ All correct official stats
 const STATS = [
-  { value: '48', label: 'Group Matches' },
-  { value: '32', label: 'Knockout Matches' },
-  { value: '32', label: 'Nations' },
-  { value: '3', label: 'Host Countries' },
-  { value: '16', label: 'Host Cities' },
-  { value: '39', label: 'Days of Football' },
+  { value: '104', label: 'Total Matches' },
+  { value: '72',  label: 'Group Matches' },
+  { value: '32',  label: 'Knockout Matches' },
+  { value: '48',  label: 'Nations' },
+  { value: '16',  label: 'Host Cities' },
+  { value: '39',  label: 'Days of Football' },
 ]
 
 export default function WorldCup2026() {
@@ -95,19 +99,19 @@ export default function WorldCup2026() {
       <section style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '80px 20px 60px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D1F0F', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '6px 16px', marginBottom: '28px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>JUNE 11 – JULY 26, 2026</span>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block' }} />
+            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>JUNE 11 – JULY 19, 2026</span>
           </div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '52px', lineHeight: '1.15', marginBottom: '20px' }}>
             FIFA World Cup 2026<br />
             <span style={{ color: '#2E9E5E' }}>Predict Every Match.</span>
           </h1>
           <p style={{ fontSize: '18px', color: '#9CA3AF', marginBottom: '12px', lineHeight: '1.7' }}>
-            64 matches. 32 nations. 3 host countries.<br />
-            <strong style={{ color: '#D1FAE5' }}>Your predictions. Permanent. Public. Forever.</strong>
+            104 matches. 48 nations. 3 host countries.<br />
+            <strong style={{ color: '#D1FAE5' }}>Your predictions. Your record. Your legacy.</strong>
           </p>
           <p style={{ fontSize: '14px', color: '#4B5563', marginBottom: '40px', fontStyle: 'italic' }}>
-            Not a bet. A record of who you are as a football mind.
+            Not a bet. A permanent record of your football intelligence.
           </p>
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '16px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 0 30px rgba(46,158,94,0.3)' }}>
@@ -122,7 +126,7 @@ export default function WorldCup2026() {
 
       {/* ── TOURNAMENT STATS ── */}
       <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '16px' }}>
             {STATS.map(({ value, label }) => (
               <div key={label} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
@@ -147,9 +151,12 @@ export default function WorldCup2026() {
       <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>TOURNAMENT STRUCTURE</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '40px' }}>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '8px' }}>
             From Group Stage to Glory
           </h2>
+          <p style={{ color: '#6B7280', textAlign: 'center', marginBottom: '32px', fontSize: '14px' }}>
+            72 group matches + 32 knockout matches = 104 total
+          </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {STAGES.map(({ stage, dates, matches, icon }) => (
               <div key={stage} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '18px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -176,7 +183,7 @@ export default function WorldCup2026() {
             12 Groups. 72 Matches.
           </h2>
           <p style={{ color: '#6B7280', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>
-            Each group has 4 teams playing 6 matches. Predict them all.
+            Each group has 4 teams playing 6 matches. Predict them all before kick-off.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {GROUPS.map(({ group, teams }) => (
@@ -185,7 +192,7 @@ export default function WorldCup2026() {
                   GROUP {group}
                 </div>
                 {teams.map(team => (
-                  <div key={team} style={{ fontSize: '14px', color: '#D1FAE5', padding: '4px 0', borderBottom: '1px solid #1A3A1A' }}>
+                  <div key={team} style={{ fontSize: '14px', color: '#D1FAE5', padding: '5px 0', borderBottom: '1px solid #1A3A1A' }}>
                     {team}
                   </div>
                 ))}
@@ -207,7 +214,7 @@ export default function WorldCup2026() {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
             {TOP_COUNTRIES.map(({ flag, name, slug, odds, color }) => (
-              <a key={slug} href={`/world-cup-2026/${slug}`} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', textDecoration: 'none', display: 'block', transition: 'border-color 0.2s' }}>
+              <a key={slug} href={`/world-cup-2026/${slug}`} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', textDecoration: 'none', display: 'block' }}>
                 <div style={{ fontSize: '36px', marginBottom: '10px' }}>{flag}</div>
                 <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>{name}</div>
                 <div style={{ fontSize: '11px', color, fontWeight: 'bold' }}>{odds}</div>
@@ -225,7 +232,7 @@ export default function WorldCup2026() {
             16 Cities. 3 Nations.
           </h2>
           <p style={{ color: '#6B7280', textAlign: 'center', marginBottom: '40px', fontSize: '14px' }}>
-            USA 🇺🇸 · Mexico 🇲🇽 · Canada 🇨🇦
+            USA 🇺🇸 (11 cities) · Mexico 🇲🇽 (3 cities) · Canada 🇨🇦 (2 cities)
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
             {HOST_CITIES.map(({ city, stadium, capacity }) => (
@@ -255,7 +262,7 @@ export default function WorldCup2026() {
               { step: '01', icon: '🎯', title: 'Predict the match', desc: 'Pick winner + exact score before kick-off' },
               { step: '02', icon: '🔒', title: 'It locks forever', desc: 'No edits after whistle. Your word stands.' },
               { step: '03', icon: '⚡', title: 'Earn reputation', desc: 'Correct calls earn points and badges' },
-              { step: '04', icon: '👑', title: 'Build your legacy', desc: 'Permanent public record. Forever.' },
+              { step: '04', icon: '👑', title: 'Build your legacy', desc: 'Permanent public record. Tournament after tournament.' },
             ].map(({ step, icon, title, desc }) => (
               <div key={step} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '24px' }}>
                 <div style={{ fontSize: '11px', color: '#1A7A4A', fontWeight: 'bold', marginBottom: '10px' }}>STEP {step}</div>
@@ -277,13 +284,13 @@ export default function WorldCup2026() {
             <span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
           </h2>
           <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '32px', lineHeight: '1.7' }}>
-            Join thousands of forecasters building their permanent<br />World Cup 2026 prediction record on Flipseer.
+            Join forecasters worldwide building their permanent<br />World Cup 2026 prediction record on Flipseer.
           </p>
           <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
             Start Predicting Free →
           </a>
           <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '14px' }}>
-            Free. No betting. No risk. Pure football.
+            Free. No betting. Pure football.
           </p>
         </div>
       </section>
