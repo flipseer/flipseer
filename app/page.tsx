@@ -201,12 +201,12 @@ export default function Home() {
         </h1>
 
         <p style={{ fontSize: '20px', color: '#9CA3AF', marginBottom: '12px', lineHeight: '1.7', maxWidth: '640px', margin: '0 auto 12px' }}>
-          64 matches. 32 nations. One World Cup.<br />
-          <strong style={{ color: '#D1FAE5' }}>Your predictions. Permanent. Public. Forever.</strong>
+          104 matches. 48 nations. One World Cup.<br />
+          <strong style={{ color: '#D1FAE5' }}>Your predictions. Your record. Your legacy.</strong>
         </p>
 
         <p style={{ fontSize: '16px', color: '#4B5563', marginBottom: '48px', fontStyle: 'italic' }}>
-          Not a bet. Not a tip. A record of who you are as a football mind.
+          Not a bet. Not a tip. A record of your football intelligence. Forever.
         </p>
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '64px' }}>
@@ -220,9 +220,9 @@ export default function Home() {
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
           {[
-            { value: '64', label: 'Matches to Predict' },
-            { value: '32', label: 'Nations' },
-            { value: '0', label: 'Bets. Ever.' },
+            { value: '104', label: 'Matches to Predict' },
+            { value: '48', label: 'Nations' },
+            { value: '39', label: 'Days of Football' },
           ].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', animation: `countup 0.6s ease ${i * 0.2}s both` }}>
               <div style={{ fontSize: '40px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{stat.value}</div>
@@ -386,7 +386,7 @@ export default function Home() {
         <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)', letterSpacing: '0.5px' }}>
           Start Your Legacy Now →
         </a>
-        <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free. No betting. No risk. Just football.</p>
+        <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free to join. Always.</p>
       </section>
 
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A3A1A' }}>
