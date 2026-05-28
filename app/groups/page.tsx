@@ -1,11 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase-browser';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// ✅ Fix 1: use shared browser client that preserves session
+const supabase = createClient();
 
 type Group = {
   id: string;
@@ -38,32 +36,28 @@ export default function Groups() {
   const [loading, setLoading] = useState(true);
   const [lbLoading, setLbLoading] = useState(false);
 
-  // Create form
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState('');
 
-  // Search
   const [searchQ, setSearchQ] = useState('');
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [searching, setSearching] = useState(false);
   const [joining, setJoining] = useState<string | null>(null);
 
-  // Invite code join
   const [inviteCode, setInviteCode] = useState('');
   const [joiningCode, setJoiningCode] = useState(false);
   const [joinMsg, setJoinMsg] = useState('');
-
-  // Copied state
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { window.location.href = '/auth'; return; }
-      setUser(user);
-      await fetchMyGroups(user.id);
+      // ✅ Fix 2: use getSession() instead of getUser()
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/auth'; return; }
+      setUser(session.user);
+      await fetchMyGroups(session.user.id);
       setLoading(false);
     };
     init();
@@ -165,7 +159,6 @@ export default function Groups() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  // Auto-join from invite link
   useEffect(() => {
     if (!user) return;
     const params = new URLSearchParams(window.location.search);
@@ -185,14 +178,12 @@ export default function Groups() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
-      {/* HEADER */}
       <section style={{ textAlign: 'center', padding: '40px 20px 24px', background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)' }}>
         <div style={{ fontSize: '48px', marginBottom: '12px' }}>👥</div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '8px' }}>Private Groups</h1>
         <p style={{ color: '#6B7280', fontSize: '14px' }}>Compete with friends, colleagues, and rivals</p>
       </section>
 
-      {/* TABS */}
       <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           {[
@@ -201,19 +192,13 @@ export default function Groups() {
             { key: 'search', label: '🔍 Find' },
           ].map(({ key, label }) => (
             <button key={key} onClick={() => { setTab(key as any); setActiveGroup(null); }}
-              style={{
-                flex: 1, padding: '10px 4px', borderRadius: '8px',
-                border: '1px solid #1A7A4A',
-                backgroundColor: tab === key ? '#1A7A4A' : 'transparent',
-                color: tab === key ? 'white' : '#9CA3AF',
-                cursor: 'pointer', fontSize: '13px', fontWeight: 'bold',
-              }}>
+              style={{ flex: 1, padding: '10px 4px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: tab === key ? '#1A7A4A' : 'transparent', color: tab === key ? 'white' : '#9CA3AF', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
               {label}
             </button>
           ))}
         </div>
 
-        {/* ── MY GROUPS ── */}
+        {/* MY GROUPS */}
         {tab === 'my' && (
           <div>
             {myGroups.length === 0 ? (
@@ -228,7 +213,6 @@ export default function Groups() {
               </div>
             ) : (
               <>
-                {/* Group leaderboard view */}
                 {activeGroup ? (
                   <div>
                     <button onClick={() => setActiveGroup(null)}
@@ -238,7 +222,7 @@ export default function Groups() {
                     <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
                       <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '4px' }}>{activeGroup.name}</h2>
                       {activeGroup.description && <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '12px' }}>{activeGroup.description}</p>}
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '12px', color: '#6B7280' }}>Invite code:</span>
                         <code style={{ fontSize: '12px', color: '#2E9E5E', backgroundColor: '#0D1F0F', padding: '3px 10px', borderRadius: '6px', fontWeight: 'bold' }}>
                           {activeGroup.invite_code}
@@ -249,27 +233,24 @@ export default function Groups() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Leaderboard */}
                     <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '16px', marginBottom: '12px' }}>🏆 Group Leaderboard</h3>
                     {lbLoading ? (
                       <p style={{ color: '#6B7280', textAlign: 'center', padding: '20px' }}>Loading...</p>
+                    ) : leaderboard.length === 0 ? (
+                      <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '32px', textAlign: 'center' }}>
+                        <p style={{ color: '#6B7280' }}>No members yet. Share the invite link!</p>
+                      </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {leaderboard.map((m, i) => (
-                          <div key={m.user_id} style={{
-                            backgroundColor: '#0D2B14',
-                            border: `1px solid ${i === 0 ? '#F59E0B' : i === 1 ? '#9CA3AF' : i === 2 ? '#CD7C2F' : '#1A7A4A'}`,
-                            borderRadius: '12px', padding: '14px 16px',
-                            display: 'flex', alignItems: 'center', gap: '12px',
-                          }}>
+                          <div key={m.user_id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${i === 0 ? '#F59E0B' : i === 1 ? '#9CA3AF' : i === 2 ? '#CD7C2F' : '#1A7A4A'}`, borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ fontSize: '20px', minWidth: '32px', textAlign: 'center' }}>
                               {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                             </div>
                             <div style={{ flex: 1 }}>
                               <div style={{ fontSize: '14px', fontWeight: 'bold' }}>@{m.profiles?.username}</div>
                               <div style={{ fontSize: '11px', color: '#6B7280' }}>
-                                {m.profiles?.correct_count ?? 0} correct · {m.profiles?.streak ?? 0} streak 🔥
+                                {m.profiles?.correct_count ?? 0} correct · {m.profiles?.prediction_count ?? 0} predictions
                               </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
@@ -297,7 +278,7 @@ export default function Groups() {
                             🏆 View
                           </button>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                           <code style={{ fontSize: '11px', color: '#2E9E5E', backgroundColor: '#0D1F0F', padding: '3px 10px', borderRadius: '6px' }}>
                             {g.invite_code}
                           </code>
@@ -315,33 +296,21 @@ export default function Groups() {
           </div>
         )}
 
-        {/* ── CREATE GROUP ── */}
+        {/* CREATE GROUP */}
         {tab === 'create' && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '24px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '20px' }}>Create a Group</h2>
             <div style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '12px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>GROUP NAME *</label>
-              <input
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                placeholder="e.g. Office World Cup Pool"
-                maxLength={40}
-                style={{ width: '100%', padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-              />
+              <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="e.g. Office World Cup Pool" maxLength={40}
+                style={{ width: '100%', padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
             </div>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ fontSize: '12px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>DESCRIPTION (optional)</label>
-              <input
-                value={newDesc}
-                onChange={e => setNewDesc(e.target.value)}
-                placeholder="e.g. Bragging rights for the whole office"
-                maxLength={100}
-                style={{ width: '100%', padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-              />
+              <input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="e.g. Bragging rights for the whole office" maxLength={100}
+                style={{ width: '100%', padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }} />
             </div>
-            {createMsg && (
-              <p style={{ fontSize: '13px', color: createMsg.startsWith('✅') ? '#2E9E5E' : '#FCA5A5', marginBottom: '12px' }}>{createMsg}</p>
-            )}
+            {createMsg && <p style={{ fontSize: '13px', color: createMsg.startsWith('✅') ? '#2E9E5E' : '#FCA5A5', marginBottom: '12px' }}>{createMsg}</p>}
             <button onClick={handleCreate} disabled={creating || !newName.trim()}
               style={{ width: '100%', padding: '12px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', opacity: !newName.trim() ? 0.5 : 1 }}>
               {creating ? 'Creating...' : 'Create Group →'}
@@ -349,19 +318,15 @@ export default function Groups() {
           </div>
         )}
 
-        {/* ── SEARCH + JOIN ── */}
+        {/* SEARCH + JOIN */}
         {tab === 'search' && (
           <div>
-            {/* Join by invite code */}
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px', color: '#2E9E5E' }}>🔗 Join by Invite Code</h3>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  value={inviteCode}
-                  onChange={e => setInviteCode(e.target.value)}
-                  placeholder="Enter invite code..."
-                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px' }}
-                />
+                <input value={inviteCode} onChange={e => setInviteCode(e.target.value)} placeholder="Enter invite code..."
+                  onKeyDown={e => e.key === 'Enter' && handleJoinByCode()}
+                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px' }} />
                 <button onClick={handleJoinByCode} disabled={joiningCode || !inviteCode.trim()}
                   style={{ padding: '10px 16px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                   {joiningCode ? '...' : 'Join'}
@@ -370,23 +335,16 @@ export default function Groups() {
               {joinMsg && <p style={{ fontSize: '13px', color: joinMsg.startsWith('✅') ? '#2E9E5E' : '#FCA5A5', marginTop: '8px' }}>{joinMsg}</p>}
             </div>
 
-            {/* Search by name */}
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px' }}>
               <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px' }}>🔍 Search Groups by Name</h3>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <input
-                  value={searchQ}
-                  onChange={e => setSearchQ(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                  placeholder="Search group name..."
-                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px' }}
-                />
+                <input value={searchQ} onChange={e => setSearchQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="Search group name..."
+                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '8px', color: 'white', fontSize: '14px' }} />
                 <button onClick={handleSearch} disabled={searching}
                   style={{ padding: '10px 16px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
                   {searching ? '...' : 'Search'}
                 </button>
               </div>
-
               {searchResults.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {searchResults.map((g) => {
@@ -410,7 +368,6 @@ export default function Groups() {
                   })}
                 </div>
               )}
-
               {searchResults.length === 0 && searchQ && !searching && (
                 <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', padding: '20px' }}>No groups found for "{searchQ}"</p>
               )}
