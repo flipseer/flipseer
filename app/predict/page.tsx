@@ -22,6 +22,21 @@ type CommunityStats = {
   total: number;
 };
 
+// ✅ Format kickoff in user's LOCAL browser timezone — works for every country
+function formatKickoffLocal(kickoffUtc: string): string {
+  const date = new Date(kickoffUtc)
+  const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return date.toLocaleString('en-GB', {
+    timeZone: browserTz,
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZoneName: 'short',
+  })
+}
+
 // ── Countdown hook ──
 function useCountdown(kickoff: string) {
   const LOCK_BEFORE_MS = 2 * 60 * 1000;
@@ -69,9 +84,8 @@ function MatchCard({
   const { locked, label: timeLeft } = useCountdown(match.kickoff);
   const [shared, setShared] = useState(false);
 
-  const kickoffDate = new Date(match.kickoff).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-  });
+  // ✅ Fixed: uses browser timezone automatically for every country
+  const kickoffDate = formatKickoffLocal(match.kickoff);
 
   const getPct = (count: number, total: number) =>
     total === 0 ? 0 : Math.round((count / total) * 100);
@@ -90,11 +104,9 @@ function MatchCard({
       : pred.outcome === 'away'
       ? `${match.away_team} Win`
       : 'Draw';
-
     const shareUrl = `https://flipseer.com/u/${username}`;
     const text = `⚽ I just predicted ${match.home_team} vs ${match.away_team}\n🎯 ${pickLabel} · ${pred.confidence}% confidence\nMy World Cup 2026 record → ${shareUrl}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-
     if (navigator.share) {
       await navigator.share({ title: 'My Flipseer Prediction', text, url: shareUrl });
     } else {
@@ -188,7 +200,7 @@ function MatchCard({
           {pred?.outcome && (
             <div style={{ marginBottom: '16px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '12px' }}>
               <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '10px', textAlign: 'center' }}>
-                🎯 Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+25 bonus pts if correct!)</span>
+                🎯 Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+55 pts if correct!)</span>
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
@@ -289,7 +301,7 @@ function MatchCard({
         </div>
       )}
 
-      {/* SHARE AFTER SAVING (not locked yet) */}
+      {/* SHARE AFTER SAVING */}
       {isSaved && !locked && pred?.outcome && (
         <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
           <button onClick={handleShare}
@@ -403,15 +415,12 @@ export default function Predict() {
 
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
-
     const match = matches.find(m => m.id === matchId);
     if (match && new Date() >= new Date(new Date(match.kickoff).getTime() - 2 * 60 * 1000)) {
       alert('⚠️ Predictions are locked for this match.');
       return;
     }
-
     setLoading(prev => ({ ...prev, [matchId]: true }));
-
     const { error } = await supabase
       .from('predictions')
       .upsert({
@@ -422,9 +431,7 @@ export default function Predict() {
         predicted_home_score: predictions[matchId].predicted_home_score ?? null,
         predicted_away_score: predictions[matchId].predicted_away_score ?? null,
       }, { onConflict: 'user_id,match_id' });
-
     setLoading(prev => ({ ...prev, [matchId]: false }));
-
     if (!error) {
       setSaved(prev => ({ ...prev, [matchId]: true }));
       setCommunity(prev => {
@@ -446,7 +453,6 @@ export default function Predict() {
           </a>
         )}
       </section>
-
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
         {matchesLoading ? (
           <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px' }}>
@@ -475,7 +481,6 @@ export default function Predict() {
           ))
         )}
       </section>
-
       <footer style={{ padding: '24px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
         <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · Pure football reputation.</p>
       </footer>
