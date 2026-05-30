@@ -247,7 +247,7 @@ export default function Profile() {
           </div>
           <button onClick={handleSaveCountry} disabled={savingCountry}
             style={{ backgroundColor: '#1A7A4A', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}>
-            {savingCountry ? 'Saving...' : 'Save Country &#x2713;'}
+            {savingCountry ? 'Saving...' : 'Save Country'}
           </button>
         </div>
       </section>
