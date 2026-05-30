@@ -28,6 +28,7 @@ const SCORING = [
 ]
 
 const BADGES = [
+  { icon: '&#x1F947;', badge: 'Founding Forecaster', how: 'Joined Flipseer before the World Cup 2026 launch — forever on record', rarity: 'Legendary' },
   { icon: '&#x1F3AF;', badge: 'Score Master', how: 'Predict the exact final score correctly', rarity: 'Rare' },
   { icon: '&#x1F631;', badge: 'Upset King', how: 'Correctly predict an underdog victory', rarity: 'Rare' },
   { icon: '&#x26A1;', badge: 'Match Hero', how: 'Earn the highest points in a single match', rarity: 'Epic' },
