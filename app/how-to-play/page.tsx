@@ -115,7 +115,7 @@ export default function HowToPlay() {
               <div>Exact score: <strong style={{ color: 'white' }}>4-2</strong> &#x2713;</div>
               <div>Confidence: <strong style={{ color: 'white' }}>85%</strong></div>
               <div style={{ borderTop: '1px solid #1A3A1A', marginTop: '8px', paddingTop: '8px', color: '#D1FAE5' }}>
-                10 + 55 (exact) + 12 (upset) = 77 &#xD7; 1.4 = <strong style={{ color: '#2E9E5E', fontSize: '18px' }}>107 pts!</strong>
+                10 + 55 (exact) + 12 (upset) = 77 &#xD7; 1.4 = 107.8 &#x2192; <strong style={{ color: '#2E9E5E', fontSize: '18px' }}>108 pts!</strong>
               </div>
             </div>
           </div>
