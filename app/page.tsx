@@ -78,6 +78,131 @@ const NATION_FLAGS = [
   '&#x1F1E9;&#x1F1EA;',
 ];
 
+
+// -- UPCOMING MATCHES COMPONENT --
+function UpcomingMatches() {
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      const { data } = await supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, status, league')
+        .in('status', ['upcoming', 'live', 'locked'])
+        .order('kickoff', { ascending: true })
+        .limit(4);
+      setMatches(data || []);
+      setLoading(false);
+    };
+    fetchMatches();
+    const interval = setInterval(fetchMatches, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const tick = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(tick);
+  }, []);
+
+  const formatKickoff = (kickoff: string) => {
+    const date = new Date(kickoff);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return date.toLocaleString('en-GB', {
+      timeZone: tz, day: 'numeric', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    });
+  };
+
+  const getCountdown = (kickoff: string) => {
+    const diff = new Date(kickoff).getTime() - now.getTime();
+    if (diff <= 0) return null;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    if (h > 24) return null;
+    if (h > 0) return ;
+    if (m > 0) return ;
+    return ;
+  };
+
+  const isLive = (kickoff: string, status: string) => {
+    if (status === 'live') return true;
+    const diff = now.getTime() - new Date(kickoff).getTime();
+    return diff > 0 && diff < 105 * 60 * 1000;
+  };
+
+  if (loading || matches.length === 0) return null;
+
+  return (
+    <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>WORLD CUP 2026</p>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '8px' }}>
+          Upcoming Matches
+        </h2>
+        <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '32px' }}>
+          Predict before kick-off. Your call is locked forever.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+          {matches.map((match) => {
+            const live = isLive(match.kickoff, match.status);
+            const countdown = getCountdown(match.kickoff);
+            const kickoffPast = new Date(match.kickoff).getTime() < now.getTime();
+            return (
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: , borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none' }}>
+                {/* Live / countdown badge */}
+                <div style={{ minWidth: '80px', textAlign: 'center' }}>
+                  {live ? (
+                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', letterSpacing: '1px' }}>
+                      &#x25CF; LIVE
+                    </span>
+                  ) : countdown ? (
+                    <span style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#F59E0B', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', border: '1px solid #F59E0B' }}>
+                      {countdown}
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: '11px', color: '#6B7280' }}>
+                      {formatKickoff(match.kickoff)}
+                    </span>
+                  )}
+                  {!live && !countdown && (
+                    <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>{match.league}</div>
+                  )}
+                  {(live || countdown) && (
+                    <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
+                  )}
+                </div>
+
+                {/* Teams */}
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white' }}>{match.home_team}</span>
+                    <span style={{ fontSize: '12px', color: '#4B5563', fontWeight: 'bold' }}>vs</span>
+                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white' }}>{match.away_team}</span>
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{match.league}</div>
+                </div>
+
+                {/* CTA */}
+                <a href=/predict style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  {kickoffPast ? '&#x1F512; Locked' : 'Predict &#x2192;'}
+                </a>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <a href=/predict style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
+            View all 72 World Cup matches &#x2192;
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [tickerItems, setTickerItems] = useState<any[]>([]);
   const [useRealTicker, setUseRealTicker] = useState(false);
@@ -258,6 +383,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* UPCOMING MATCHES */}
+      <UpcomingMatches />
 
       {/* TENSION */}
       <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
