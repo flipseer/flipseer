@@ -122,9 +122,9 @@ function UpcomingMatches() {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
     if (h > 24) return null;
-    if (h > 0) return ;
-    if (m > 0) return ;
-    return ;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   };
 
   const isLive = (kickoff: string, status: string) => {
@@ -187,7 +187,7 @@ function UpcomingMatches() {
 
                 {/* CTA */}
                 <a href=/predict style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                  {kickoffPast ? '&#x1F512; Locked' : 'Predict &#x2192;'}
+                  {kickoffPast ? 'Locked' : 'Predict ->'}
                 </a>
               </div>
             );
