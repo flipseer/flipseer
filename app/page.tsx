@@ -151,7 +151,7 @@ function UpcomingMatches() {
             const countdown = getCountdown(match.kickoff);
             const kickoffPast = new Date(match.kickoff).getTime() < now.getTime();
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: , borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none' }}>
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: `1px solid ${live ? '#2E9E5E' : '#1A7A4A'}`, borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none' }}>
                 {/* Live / countdown badge */}
                 <div style={{ minWidth: '80px', textAlign: 'center' }}>
                   {live ? (
@@ -186,7 +186,7 @@ function UpcomingMatches() {
                 </div>
 
                 {/* CTA */}
-                <a href=/predict style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                <a href='/predict' style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                   {kickoffPast ? 'Locked' : 'Predict ->'}
                 </a>
               </div>
@@ -194,7 +194,7 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href=/predict style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
+          <a href='/predict' style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
             View all 72 World Cup matches &#x2192;
           </a>
         </div>
