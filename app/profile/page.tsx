@@ -188,7 +188,8 @@ export default function Profile() {
             {badges.map((b) => {
               const badgeColors: { [key: string]: string } = {
                 score_master: '#3B82F6', upset_king: '#8B5CF6', match_hero: '#F59E0B',
-                bold_caller: '#EF4444', hot_streak_5: '#FB923C', hot_streak_7: '#F59E0B', hot_streak_10: '#EF4444',
+                bold_caller: '#EF4444', hot_streak_5: '#FB923C', hot_streak_7: '#F59E0B',
+                hot_streak_10: '#EF4444', founding_forecaster: '#F59E0B',
               };
               const color = badgeColors[b.badge_type] ?? '#2E9E5E';
               return (
