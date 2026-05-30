@@ -150,7 +150,7 @@ function UpcomingMatches() {
                   ) : (
                     <span style={{ fontSize: '11px', color: '#6B7280' }}>Soon</span>
                   )}
-                  <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
+                  <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '4px', fontWeight: 'bold' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
 
                 <div style={{ flex: 1, textAlign: 'center' }}>
@@ -171,7 +171,7 @@ function UpcomingMatches() {
         </div>
         <div style={{ textAlign: 'center' }}>
           <a href="/predict" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
-            View all 72 World Cup matches &#x2192;
+            View all 104 World Cup matches &#x2192;
           </a>
         </div>
       </div>
@@ -330,10 +330,10 @@ export default function Home() {
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '32px' }}>
           <span style={{ fontSize: '13px', color: '#6B7280' }}>
             {totalUsers > 0
-              ? totalUsers + ' founding forecasters already joined -- '
-              : 'Be among the first 100 founding forecasters -- '
+              ? 'Join ' + totalUsers + ' Founding Forecasters -- '
+              : 'Only 100 Founding Forecaster spots -- '
             }
-            <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Earn the Founding Forecaster badge</span>
+            <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Exclusive badge. Never awarded again.</span>
           </span>
         </div>
 
@@ -341,6 +341,7 @@ export default function Home() {
           <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
             Claim Your Record &#x2192;
           </a>
+          <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '8px' }}>Sign up free in 10 seconds. No card required.</p>
           <a href="/how-to-play" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
             How It Works
           </a>
@@ -557,4 +558,3 @@ export default function Home() {
     </main>
   );
 }
-  
