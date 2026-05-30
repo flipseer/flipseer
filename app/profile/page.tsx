@@ -374,15 +374,18 @@ function ShareCard({ prediction, matchName, username, onClose }: {
   const hasResult = prediction.points_earned !== null;
   const won = prediction.points_earned > 0;
 
+  const profileUrl = `https://flipseer.com/u/${username}`;
+  const ogImageUrl = `https://flipseer.com/api/og?username=${encodeURIComponent(username)}&points=${prediction.points_earned ?? 0}&correct=1&accuracy=0&country=WC+2026`;
+
   const shareText = hasResult
-    ? `I predicted ${outcomeLabel} in ${matchName} with ${prediction.confidence_pct}% confidence - ${won ? `earned +${prediction.points_earned} pts!` : 'got it wrong this time'}\n\nBuild your football reputation at flipseer.com`
-    : `I just predicted ${outcomeLabel} in ${matchName} with ${prediction.confidence_pct}% confidence!\n\nBuild your permanent football reputation at flipseer.com #WorldCup2026`;
+    ? `I predicted ${outcomeLabel} in ${matchName} with ${prediction.confidence_pct}% confidence - ${won ? `earned +${prediction.points_earned} pts!` : 'got it wrong this time'}\n\nSee my full record: ${profileUrl}\n\nBuild your football reputation at flipseer.com`
+    : `I just predicted ${outcomeLabel} in ${matchName} with ${prediction.confidence_pct}% confidence!\n\nSee my record: ${profileUrl}\n\n#WorldCup2026 #Flipseer`;
 
   const encodedText = encodeURIComponent(shareText);
-  const encodedUrl = encodeURIComponent('https://flipseer.com');
+  const encodedUrl = encodeURIComponent(profileUrl);
 
   const platforms = [
-    { name: 'X', label: 'X', bg: '#000000', url: `https://twitter.com/intent/tweet?text=${encodedText}` },
+    { name: 'X', label: 'X', bg: '#000000', url: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}` },
     { name: 'Facebook', label: 'f', bg: '#1877F2', url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}` },
     { name: 'WhatsApp', label: 'W', bg: '#25D366', url: `https://wa.me/?text=${encodedText}` },
   ];
