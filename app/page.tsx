@@ -181,25 +181,30 @@ function UpcomingMatches() {
 
 
 // -- WELCOME CONFETTI COMPONENT --
+const PARTICLES = [
+  { id: 0, left: 5, delay: 0.0, dur: 3.0, icon: '&#x26BD;', size: 24 },
+  { id: 1, left: 12, delay: 0.3, dur: 2.8, icon: '&#x1F3C6;', size: 18 },
+  { id: 2, left: 20, delay: 0.1, dur: 3.2, icon: '&#x2B50;', size: 20 },
+  { id: 3, left: 28, delay: 0.5, dur: 2.6, icon: '&#x26BD;', size: 28 },
+  { id: 4, left: 35, delay: 0.2, dur: 3.5, icon: '&#x1F3C6;', size: 22 },
+  { id: 5, left: 42, delay: 0.4, dur: 2.9, icon: '&#x26BD;', size: 16 },
+  { id: 6, left: 50, delay: 0.1, dur: 3.1, icon: '&#x2B50;', size: 26 },
+  { id: 7, left: 58, delay: 0.6, dur: 2.7, icon: '&#x26BD;', size: 20 },
+  { id: 8, left: 65, delay: 0.3, dur: 3.3, icon: '&#x1F3C6;', size: 24 },
+  { id: 9, left: 72, delay: 0.2, dur: 2.5, icon: '&#x26BD;', size: 18 },
+  { id: 10, left: 80, delay: 0.5, dur: 3.0, icon: '&#x2B50;', size: 22 },
+  { id: 11, left: 88, delay: 0.1, dur: 2.8, icon: '&#x26BD;', size: 28 },
+  { id: 12, left: 95, delay: 0.4, dur: 3.4, icon: '&#x1F3C6;', size: 20 },
+  { id: 13, left: 15, delay: 0.7, dur: 2.6, icon: '&#x26BD;', size: 16 },
+  { id: 14, left: 45, delay: 0.8, dur: 3.2, icon: '&#x2B50;', size: 24 },
+  { id: 15, left: 75, delay: 0.6, dur: 2.9, icon: '&#x26BD;', size: 20 },
+];
+
 function WelcomeConfetti() {
   const [show, setShow] = useState(true);
-  const [particles, setParticles] = useState<any[]>([]);
 
   useEffect(() => {
-    // Generate particles once
-    const items = Array.from({ length: 30 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 2,
-      duration: 2.5 + Math.random() * 2,
-      icon: i % 3 === 0 ? '&#x26BD;' : i % 3 === 1 ? '&#x1F3C6;' : '&#x2B50;',
-      size: 16 + Math.floor(Math.random() * 20),
-      rotate: Math.floor(Math.random() * 360),
-    }));
-    setParticles(items);
-
-    // Hide after 4 seconds
-    const timer = setTimeout(() => setShow(false), 4000);
+    const timer = setTimeout(() => setShow(false), 4500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -207,53 +212,32 @@ function WelcomeConfetti() {
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 999, overflow: 'hidden' }}>
-      <WelcomeConfetti />
-
       <style>{`
         @keyframes fall {
-          0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+          0% { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
         }
-        @keyframes fadeout {
-          0% { opacity: 1; }
-          70% { opacity: 1; }
-          100% { opacity: 0; }
+        @keyframes fadeWelcome {
+          0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+          20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
         }
       `}</style>
-      {/* Welcome message */}
-      <div style={{
-        position: 'fixed', top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        textAlign: 'center', animation: 'fadeout 3s forwards',
-        zIndex: 1000, pointerEvents: 'none',
-      }}>
-        <div style={{ fontSize: '64px', marginBottom: '8px' }}>&#x26BD;</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '28px', color: 'white', fontWeight: 'bold', textShadow: '0 0 20px rgba(46,158,94,0.8)' }}>
-          Welcome to Flipseer!
-        </div>
-        <div style={{ fontSize: '16px', color: '#2E9E5E', marginTop: '8px' }}>
-          Build your football legacy
-        </div>
+      <div style={{ position: 'fixed', top: '50%', left: '50%', textAlign: 'center', animation: 'fadeWelcome 4s forwards', zIndex: 1000, pointerEvents: 'none', backgroundColor: 'rgba(13,31,15,0.92)', border: '2px solid #2E9E5E', borderRadius: '20px', padding: '32px 48px', boxShadow: '0 0 60px rgba(46,158,94,0.4)' }}>
+        <div style={{ fontSize: '56px', marginBottom: '12px' }}>&#x26BD;</div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '26px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
+        <div style={{ fontSize: '15px', color: '#2E9E5E', marginTop: '8px' }}>Build your permanent football legacy</div>
+        <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '6px' }}>World Cup 2026 &#xB7; June 11</div>
       </div>
-      {/* Falling particles */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          dangerouslySetInnerHTML={{ __html: p.icon }}
-          style={{
-            position: 'absolute',
-            left: p.left + '%',
-            top: '-50px',
-            fontSize: p.size + 'px',
-            animation: 'fall ' + p.duration + 's ' + p.delay + 's ease-in forwards',
-            transform: 'rotate(' + p.rotate + 'deg)',
-          }}
+      {PARTICLES.map((p) => (
+        <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
+          style={{ position: 'absolute', left: p.left + '%', top: '-60px', fontSize: p.size + 'px', animation: 'fall ' + p.dur + 's ' + p.delay + 's ease-in forwards' }}
         />
       ))}
     </div>
   );
 }
-
 export default function Home() {
   const [tickerItems, setTickerItems] = useState<any[]>([]);
   const [useRealTicker, setUseRealTicker] = useState(false);
