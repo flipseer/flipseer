@@ -14,7 +14,6 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  // ── Google Sign-in ──
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setMessage('');
@@ -22,17 +21,10 @@ export default function Auth() {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+        queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });
-    if (error) {
-      setMessage(error.message);
-      setGoogleLoading(false);
-    }
-    // On success Supabase redirects automatically
+    if (error) { setMessage(error.message); setGoogleLoading(false); }
   };
 
   const handleForgotPassword = async () => {
@@ -43,7 +35,7 @@ export default function Auth() {
       redirectTo: 'https://flipseer.com/reset-password',
     });
     if (error) { setMessage(error.message); }
-    else { setMessage('✅ Password reset link sent! Check your inbox.'); }
+    else { setMessage('Password reset link sent! Check your inbox.'); }
     setLoading(false);
   };
 
@@ -55,115 +47,96 @@ export default function Auth() {
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { setMessage(error.message); }
-      else { window.location.href = '/profile'; }
+      else { window.location.href = '/predict'; }
     } else {
-      if (!username) { setMessage('Username is required'); setLoading(false); return; }
-
+      if (!username.trim()) { setMessage('Username is required'); setLoading(false); return; }
       const { data, error } = await supabase.auth.signUp({ email, password });
-
       if (error && error.message !== 'Error sending confirmation email') {
         setMessage(error.message);
       } else if (data.user) {
-        const { error: profileError } = await supabase.from('profiles').upsert([{
+        await supabase.from('profiles').upsert([{
           id: data.user.id,
-          username,
-          reputation: 0,
-          total_points: 0,
-          prediction_count: 0,
-          correct_count: 0,
-          streak: 0,
-          best_streak: 0,
-          accuracy_pct: 0,
-          rank: 'Rookie',
-          rank_icon: '🥉',
+          username: username.trim(),
+          reputation: 0, total_points: 0,
+          prediction_count: 0, correct_count: 0,
+          streak: 0, best_streak: 0,
+          accuracy_pct: 0, rank: 'Rookie', rank_icon: '&#x1F949;',
         }], { onConflict: 'id' });
-
-        if (profileError) {
-          console.error('Profile creation failed:', profileError.message);
-        }
-
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username }),
-        }).catch(e => console.error('Welcome email failed silently:', e));
-
-        setMessage('✅ Account created! Check your email to confirm.');
+        }).catch(() => {});
+        window.location.href = '/predict';
       }
     }
     setLoading(false);
   };
 
-  // ── FORGOT PASSWORD VIEW ──
   if (isForgot) {
     return (
-      <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔐</div>
-              <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Reset Password</h1>
-              <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>Enter your email and we'll send a reset link</p>
+      <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F510;</div>
+            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Reset Password</h1>
+            <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>Enter your email and we'll send a reset link</p>
+          </div>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Email</label>
+            <input type="email" placeholder="your@email.com" value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
+          </div>
+          {message && (
+            <div style={{ backgroundColor: message.startsWith('Password reset') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+              {message}
             </div>
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Email</label>
-              <input type="email" placeholder="your@email.com" value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
-            </div>
-            {message && (
-              <div style={{ backgroundColor: message.startsWith('✅') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
-                {message}
-              </div>
-            )}
-            <button onClick={handleForgotPassword} disabled={loading}
-              style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1, marginBottom: '16px' }}>
-              {loading ? 'Sending...' : 'Send Reset Link →'}
+          )}
+          <button onClick={handleForgotPassword} disabled={loading}
+            style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1, marginBottom: '16px' }}>
+            {loading ? 'Sending...' : 'Send Reset Link ->'}
+          </button>
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => { setIsForgot(false); setMessage(''); }}
+              style={{ background: 'none', border: 'none', color: '#2E9E5E', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
+              Back to Sign In
             </button>
-            <div style={{ textAlign: 'center' }}>
-              <button onClick={() => { setIsForgot(false); setMessage(''); }}
-                style={{ background: 'none', border: 'none', color: '#2E9E5E', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold' }}>
-                ← Back to Sign In
-              </button>
-            </div>
           </div>
         </div>
-        <footer style={{ padding: '20px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-          <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · No betting. Pure football reputation.</p>
-        </footer>
       </main>
     );
   }
 
-  // ── SIGN IN / SIGN UP VIEW ──
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px' }}>
 
-          {/* TOGGLE */}
-          <div style={{ display: 'flex', marginBottom: '32px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '4px' }}>
-            <button onClick={() => { setIsLogin(true); setMessage(''); }} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign In</button>
-            <button onClick={() => { setIsLogin(false); setMessage(''); }} style={{ flex: 1, padding: '10px', borderRadius: '6px', border: 'none', backgroundColor: !isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>Sign Up</button>
-          </div>
+      {/* URGENCY BANNER */}
+      <div style={{ backgroundColor: '#1A7A4A', padding: '10px 20px', textAlign: 'center' }}>
+        <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
+          &#x26BD; World Cup 2026 starts June 11 -- Join now to earn the Founding Forecaster badge
+        </span>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '420px' }}>
 
           {/* HEADING */}
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px', textAlign: 'center' }}>
-            {isLogin ? 'Welcome back' : 'Build your reputation'}
-          </h1>
-          <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '24px' }}>
-            {isLogin ? 'Sign in to your forecasting profile' : 'Join the football forecasting network'}
-          </p>
+          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ fontSize: '36px', marginBottom: '8px' }}>&#x26BD;</div>
+            <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>
+              {isLogin ? 'Welcome back' : 'Build your reputation'}
+            </h1>
+            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
+              {isLogin ? 'Sign in to your forecasting profile' : 'Join the football forecasting network'}
+            </p>
+          </div>
 
-          {/* ── GOOGLE SIGN IN BUTTON ── */}
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={googleLoading}
-            style={{ width: '100%', padding: '13px', backgroundColor: 'white', color: '#1F2937', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '16px', opacity: googleLoading ? 0.7 : 1 }}>
-            {googleLoading ? (
-              '⏳ Connecting...'
-            ) : (
+          {/* GOOGLE BUTTON -- PRIMARY */}
+          <button onClick={handleGoogleSignIn} disabled={googleLoading}
+            style={{ width: '100%', padding: '14px', backgroundColor: 'white', color: '#1F2937', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px', opacity: googleLoading ? 0.7 : 1 }}>
+            {googleLoading ? 'Connecting...' : (
               <>
                 <svg width="18" height="18" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -177,20 +150,32 @@ export default function Auth() {
           </button>
 
           {/* DIVIDER */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, height: '1px', backgroundColor: '#1A7A4A' }} />
             <span style={{ color: '#6B7280', fontSize: '12px' }}>or use email</span>
             <div style={{ flex: 1, height: '1px', backgroundColor: '#1A7A4A' }} />
           </div>
 
-          {/* USERNAME (signup only) */}
+          {/* TOGGLE */}
+          <div style={{ display: 'flex', marginBottom: '20px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '4px' }}>
+            <button onClick={() => { setIsLogin(true); setMessage(''); }}
+              style={{ flex: 1, padding: '9px', borderRadius: '6px', border: 'none', backgroundColor: isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              Sign In
+            </button>
+            <button onClick={() => { setIsLogin(false); setMessage(''); }}
+              style={{ flex: 1, padding: '9px', borderRadius: '6px', border: 'none', backgroundColor: !isLogin ? '#1A7A4A' : 'transparent', color: 'white', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              Sign Up
+            </button>
+          </div>
+
+          {/* USERNAME signup only */}
           {!isLogin && (
             <div style={{ marginBottom: '16px' }}>
               <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Username</label>
               <input type="text" placeholder="e.g. football_oracle" value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_'))}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
-              <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>This becomes your permanent public identity — choose wisely</p>
+              <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Your permanent public identity</p>
             </div>
           )}
 
@@ -211,7 +196,6 @@ export default function Auth() {
               style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
           </div>
 
-          {/* FORGOT PASSWORD */}
           {isLogin && (
             <div style={{ textAlign: 'right', marginBottom: '20px' }}>
               <button onClick={() => { setIsForgot(true); setMessage(''); }}
@@ -222,21 +206,18 @@ export default function Auth() {
           )}
           {!isLogin && <div style={{ marginBottom: '20px' }} />}
 
-          {/* MESSAGE */}
           {message && (
-            <div style={{ backgroundColor: message.startsWith('✅') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+            <div style={{ backgroundColor: message.includes('reset') || message.includes('created') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
               {message}
             </div>
           )}
 
-          {/* SUBMIT */}
           <button onClick={handleAuth} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : isLogin ? 'Sign In →' : 'Create Account →'}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In ->' : 'Create Account ->'}
           </button>
 
-          {/* SWITCH MODE */}
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
             <span style={{ color: '#6B7280', fontSize: '13px' }}>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button onClick={() => { setIsLogin(!isLogin); setMessage(''); }}
@@ -246,11 +227,11 @@ export default function Auth() {
             </span>
           </div>
 
+          <p style={{ textAlign: 'center', color: '#4B5563', fontSize: '11px', marginTop: '16px' }}>
+            Free. No betting. No gambling. Pure football.
+          </p>
         </div>
       </div>
-      <footer style={{ padding: '20px', textAlign: 'center', borderTop: '1px solid #1A7A4A' }}>
-        <p style={{ color: '#6B7280', fontSize: '12px' }}>© 2026 Flipseer · No betting. Pure football reputation.</p>
-      </footer>
     </main>
   );
 }
