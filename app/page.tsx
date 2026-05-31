@@ -304,6 +304,18 @@ export default function Home() {
         </div>
       </div>
 
+      {/* STICKY SIGNUP BANNER */}
+      <div style={{ backgroundColor: '#1A7A4A', padding: '12px 20px', textAlign: 'center', borderBottom: '1px solid #2E9E5E', position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '14px', color: 'white', fontWeight: 'bold' }}>
+            &#x26BD; FIFA World Cup 2026 starts June 11 -- Build your football reputation now!
+          </span>
+          <a href="/auth" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '6px 20px', borderRadius: '999px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+            Join Free &#x2192;
+          </a>
+        </div>
+      </div>
+
       {/* HERO -- Punchier */}
       <section style={{ textAlign: 'center', padding: '80px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
