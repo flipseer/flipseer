@@ -51,13 +51,12 @@ export default function Navbar() {
 
         {/* DESKTOP NAV LINKS */}
         <div className="nav-links" style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <a href="/predict" style={linkStyle}>Predict</a>
-          <a href="/world-cup-2026" style={linkStyle}>World Cup 2026</a>
-          <a href="/epl" style={linkStyle}>EPL</a>
-          <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
-          <a href="/groups" style={linkStyle}>Groups</a>
+          <a href="/" style={linkStyle}>&#x1F3E0; Home</a>
+          <a href="/predict" style={linkStyle}>&#x26BD; Predict</a>
+          <a href="/world-cup-2026" style={linkStyle}>&#x1F3C6; World Cup 2026</a>
+          <a href="/leaderboard" style={linkStyle}>&#x1F30D; Leaderboard</a>
           {user ? (
-            <a href="/profile" style={activeStyle}>My Profile</a>
+            <a href="/profile" style={activeStyle}>&#x1F464; My Profile</a>
           ) : (
             <a href="/auth" style={activeStyle}>Sign In</a>
           )}
@@ -88,19 +87,10 @@ export default function Navbar() {
           zIndex: 99,
         }}>
           {/* NAV LINKS */}
-          {[
-            { href: '/predict', label: 'Predict' },
-            { href: '/world-cup-2026', label: 'World Cup 2026' },
-            { href: '/epl', label: 'EPL Predictions' },
-            { href: '/leaderboard', label: 'Leaderboard' },
-            { href: '/groups', label: 'Groups' },
-          ].map(({ href, label }) => (
-            <a key={href} href={href}
-              onClick={() => setMenuOpen(false)}
-              style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A' }}>
-              {label}
-            </a>
-          ))}
+          <a href="/" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Home</a>
+          <a href="/predict" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Predict</a>
+          <a href="/world-cup-2026" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>World Cup 2026</a>
+          <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Leaderboard</a>
 
           {/* PROFILE OR SIGN IN */}
           {user ? (
