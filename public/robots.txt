@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /world-cup-2026
+Allow: /world-cup-2026/
+Allow: /epl
+Allow: /how-to-play
+Allow: /leaderboard
+Allow: /auth
+
+Disallow: /admin
+Disallow: /predict
+Disallow: /profile
+Disallow: /groups
+Disallow: /api/
+Disallow: /u/
+
+Sitemap: https://flipseer.com/sitemap.xml
