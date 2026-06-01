@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
@@ -51,16 +52,16 @@ export default function Navbar() {
 
         {/* DESKTOP NAV LINKS */}
         <div className="nav-links" style={{ display: 'flex', gap: '2px', alignItems: 'center', flexWrap: 'nowrap' }}>
-          <a href="/" style={linkStyle}>Home</a>
-          <a href="/predict" style={linkStyle}>Predict</a>
-          <a href="/world-cup-2026" style={linkStyle}>WC2026</a>
-          <a href="/epl" style={linkStyle}>EPL</a>
-          <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
-          <a href="/groups" style={linkStyle}>Groups</a>
+          <Link href="/" style={linkStyle}>Home</Link>
+          <Link href="/predict" style={linkStyle}>Predict</Link>
+          <Link href="/world-cup-2026" style={linkStyle}>WC2026</Link>
+          <Link href="/epl" style={linkStyle}>EPL</Link>
+          <Link href="/leaderboard" style={linkStyle}>Leaderboard</Link>
+          <Link href="/groups" style={linkStyle}>Groups</Link>
           {user ? (
-            <a href="/profile" style={activeStyle}>Profile</a>
+            <Link href="/profile" style={activeStyle}>Profile</Link>
           ) : (
-            <a href="/auth" style={activeStyle}>Sign In</a>
+            <Link href="/auth" style={activeStyle}>Sign In</Link>
           )}
         </div>
 
