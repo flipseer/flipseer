@@ -184,7 +184,7 @@ export default function About() {
             &#x26BD;
           </div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>Praveen Ballari</h2>
-          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>Founder, Flipseer &middot; Tumkur, Karnataka, India</p>
+          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>Founder, Flipseer &middot; Bengaluru, Karnataka, India</p>
           <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.8', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
             Solo bootstrap founder. Built Flipseer from scratch in 2026 to give football fans a permanent home for their predictions and reputation.
           </p>
