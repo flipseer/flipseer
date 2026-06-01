@@ -42,7 +42,7 @@ const COMING_SOON = [
   { icon: '&#x1F3C6;', title: 'EPL & Champions League', desc: "Europe's biggest stages. Your biggest calls.", date: 'Aug 2026' },
   { icon: '&#x1F1EA;&#x1F1F8;', title: 'La Liga & Serie A', desc: 'El Clasico. Derby della Madonnina. Predict them all.', date: 'Sep 2026' },
   { icon: '&#x1F1E9;&#x1F1EA;', title: 'Bundesliga & Ligue 1', desc: 'Der Klassiker. PSG. The rivalries never end.', date: 'Oct 2026' },
-  { icon: '&#x2B50;', title: 'Flipseer Pro', desc: 'Advanced analytics, deeper insights, elite badges.', date: 'Jul 2026' },
+  { icon: '&#x2B50;', title: 'Flipseer Pro', desc: 'Advanced analytics, deeper insights, elite badges.', date: 'Sep 2026' },
   { icon: '&#x1F91D;', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
 ];
 
@@ -201,11 +201,17 @@ const PARTICLES = [
 ];
 
 function WelcomeConfetti() {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setShow(false), 4500);
-    return () => clearTimeout(timer);
+    // Only show once per browser session
+    const seen = sessionStorage.getItem('flipseer_welcome');
+    if (!seen) {
+      setShow(true);
+      sessionStorage.setItem('flipseer_welcome', '1');
+      const timer = setTimeout(() => setShow(false), 4500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   if (!show) return null;
