@@ -53,13 +53,14 @@ export default function Navbar() {
         <div className="nav-links" style={{ display: 'flex', gap: '2px', alignItems: 'center', flexWrap: 'nowrap' }}>
           <a href="/" style={linkStyle}>Home</a>
           <a href="/predict" style={linkStyle}>Predict</a>
-          <a href="/world-cup-2026" style={linkStyle}>World Cup 2026</a>
+          <a href="/world-cup-2026" style={linkStyle}>WC 2026</a>
+          <a href="/epl" style={linkStyle}>EPL</a>
           <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
           <a href="/groups" style={linkStyle}>Groups</a>
           {user ? (
             <>
-              <a href="/profile" style={linkStyle}>My Profile</a>
-              <button onClick={async () => { const { createClient } = await import('@/lib/supabase-browser'); await createClient().auth.signOut(); window.location.href = '/'; }} style={{ ...linkStyle, backgroundColor: 'transparent', border: '1px solid #1A3A1A', cursor: 'pointer', fontSize: '13px' }}>Sign Out</button>
+              <a href="/profile" style={activeStyle}>My Profile</a>
+              <button onClick={async () => { const { createClient } = await import('@/lib/supabase-browser'); await createClient().auth.signOut(); window.location.href = '/'; }} style={{ ...linkStyle, backgroundColor: 'transparent', border: '1px solid #374151', cursor: 'pointer', color: '#6B7280', fontSize: '13px' }}>Sign Out</button>
             </>
           ) : (
             <a href="/auth" style={activeStyle}>Sign In</a>
@@ -94,6 +95,7 @@ export default function Navbar() {
           <a href="/" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Home</a>
           <a href="/predict" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Predict</a>
           <a href="/world-cup-2026" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>World Cup 2026</a>
+          <a href="/epl" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>EPL</a>
           <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Leaderboard</a>
           <a href="/groups" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Groups</a>
 
