@@ -55,7 +55,7 @@ export default function Navbar() {
           <a href="/predict" style={linkStyle}>Predict</a>
           <a href="/world-cup-2026" style={linkStyle}>WC2026</a>
           <a href="/epl" style={linkStyle}>EPL</a>
-          <a href="/leaderboard" style={linkStyle}>Rankings</a>
+          <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
           <a href="/groups" style={linkStyle}>Groups</a>
           {user ? (
             <a href="/profile" style={activeStyle}>Profile</a>
