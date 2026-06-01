@@ -21,11 +21,11 @@ export default function Navbar() {
   return (
     <>
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .nav-links { display: none !important; }
           .hamburger { display: flex !important; }
         }
-        @media (min-width: 769px) {
+        @media (min-width: 901px) {
           .hamburger { display: none !important; }
           .mobile-menu { display: none !important; }
         }
@@ -50,13 +50,17 @@ export default function Navbar() {
         </a>
 
         {/* DESKTOP NAV LINKS */}
-        <div className="nav-links" style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <a href="/" style={linkStyle}>&#x1F3E0; Home</a>
-          <a href="/predict" style={linkStyle}>&#x26BD; Predict</a>
-          <a href="/world-cup-2026" style={linkStyle}>&#x1F3C6; World Cup 2026</a>
-          <a href="/leaderboard" style={linkStyle}>&#x1F30D; Leaderboard</a>
+        <div className="nav-links" style={{ display: 'flex', gap: '2px', alignItems: 'center', flexWrap: 'nowrap' }}>
+          <a href="/" style={linkStyle}>Home</a>
+          <a href="/predict" style={linkStyle}>Predict</a>
+          <a href="/world-cup-2026" style={linkStyle}>World Cup 2026</a>
+          <a href="/leaderboard" style={linkStyle}>Leaderboard</a>
+          <a href="/groups" style={linkStyle}>Groups</a>
           {user ? (
-            <a href="/profile" style={activeStyle}>&#x1F464; My Profile</a>
+            <>
+              <a href="/profile" style={linkStyle}>My Profile</a>
+              <button onClick={async () => { const { createClient } = await import('@/lib/supabase-browser'); await createClient().auth.signOut(); window.location.href = '/'; }} style={{ ...linkStyle, backgroundColor: 'transparent', border: '1px solid #1A3A1A', cursor: 'pointer', fontSize: '13px' }}>Sign Out</button>
+            </>
           ) : (
             <a href="/auth" style={activeStyle}>Sign In</a>
           )}
@@ -91,18 +95,23 @@ export default function Navbar() {
           <a href="/predict" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Predict</a>
           <a href="/world-cup-2026" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>World Cup 2026</a>
           <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Leaderboard</a>
+          <a href="/groups" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Groups</a>
 
           {/* PROFILE OR SIGN IN */}
           {user ? (
-            <a href="/profile"
-              onClick={() => setMenuOpen(false)}
-              style={{ color: '#2E9E5E', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', fontWeight: 'bold' }}>
-              My Profile
-            </a>
+            <>
+              <a href="/profile" onClick={() => setMenuOpen(false)}
+                style={{ color: '#2E9E5E', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', fontWeight: 'bold', borderBottom: '1px solid #1A3A1A', display: 'block' }}>
+                My Profile
+              </a>
+              <button onClick={async () => { const { createClient } = await import('@/lib/supabase-browser'); await createClient().auth.signOut(); window.location.href = '/'; setMenuOpen(false); }}
+                style={{ color: '#EF4444', background: 'none', border: 'none', fontSize: '14px', padding: '10px 12px', textAlign: 'left', cursor: 'pointer', width: '100%' }}>
+                Sign Out
+              </button>
+            </>
           ) : (
-            <a href="/auth"
-              onClick={() => setMenuOpen(false)}
-              style={{ color: '#2E9E5E', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', fontWeight: 'bold' }}>
+            <a href="/auth" onClick={() => setMenuOpen(false)}
+              style={{ color: '#2E9E5E', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', fontWeight: 'bold', display: 'block' }}>
               Sign In
             </a>
           )}
@@ -135,9 +144,9 @@ export default function Navbar() {
 const linkStyle: React.CSSProperties = {
   color: '#9CA3AF',
   textDecoration: 'none',
-  fontSize: '14px',
-  padding: '7px 12px',
-  borderRadius: '8px',
+  fontSize: '13px',
+  padding: '6px 8px',
+  borderRadius: '6px',
   border: '1px solid transparent',
   whiteSpace: 'nowrap',
 };
@@ -145,9 +154,9 @@ const linkStyle: React.CSSProperties = {
 const activeStyle: React.CSSProperties = {
   color: '#2E9E5E',
   textDecoration: 'none',
-  fontSize: '14px',
-  padding: '7px 12px',
-  borderRadius: '8px',
+  fontSize: '13px',
+  padding: '6px 10px',
+  borderRadius: '6px',
   border: '1px solid #1A7A4A',
   fontWeight: 'bold',
   whiteSpace: 'nowrap',
