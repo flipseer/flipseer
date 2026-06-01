@@ -1,208 +1,213 @@
-'use client';
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'About Flipseer -- The Football Reputation Platform',
+  description: 'Flipseer was built to answer one question: who are the world\'s smartest football fans? Learn the story behind the platform.',
+  alternates: { canonical: 'https://flipseer.com/about' },
+  openGraph: {
+    title: 'About Flipseer -- The Football Reputation Platform',
+    description: 'Built to answer one question: who are the world\'s smartest football fans?',
+    url: 'https://flipseer.com/about',
+  }
+}
 
 export default function About() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
 
       {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '80px 20px 60px', background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', borderBottom: '1px solid #1A7A4A' }}>
-        <div style={{ fontSize: '56px', marginBottom: '20px' }}>⚽</div>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>ABOUT FLIPSEER</p>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '44px', lineHeight: '1.2', marginBottom: '20px', maxWidth: '700px', margin: '0 auto 20px' }}>
-          <span style={{ color: '#2E9E5E' }}>Football's Reputation Marketplace.</span>
-        </h1>
-        <p style={{ fontSize: '18px', color: '#9CA3AF', maxWidth: '600px', margin: '0 auto', lineHeight: '1.7' }}>
-          Not a betting site. Not a fantasy game. Something entirely new —
-          a permanent, public record of your football intelligence.
-        </p>
-      </section>
-
-      {/* ORIGIN STORY */}
-      <section style={{ maxWidth: '760px', margin: '0 auto', padding: '64px 24px' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px' }}>THE STORY</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '24px', lineHeight: '1.3' }}>
-          Every fan has an opinion.<br />Few have a record.
-        </h2>
-        <div style={{ color: '#9CA3AF', fontSize: '16px', lineHeight: '1.9', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <p>
-            Football fans have always predicted matches — in living rooms, groups, offices, and stadiums. But those predictions disappear. No record. No proof. No legacy.
-          </p>
-          <p>
-            Flipseer was built to change that. We give every football fan a permanent, verifiable record of their football intelligence — built match by match, tournament by tournament, decade by decade.
-          </p>
-          <p style={{ color: '#D1FAE5', fontStyle: 'italic', borderLeft: '3px solid #2E9E5E', paddingLeft: '20px', fontSize: '17px' }}>
-            "I don't follow football. I foresee it."
-          </p>
-          <p>
-            That's the Flipseer forecaster. Someone who doesn't just watch the game — they read it, anticipate it, and prove it. Before the world catches up.
+      <section style={{ textAlign: 'center', padding: '72px 20px 48px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>OUR STORY</p>
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '42px', lineHeight: '1.2', marginBottom: '20px' }}>
+            Who are the world's<br />
+            <span style={{ color: '#2E9E5E' }}>smartest football fans?</span>
+          </h1>
+          <p style={{ color: '#9CA3AF', fontSize: '17px', lineHeight: '1.8', margin: 0 }}>
+            That question is why Flipseer exists.
           </p>
         </div>
       </section>
 
-      {/* WHAT WE ARE / WHAT WE ARE NOT */}
-      <section style={{ backgroundColor: '#0D2B14', borderTop: '1px solid #1A7A4A', borderBottom: '1px solid #1A7A4A', padding: '64px 24px' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '32px', textAlign: 'center' }}>THE DIFFERENCE</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+      {/* FOUNDER STORY */}
+      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
 
-            {/* What we ARE */}
-            <div style={{ backgroundColor: '#0D1F0F', border: '1px solid #2E9E5E', borderRadius: '16px', padding: '28px' }}>
-              <div style={{ fontSize: '24px', marginBottom: '12px' }}>✅</div>
-              <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', color: '#2E9E5E', marginBottom: '16px' }}>Flipseer IS</h3>
-              {[
-                'A permanent reputation system',
-                'A football intelligence platform',
-                'A global & national leaderboard',
-                'A record that lives forever',
-                'Pure. Clean. Football.',
-              ].map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <span style={{ color: '#2E9E5E', fontSize: '14px' }}>→</span>
-                  <span style={{ color: '#D1FAE5', fontSize: '14px' }}>{item}</span>
-                </div>
-              ))}
-            </div>
+          <p style={{ fontSize: '16px', color: '#D1FAE5', lineHeight: '1.9', marginBottom: '20px' }}>
+            Every day, millions of football supporters debate match results, players, and tournaments across social media.
+          </p>
 
-            {/* What we ARE NOT */}
-            <div style={{ backgroundColor: '#0D1F0F', border: '1px solid #7F1D1D', borderRadius: '16px', padding: '28px' }}>
-              <div style={{ fontSize: '24px', marginBottom: '12px' }}>🚫</div>
-              <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', color: '#FCA5A5', marginBottom: '16px' }}>Flipseer is NOT</h3>
-              {[
-                'A betting platform',
-                'A gambling site',
-                'A fantasy football game',
-                'An AI tips service',
-                'A clone of anything.',
-              ].map((item, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <span style={{ color: '#FCA5A5', fontSize: '14px' }}>✕</span>
-                  <span style={{ color: '#9CA3AF', fontSize: '14px' }}>{item}</span>
-                </div>
-              ))}
-            </div>
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '20px' }}>
+            But once the match ends, most predictions disappear.
+          </p>
 
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '14px', padding: '24px 28px', margin: '32px 0' }}>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '20px', color: 'white', lineHeight: '1.7', margin: '0 0 8px', fontStyle: 'italic' }}>
+              "Nobody remembers who was right. Nobody keeps score."
+            </p>
+            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>That observation led to Flipseer.</p>
           </div>
+
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '20px' }}>
+            For years, football fans passionately discussed the game online. Everyone had opinions. Everyone claimed expertise. Yet there was no global system that could permanently track prediction accuracy and build football reputation over time.
+          </p>
+
+          <p style={{ fontSize: '16px', color: '#D1FAE5', lineHeight: '1.9', marginBottom: '20px', fontWeight: 'bold' }}>
+            That felt like a missing category.
+          </p>
+
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '20px' }}>
+            Most football products focus on watching matches, consuming content, fantasy sports, or betting. Flipseer takes a different approach.
+          </p>
+
         </div>
       </section>
 
-      {/* GROWTH POTENTIAL */}
-      <section style={{ maxWidth: '760px', margin: '0 auto', padding: '64px 24px' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px' }}>THE VISION</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '32px' }}>Where Flipseer is going</h2>
-
-        {[
-          {
-            icon: '📈',
-            title: 'Growth Potential',
-            rating: '8/10 → 9.5/10',
-            desc: 'Strong foundations today. As social proof emerges — real users, real predictions, real results — growth accelerates to near-perfect. Every World Cup match is a growth event.',
-            color: '#2E9E5E',
-          },
-          {
-            icon: '🌍',
-            title: 'Popularity Potential',
-            rating: 'Very High Internationally',
-            desc: 'Football is the world\'s game. Flipseer speaks to every football nation. When visuals become elite and sharing becomes addictive, international popularity explodes.',
-            color: '#3B82F6',
-          },
-          {
-            icon: '🏗️',
-            title: 'Ecosystem Strength',
-            rating: 'Extremely Strong',
-            desc: 'Leaderboards + reputation history + permanent records = a moat no competitor can replicate overnight. The longer a user stays, the more valuable their profile becomes.',
-            color: '#F59E0B',
-          },
-          {
-            icon: '👑',
-            title: 'Destiny Path',
-            rating: "The World's Football Reputation Platform",
-            desc: 'A platform where your football intelligence is publicly verified, professionally presented, and permanently recorded. Your Flipseer profile becomes your football identity.',
-            color: '#A855F7',
-          },
-        ].map(({ icon, title, rating, desc, color }) => (
-          <div key={title} style={{ backgroundColor: '#0D2B14', border: `1px solid ${color}30`, borderLeft: `4px solid ${color}`, borderRadius: '14px', padding: '24px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '24px' }}>{icon}</span>
-              <div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white' }}>{title}</div>
-                <div style={{ fontSize: '12px', color, fontWeight: 'bold' }}>{rating}</div>
-              </div>
-            </div>
-            <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.7', margin: 0 }}>{desc}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* ROADMAP */}
-      <section style={{ backgroundColor: '#0D2B14', borderTop: '1px solid #1A7A4A', borderBottom: '1px solid #1A7A4A', padding: '64px 24px' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto' }}>
-          <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px', textAlign: 'center' }}>ROADMAP</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '32px', textAlign: 'center' }}>The journey ahead</h2>
-
+      {/* THREE QUESTIONS */}
+      <section style={{ padding: '64px 20px', backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '24px', textAlign: 'center' }}>THE QUESTIONS WE ASKED</p>
           {[
-            { phase: 'Phase 1', date: 'June 2026', title: 'World Cup Launch', desc: '64 matches. Global leaderboards. Building the first wave of football forecasters.', current: true },
-            { phase: 'Phase 2', date: 'Aug 2026', title: 'EPL & Champions League', desc: 'Europe\'s biggest leagues. Your reputation builds year-round, not just tournaments.', current: false },
-            { phase: 'Phase 3', date: 'Jul 2026', title: 'Flipseer Pro', desc: 'Advanced analytics, deeper insights, exclusive badges, and premium features.', current: false },
-            { phase: 'Phase 4', date: 'Sep 2026', title: 'La Liga, Serie A, Bundesliga', desc: 'Full European football coverage. The complete football reputation platform.', current: false },
-            { phase: 'Phase 5', date: '2027+', title: 'Brand Partnerships & Legacy', desc: 'Sponsorships, verified forecaster badges, and the football reputation economy.', current: false },
-          ].map(({ phase, date, title, desc, current }) => (
-            <div key={phase} style={{ display: 'flex', gap: '20px', marginBottom: '24px', alignItems: 'flex-start' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '40px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: current ? '#2E9E5E' : '#1A3A20', border: `2px solid ${current ? '#2E9E5E' : '#1A7A4A'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold', color: current ? 'white' : '#6B7280' }}>
-                  {current ? '→' : '○'}
-                </div>
-              </div>
-              <div style={{ flex: 1, backgroundColor: current ? 'rgba(46,158,94,0.08)' : 'transparent', border: current ? '1px solid rgba(46,158,94,0.3)' : '1px solid transparent', borderRadius: '12px', padding: current ? '16px' : '4px 16px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold' }}>{phase}</span>
-                  <span style={{ fontSize: '11px', color: '#2E9E5E', backgroundColor: '#0D1F0F', padding: '2px 8px', borderRadius: '999px' }}>{date}</span>
-                  {current && <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold' }}>← NOW</span>}
-                </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>{title}</div>
-                <div style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.6' }}>{desc}</div>
-              </div>
+            { q: 'What if every football fan had a public prediction record?', icon: '&#x1F4D6;' },
+            { q: 'What if football intelligence could be measured over time?', icon: '&#x1F4CA;' },
+            { q: 'What if fans competed with knowledge instead of money?', icon: '&#x1F3C6;' },
+          ].map(({ q, icon }) => (
+            <div key={q} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px 24px', marginBottom: '12px' }}>
+              <div style={{ fontSize: '28px', minWidth: '40px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+              <p style={{ fontFamily: 'Georgia, serif', fontSize: '17px', color: 'white', lineHeight: '1.6', margin: 0 }}>{q}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* MANIFESTO */}
-      <section style={{ textAlign: 'center', padding: '80px 24px', maxWidth: '700px', margin: '0 auto' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '24px' }}>OUR MANIFESTO</p>
-        <blockquote style={{ fontFamily: 'Georgia, serif', fontSize: '22px', lineHeight: '1.7', color: 'white', fontStyle: 'italic', marginBottom: '32px' }}>
-          "Football is not just a game. It's history.<br />
-          And history deserves a record.<br />
-          <span style={{ color: '#2E9E5E' }}>Flipseer is that record.</span>"
-        </blockquote>
-        <p style={{ color: '#6B7280', fontSize: '15px', lineHeight: '1.8', marginBottom: '40px' }}>
-          Every correct prediction. Every upset called. Every exact score.<br />
-          Written into your permanent profile. Forever.
-        </p>
-        <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 48px', borderRadius: '10px', textDecoration: 'none', fontWeight: 'bold', fontSize: '17px', boxShadow: '0 0 32px rgba(46,158,94,0.3)' }}>
-          Start Building Your Legacy →
-        </a>
-      </section>
+      {/* WHAT FLIPSEER IS */}
+      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px', textAlign: 'center' }}>WHAT FLIPSEER IS</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '20px', textAlign: 'center' }}>A reputation system for football fans.</h2>
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '32px', textAlign: 'center' }}>
+            Flipseer was never intended to be another betting platform or fantasy sports product. It was designed as a place where predictions are permanently recorded and performance is measured across tournaments and seasons.
+          </p>
 
-      {/* LEGAL LINKS */}
-      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 24px' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
             {[
-              { label: '📄 Privacy Policy', href: '/privacy' },
-              { label: '📋 Terms of Service', href: '/terms' },
-              { label: '⚠️ Disclaimer', href: '/disclaimer' },
-            ].map(({ label, href }) => (
-              <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '8px', padding: '8px 16px', color: '#9CA3AF', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-                {label}
-              </a>
+              { icon: '&#x26BD;', text: 'Predict World Cup matches' },
+              { icon: '&#x1F3C6;', text: 'Compete on national leaderboards' },
+              { icon: '&#x1F30D;', text: 'Climb global rankings' },
+              { icon: '&#x1F4C8;', text: 'Build a public prediction history' },
+              { icon: '&#x1F465;', text: 'Create prediction teams' },
+              { icon: '&#x2705;', text: '100% Free. Always.' },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                <span style={{ fontSize: '14px', color: '#D1FAE5' }}>{text}</span>
+              </div>
             ))}
           </div>
-          <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            © 2026 Flipseer · No betting. Ever.
+
+          {/* No betting */}
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '20px', flexWrap: 'wrap' }}>
+            {['&#x1F6AB; No Betting', '&#x1F6AB; No Gambling', '&#x1F6AB; No Money'].map(item => (
+              <div key={item} style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid #7F1D1D', borderRadius: '999px', padding: '6px 18px' }}>
+                <span style={{ fontSize: '13px', color: '#FCA5A5', fontWeight: 'bold' }} dangerouslySetInnerHTML={{ __html: item }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* THE VISION */}
+      <section style={{ padding: '64px 20px', backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px', textAlign: 'center' }}>THE VISION</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '30px', marginBottom: '24px', textAlign: 'center' }}>Football fandom is evolving.</h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+            {[
+              { era: 'In the past', desc: 'Fans watched football.' },
+              { era: 'Today', desc: 'Fans create football content.' },
+              { era: 'Tomorrow', desc: 'Fans will compete through football intelligence.' },
+            ].map(({ era, desc }, i) => (
+              <div key={era} style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 20px' }}>
+                <div style={{ fontSize: '22px', minWidth: '32px', textAlign: 'center', color: '#2E9E5E', fontWeight: 'bold' }}>{i + 1}</div>
+                <div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '2px' }}>{era.toUpperCase()}</div>
+                  <div style={{ fontSize: '15px', color: 'white' }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '24px' }}>
+            With FIFA World Cup 2026 approaching, millions of fans across India, Nigeria, Indonesia, Saudi Arabia, and beyond will follow every match. For the first time, they may also have the opportunity to build a public football reputation and prove their forecasting ability on a global stage.
           </p>
+
+          {/* The analogy */}
+          <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '14px', padding: '28px', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '18px', color: '#D1FAE5', lineHeight: '1.7', margin: '0 0 12px' }}>
+              "Social media created public social reputation."
+            </p>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '20px', color: '#2E9E5E', fontWeight: 'bold', lineHeight: '1.7', margin: 0 }}>
+              "Flipseer aims to create public football reputation."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* MISSION */}
+      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>OUR MISSION</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '16px', lineHeight: '1.3' }}>
+            To build the world's largest<br />football prediction competition.
+          </h2>
+          <p style={{ fontSize: '16px', color: '#9CA3AF', lineHeight: '1.9', marginBottom: '32px' }}>
+            And become the global home for football forecasting.
+          </p>
+
+          <div style={{ backgroundColor: '#0D2B14', border: '2px solid #1A7A4A', borderRadius: '16px', padding: '32px' }}>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', lineHeight: '1.6', margin: '0 0 16px', fontStyle: 'italic' }}>
+              "In football, everyone has an opinion."
+            </p>
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: '24px', color: '#2E9E5E', fontWeight: 'bold', margin: 0 }}>
+              "Flipseer is where you prove it."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FOUNDER */}
+      <section style={{ padding: '64px 20px', backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>BUILT BY</p>
+          <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #2E9E5E, #1A7A4A)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: '32px' }}>
+            &#x26BD;
+          </div>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>Praveen Ballari</h2>
+          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>Founder, Flipseer &middot; Tumkur, Karnataka, India</p>
+          <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.8', marginBottom: '24px', maxWidth: '500px', margin: '0 auto 24px' }}>
+            Solo bootstrap founder. Built Flipseer from scratch in 2026 to give football fans a permanent home for their predictions and reputation.
+          </p>
+          <a href="mailto:contact@flipseer.com" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
+            contact@flipseer.com
+          </a>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ padding: '72px 20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '12px' }}>Ready to prove it?</h2>
+          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '28px' }}>
+            World Cup 2026 starts June 11. Your record starts now.
+          </p>
+          <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '16px 40px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 30px rgba(46,158,94,0.3)' }}>
+            Join Free &#x2192;
+          </a>
+          <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '12px' }}>Free. No betting. Pure football.</p>
         </div>
       </section>
 
     </main>
-  );
+  )
 }
