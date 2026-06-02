@@ -224,7 +224,7 @@ export default function Profile() {
                 <span style={{ fontSize: '14px', color: active ? '#2E9E5E' : '#6B7280', fontWeight: active ? 'bold' : 'normal' }}>
                   <span dangerouslySetInnerHTML={{ __html: icon }} /> {rank}
                 </span>
-                <span style={{ fontSize: '11px', color: '#6B7280' }}>{min}&#x2013;{max === 9999 ? '&#x221E;' : max} pts</span>
+                <span style={{ fontSize: '11px', color: '#6B7280' }}>{min}-{max === 9999 ? '\u221E' : max} pts</span>
                 {active && <span style={{ fontSize: '11px', backgroundColor: '#1A7A4A', color: 'white', padding: '2px 10px', borderRadius: '999px', fontWeight: 'bold' }}>YOU &#x2713;</span>}
               </div>
             );
