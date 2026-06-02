@@ -232,6 +232,9 @@ export default function Profile() {
         </div>
       </section>
 
+      {/* TOURNAMENT BREAKDOWN */}
+      <TournamentBreakdown userId={userId} />
+
       {/* COUNTRY SELECTOR */}
       <section id="country-selector" style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>&#x1F30D; Your Country</h2>
@@ -259,6 +262,108 @@ export default function Profile() {
       </section>
 
     </main>
+  );
+}
+
+function TournamentBreakdown({ userId }: { userId: string }) {
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('predictions')
+        .select('points_earned, base_points, prediction_processed, matches(tournament)')
+        .eq('user_id', userId)
+        .eq('prediction_processed', true);
+
+      if (data && data.length > 0) {
+        const grouped: { [key: string]: { pts: number; correct: number; total: number } } = {};
+        data.forEach((p: any) => {
+          const t = p.matches?.tournament || 'World Cup 2026';
+          if (!grouped[t]) grouped[t] = { pts: 0, correct: 0, total: 0 };
+          grouped[t].pts += p.points_earned || 0;
+          grouped[t].total += 1;
+          if (p.base_points > 0) grouped[t].correct += 1;
+        });
+        const result = Object.entries(grouped).map(([name, stats]) => ({
+          name,
+          pts: stats.pts,
+          correct: stats.correct,
+          total: stats.total,
+          accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
+        }));
+        setTournaments(result);
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, [userId]);
+
+  const TOURNAMENT_ICONS: { [key: string]: string } = {
+    'World Cup 2026': '&#x1F3C6;',
+    'EPL 2026/27': '&#x1F3F4;',
+    'Champions League': '&#x2B50;',
+    'La Liga': '&#x1F1EA;&#x1F1F8;',
+    'Serie A': '&#x1F1EE;&#x1F1F9;',
+    'Bundesliga': '&#x1F1E9;&#x1F1EA;',
+    'Ligue 1': '&#x1F1EB;&#x1F1F7;',
+  };
+
+  const UPCOMING = [
+    { name: 'EPL 2026/27', icon: '&#x1F3F4;', date: 'Aug 2026' },
+    { name: 'Champions League', icon: '&#x2B50;', date: 'Sep 2026' },
+    { name: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;', date: 'Sep 2026' },
+  ];
+
+  if (loading) return null;
+
+  return (
+    <section style={{ maxWidth: '600px', margin: '0 auto', padding: '0 20px 24px' }}>
+      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>&#x1F4CA; Tournament Breakdown</h2>
+      <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', overflow: 'hidden' }}>
+
+        {/* Active tournaments */}
+        {tournaments.length > 0 ? (
+          tournaments.map((t) => (
+            <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', borderBottom: '1px solid #1A3A1A' }}>
+              <div style={{ fontSize: '24px' }} dangerouslySetInnerHTML={{ __html: TOURNAMENT_ICONS[t.name] || '&#x26BD;' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '3px' }}>{t.name}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280' }}>{t.total} predictions  -  {t.correct} correct</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '17px', fontWeight: 'bold', color: '#2E9E5E' }}>{t.pts} pts</div>
+                <div style={{ fontSize: '11px', color: '#6B7280' }}>{t.accuracy}% accuracy</div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>&#x1F3C6;</div>
+            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
+              Your tournament stats appear here after results are processed.
+            </p>
+          </div>
+        )}
+
+        {/* Upcoming tournaments */}
+        <div style={{ padding: '12px 20px', backgroundColor: '#0D1F0F' }}>
+          <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', margin: '0 0 10px' }}>COMING SOON</p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {UPCOMING.map((t) => (
+              <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '999px', padding: '4px 12px' }}>
+                <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: t.icon }} />
+                <span style={{ fontSize: '11px', color: '#6B7280' }}>{t.name}</span>
+                <span style={{ fontSize: '10px', color: '#2E9E5E', fontWeight: 'bold' }}>{t.date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </section>
   );
 }
 
