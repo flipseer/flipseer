@@ -155,6 +155,10 @@ export async function POST(req: NextRequest) {
     <p style="color:#F59E0B;font-size:14px;font-weight:bold;margin:0">&#x1F525; ${streak}-match streak active! Keep it going!</p>
   </div>` : ''}
 
+  <a href="https://flipseer.com/result?match_id=${match_id}" style="display:block;background:linear-gradient(135deg,#1A7A4A,#2E9E5E);color:white;padding:18px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:17px;margin-bottom:12px;box-shadow:0 0 20px rgba(46,158,94,0.4)">
+    &#x1F3C6; Reveal Your Result &#x2192;
+  </a>
+
   <a href="https://flipseer.com/predict" style="display:block;background:#1A7A4A;color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
     Predict Next Match &#x2192;
   </a>
