@@ -21,10 +21,45 @@ type CommunityStats = {
   total: number;
 };
 
-//  Browser timezone     works for every country automatically
+// Browser timezone conversion
 function formatKickoffLocal(kickoffUtc: string): string {
-  const date = new Date(kickoffUtc);
+  // Force UTC parsing by appending Z if not present
+  const utcString = kickoffUtc.endsWith('Z') ? kickoffUtc : kickoffUtc.replace(' ', 'T') + 'Z';
+  const date = new Date(utcString);
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const tzMap: { [key: string]: string } = {
+    'Asia/Calcutta': 'IST',
+    'Asia/Kolkata': 'IST',
+    'Africa/Lagos': 'WAT',
+    'Africa/Abuja': 'WAT',
+    'Asia/Jakarta': 'WIB',
+    'Asia/Makassar': 'WITA',
+    'Asia/Jayapura': 'WIT',
+    'America/Mexico_City': 'CST',
+    'America/New_York': 'EDT',
+    'America/Chicago': 'CDT',
+    'America/Los_Angeles': 'PDT',
+    'Europe/London': 'BST',
+    'Europe/Paris': 'CEST',
+    'Europe/Berlin': 'CEST',
+    'Asia/Dubai': 'GST',
+    'Asia/Singapore': 'SGT',
+    'Asia/Tokyo': 'JST',
+    'Asia/Seoul': 'KST',
+    'Australia/Sydney': 'AEST',
+    'America/Sao_Paulo': 'BRT',
+    'Asia/Riyadh': 'AST',
+    'Africa/Nairobi': 'EAT',
+    'Asia/Karachi': 'PKT',
+    'Asia/Dhaka': 'BST',
+    'Asia/Bangkok': 'ICT',
+    'Africa/Johannesburg': 'SAST',
+    'America/Toronto': 'EDT',
+    'America/Vancouver': 'PDT',
+  };
+
+  const tzLabel = tzMap[browserTz] || '';
 
   const formatted = date.toLocaleString('en-GB', {
     timeZone: browserTz,
@@ -35,38 +70,10 @@ function formatKickoffLocal(kickoffUtc: string): string {
     hour12: true,
   });
 
-  // Show friendly timezone names instead of GMT+X:XX
-  const tzMap: { [key: string]: string } = {
-    'Asia/Calcutta': 'IST',
-    'Asia/Kolkata': 'IST',
-    'Africa/Lagos': 'WAT',
-    'Africa/Abuja': 'WAT',
-    'Asia/Jakarta': 'WIB',
-    'America/Mexico_City': 'CST',
-    'America/New_York': 'EDT',
-    'America/Los_Angeles': 'PDT',
-    'Europe/London': 'BST',
-    'Europe/Paris': 'CEST',
-    'Asia/Dubai': 'GST',
-    'Asia/Singapore': 'SGT',
-    'Asia/Tokyo': 'JST',
-    'Australia/Sydney': 'AEST',
-    'America/Sao_Paulo': 'BRT',
-    'Asia/Riyadh': 'AST',
-    'Africa/Nairobi': 'EAT',
-    'Asia/Karachi': 'PKT',
-    'Asia/Dhaka': 'BST',
-    'Asia/Bangkok': 'ICT',
-  };
-
-  const tzLabel = tzMap[browserTz] || Intl.DateTimeFormat('en', {
-    timeZoneName: 'short', timeZone: browserTz
-  }).formatToParts(date).find(p => p.type === 'timeZoneName')?.value || 'UTC';
-
-  return formatted + ' ' + tzLabel;
+  return formatted + (tzLabel ? ' ' + tzLabel : '');
 }
 
-//        Countdown hook       
+// Countdown hook
 function useCountdown(kickoff: string) {
   const LOCK_BEFORE_MS = 2 * 60 * 1000;
   const compute = useCallback(() => {
@@ -77,7 +84,7 @@ function useCountdown(kickoff: string) {
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
     const s = totalSecs % 60;
-    const label = h > 0 ? `${h}h ${m}m ${s}s` : m > 0 ? `${m}m ${s}s` : `${s}s`;
+    const label = h > 0 ? h + 'h ' + m + 'm ' + s + 's' : m > 0 ? m + 'm ' + s + 's' : s + 's';
     return { locked: false, label };
   }, [kickoff]);
 
@@ -91,7 +98,7 @@ function useCountdown(kickoff: string) {
   return state;
 }
 
-//        Match card       
+// Match card
 function MatchCard({
   match, pred, isSaved, isLoading, comm, username,
   onPredict, onConfidence, onScore, onSave,
@@ -122,35 +129,39 @@ function MatchCard({
   const homeVal = pred?.predicted_home_score ?? 0;
   const awayVal = pred?.predicted_away_score ?? 0;
 
+  const pickLabel = pred?.outcome === 'home' ? match.home_team + ' Win'
+    : pred?.outcome === 'away' ? match.away_team + ' Win' : 'Draw';
+
+  const shareUrl = 'https://flipseer.com/u/' + username;
+  const shareText = '&#x26BD; I just predicted ' + match.home_team + ' vs ' + match.away_team
+    + '\n&#x1F3AF; ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
+    + '\nMy World Cup 2026 record -> ' + shareUrl;
+
   const handleShare = async () => {
     if (!pred?.outcome) return;
-    const pickLabel = pred.outcome === 'home' ? `${match.home_team} Win`
-      : pred.outcome === 'away' ? `${match.away_team} Win` : 'Draw';
-    const shareUrl = `https://flipseer.com/u/${username}`;
-    const text = `    I just predicted ${match.home_team} vs ${match.away_team}\n     ${pickLabel}    ${pred.confidence}% confidence\nMy World Cup 2026 record     ${shareUrl}`;
     if (navigator.share) {
-      await navigator.share({ title: 'My Flipseer Prediction', text, url: shareUrl });
+      await navigator.share({ title: 'My Flipseer Prediction', text: shareText, url: shareUrl });
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
     }
     setShared(true);
     setTimeout(() => setShared(false), 3000);
   };
 
   return (
-    <div style={{ backgroundColor: '#0D2B14', border: `1px solid ${isSaved ? '#2E9E5E' : '#1A7A4A'}`, borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+    <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isSaved ? '#2E9E5E' : '#1A7A4A'), borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
 
       {/* MATCH HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league}    {kickoffDate}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} &middot; {kickoffDate}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {!locked && timeLeft && (
             <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
-                  Locks in {timeLeft}
+              &#x23F1; Locks in {timeLeft}
             </span>
           )}
-          {locked && <span style={{ fontSize: '11px', backgroundColor: '#7F1D1D', color: '#FCA5A5', padding: '2px 8px', borderRadius: '4px' }}>     LOCKED</span>}
-          {isSaved && !locked && <span style={{ fontSize: '11px', backgroundColor: '#1A7A4A', color: '#6EE7B7', padding: '2px 8px', borderRadius: '4px' }}> SAVED</span>}
+          {locked && <span style={{ fontSize: '11px', backgroundColor: '#7F1D1D', color: '#FCA5A5', padding: '2px 8px', borderRadius: '4px' }}>&#x1F512; LOCKED</span>}
+          {isSaved && !locked && <span style={{ fontSize: '11px', backgroundColor: '#1A7A4A', color: '#6EE7B7', padding: '2px 8px', borderRadius: '4px' }}>&#x2705; SAVED</span>}
         </div>
       </div>
 
@@ -165,13 +176,13 @@ function MatchCard({
       {comm && comm.total > 0 && (
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
-            <span>     {comm.total} predictions</span>
+            <span>&#x1F30D; {comm.total} predictions</span>
             <span>Community split</span>
           </div>
           <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', height: '8px', marginBottom: '6px' }}>
-            {homePct > 0 && <div style={{ width: `${homePct}%`, backgroundColor: '#2E9E5E' }} />}
-            {drawPct > 0 && <div style={{ width: `${drawPct}%`, backgroundColor: '#6B7280' }} />}
-            {awayPct > 0 && <div style={{ width: `${awayPct}%`, backgroundColor: '#3B82F6' }} />}
+            {homePct > 0 && <div style={{ width: homePct + '%', backgroundColor: '#2E9E5E' }} />}
+            {drawPct > 0 && <div style={{ width: drawPct + '%', backgroundColor: '#6B7280' }} />}
+            {awayPct > 0 && <div style={{ width: awayPct + '%', backgroundColor: '#3B82F6' }} />}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
             <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>{match.home_team} {homePct}%</span>
@@ -186,9 +197,9 @@ function MatchCard({
         <>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
             {[
-              { value: 'home', label: `${match.home_team} Win` },
+              { value: 'home', label: match.home_team + ' Win' },
               { value: 'draw', label: 'Draw' },
-              { value: 'away', label: `${match.away_team} Win` },
+              { value: 'away', label: match.away_team + ' Win' },
             ].map(({ value, label }) => (
               <button key={value} onClick={() => onPredict(match.id, value)}
                 style={{ flex: 1, padding: '10px 4px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: pred?.outcome === value ? '#1A7A4A' : 'transparent', color: pred?.outcome === value ? 'white' : '#9CA3AF', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
@@ -200,13 +211,13 @@ function MatchCard({
           {pred?.outcome && (
             <div style={{ marginBottom: '16px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '12px' }}>
               <p style={{ fontSize: '12px', color: '#9CA3AF', marginBottom: '10px', textAlign: 'center' }}>
-                     Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+55 pts if correct!)</span>
+                &#x1F3AF; Exact Score <span style={{ color: '#2E9E5E', fontSize: '11px' }}>(+55 pts if correct!)</span>
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                   <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.home_team}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button onClick={() => onScore(match.id, 'predicted_home_score', homeVal - 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>   </button>
+                    <button onClick={() => onScore(match.id, 'predicted_home_score', homeVal - 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>-</button>
                     <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{homeVal}</span>
                     <button onClick={() => onScore(match.id, 'predicted_home_score', homeVal + 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
                   </div>
@@ -215,7 +226,7 @@ function MatchCard({
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                   <span style={{ fontSize: '11px', color: '#9CA3AF' }}>{match.away_team}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <button onClick={() => onScore(match.id, 'predicted_away_score', awayVal - 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>   </button>
+                    <button onClick={() => onScore(match.id, 'predicted_away_score', awayVal - 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>-</button>
                     <span style={{ fontSize: '28px', fontWeight: 'bold', minWidth: '32px', textAlign: 'center' }}>{awayVal}</span>
                     <button onClick={() => onScore(match.id, 'predicted_away_score', awayVal + 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: 'white', cursor: 'pointer', fontSize: '16px' }}>+</button>
                   </div>
@@ -239,13 +250,13 @@ function MatchCard({
           {pred?.outcome && comm && comm.total > 0 && (
             <div style={{ marginBottom: '12px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
               <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-                     You agree with{' '}
+                &#x1F465; You agree with{' '}
                 <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>
                   {pred.outcome === 'home' ? homePct : pred.outcome === 'draw' ? drawPct : awayPct}%
                 </span>
                 {' '}of forecasters
                 {(pred.outcome === 'home' ? homePct : pred.outcome === 'draw' ? drawPct : awayPct) < 30 && (
-                  <span style={{ color: '#F59E0B' }}>         Brave call!</span>
+                  <span style={{ color: '#F59E0B' }}> &middot; &#x1F981; Brave call!</span>
                 )}
               </span>
             </div>
@@ -254,13 +265,13 @@ function MatchCard({
           {pred?.outcome && (
             <button onClick={() => onSave(match.id)} disabled={isLoading}
               style={{ width: '100%', padding: '12px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}>
-              {isLoading ? 'Saving...' : isSaved ? 'Update Prediction    ' : 'Lock In Prediction    '}
+              {isLoading ? 'Saving...' : isSaved ? 'Update Prediction' : 'Lock In Prediction ->'}
             </button>
           )}
         </>
       )}
 
-      {/* LOCKED STATE + SHARE */}
+      {/* LOCKED STATE */}
       {locked && (
         <div style={{ backgroundColor: '#1A3A20', padding: '12px', borderRadius: '8px' }}>
           {pred?.outcome ? (
@@ -268,23 +279,24 @@ function MatchCard({
               <div style={{ textAlign: 'center', marginBottom: '10px' }}>
                 <span style={{ fontSize: '13px', color: '#6EE7B7' }}>
                   Your pick: <strong>{pred.outcome === 'home' ? match.home_team : pred.outcome === 'away' ? match.away_team : 'Draw'}</strong>
-                  {pred.predicted_home_score !== undefined && <span>    Score: <strong>{pred.predicted_home_score}   {pred.predicted_away_score}</strong></span>}
-                  {' '}   {pred.confidence}% confidence
+                  {pred.predicted_home_score !== undefined && <span> &middot; Score: <strong>{pred.predicted_home_score}-{pred.predicted_away_score}</strong></span>}
+                  {' '}&middot; {pred.confidence}% confidence
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  {shared ? ' Shared!' : '     Share'}
+                <button onClick={handleShare}
+                  style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                  {shared ? 'Shared!' : 'Share'}
                 </button>
-                <a href={`https://wa.me/?text=${encodeURIComponent(`    I predicted ${match.home_team} vs ${match.away_team}: ${pred.outcome === 'home' ? match.home_team + ' Win' : pred.outcome === 'away' ? match.away_team + ' Win' : 'Draw'}    ${pred.confidence}% confidence\nSee my record     https://flipseer.com/u/${username}`)}`}
+                <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
                   target="_blank" rel="noopener noreferrer"
                   style={{ flex: 1, padding: '8px', backgroundColor: '#25D366', color: 'white', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>
-                       WhatsApp
+                  WhatsApp
                 </a>
               </div>
             </div>
           ) : (
-            <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>     Predictions closed     no pick recorded</span>
+            <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>&#x1F512; Predictions closed - no pick recorded</span>
           )}
         </div>
       )}
@@ -292,13 +304,14 @@ function MatchCard({
       {/* SHARE AFTER SAVING */}
       {isSaved && !locked && pred?.outcome && (
         <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-          <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-            {shared ? ' Shared!' : '     Share Prediction'}
+          <button onClick={handleShare}
+            style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+            {shared ? 'Shared!' : 'Share Prediction'}
           </button>
-          <a href={`https://wa.me/?text=${encodeURIComponent(`    I predicted ${match.home_team} vs ${match.away_team}: ${pred.outcome === 'home' ? match.home_team + ' Win' : pred.outcome === 'away' ? match.away_team + ' Win' : 'Draw'}    ${pred.confidence}% confidence\nMy record     https://flipseer.com/u/${username}`)}`}
+          <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
             target="_blank" rel="noopener noreferrer"
             style={{ flex: 1, padding: '8px', backgroundColor: '#25D366', color: 'white', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>
-                 WhatsApp
+            WhatsApp
           </a>
         </div>
       )}
@@ -306,7 +319,7 @@ function MatchCard({
   );
 }
 
-//        Main page       
+// Main page
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState('forecaster');
@@ -345,7 +358,6 @@ export default function Predict() {
       if (predData) {
         const existing: any = {};
         const savedMap: any = {};
-        //  Count today's predictions for daily limit display
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         let todayCount = 0;
@@ -403,29 +415,20 @@ export default function Predict() {
     }));
   };
 
-  //  Fixed: calls API route which enforces 8/day limit
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
-
-    // Check if already saved (update allowed, doesn't count toward limit)
     const isUpdate = saved[matchId];
-
-    // Client-side daily limit check for new predictions
     if (!isUpdate && dailyUsed >= DAILY_LIMIT) {
-      alert(`       Daily limit reached! You can make ${DAILY_LIMIT} new predictions per day. Come back tomorrow!`);
+      alert('Daily limit reached! You can make ' + DAILY_LIMIT + ' new predictions per day. Come back tomorrow!');
       return;
     }
-
     setLoading(prev => ({ ...prev, [matchId]: true }));
-
     const { data: { session } } = await supabase.auth.getSession();
-
-    //  Call API route     enforces server-side daily limit
     const res = await fetch('/api/predict', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
+        'Authorization': 'Bearer ' + session?.access_token,
       },
       body: JSON.stringify({
         match_id: matchId,
@@ -435,28 +438,19 @@ export default function Predict() {
         predicted_away_score: predictions[matchId].predicted_away_score ?? null,
       }),
     });
-
     const data = await res.json();
     setLoading(prev => ({ ...prev, [matchId]: false }));
-
-    if (res.status === 429) {
-      // Daily limit hit server-side
-      alert(`       ${data.error}`);
-      return;
-    }
-
+    if (res.status === 429) { alert(data.error); return; }
     if (res.ok) {
       setSaved(prev => ({ ...prev, [matchId]: true }));
-      if (!isUpdate) {
-        setDailyUsed(prev => prev + 1);
-      }
+      if (!isUpdate) setDailyUsed(prev => prev + 1);
       setCommunity(prev => {
         const old = prev[matchId] || { home: 0, draw: 0, away: 0, total: 0 };
         const outcome = predictions[matchId].outcome as 'home' | 'draw' | 'away';
         return { ...prev, [matchId]: { ...old, [outcome]: old[outcome] + 1, total: old.total + 1 } };
       });
     } else {
-      alert(`    ${data.error || 'Failed to save prediction. Please try again.'}`);
+      alert(data.error || 'Failed to save prediction. Please try again.');
     }
   };
 
@@ -465,32 +459,28 @@ export default function Predict() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
       <section style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>    World Cup 2026</h1>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>&#x26BD; World Cup 2026</h1>
         <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '12px' }}>Predict match outcomes before kick-off. Lock in your confidence.</p>
-
-        {/*  Daily limit counter */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(46,158,94,0.1)', border: `1px solid ${remaining === 0 ? '#EF4444' : '#2E9E5E'}`, borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(46,158,94,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#2E9E5E'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
           <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#2E9E5E', fontWeight: 'bold' }}>
             {remaining === 0
-              ? '       Daily limit reached     come back tomorrow!'
-              : `     Today: ${dailyUsed}/${DAILY_LIMIT} predictions used    ${remaining} remaining`
+              ? 'Daily limit reached - come back tomorrow!'
+              : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions used - ' + remaining + ' remaining'
             }
           </span>
         </div>
-
         {username !== 'forecaster' && (
           <div>
-            <a href={`/u/${username}`} style={{ color: '#2E9E5E', fontSize: '13px', textDecoration: 'none' }}>
-              View your journal    
+            <a href={'/u/' + username} style={{ color: '#2E9E5E', fontSize: '13px', textDecoration: 'none' }}>
+              View your journal ->
             </a>
           </div>
         )}
       </section>
-
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
         {matchesLoading ? (
           <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>   </div>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>&#x26BD;</div>
             <p>Loading matches...</p>
           </div>
         ) : matches.length === 0 ? (
