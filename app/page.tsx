@@ -471,7 +471,7 @@ export default function Home() {
 
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '56px' }}>
           <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
-            Claim Your Record &#x2192;
+            Sign-in/Sign-up to claim Your Record &#x2192;
           </a>
           <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '8px' }}>Sign up free in 10 seconds. No card required.</p>
           <a href="/how-to-play" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
