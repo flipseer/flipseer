@@ -64,6 +64,68 @@ const TOP_NATIONS = [
 ];
 
 // -- Upcoming Matches Component --
+function DynamicBanner() {
+  const [bannerText, setBannerText] = useState('FIFA World Cup 2026 -- Build your football reputation!');
+  const [bgColor, setBgColor] = useState('#1A7A4A');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const update = () => {
+      const now = new Date();
+      const kickoff = new Date('2026-06-11T19:00:00Z');
+      const diff = kickoff.getTime() - now.getTime();
+      const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      const hoursLeft = Math.ceil(diff / (1000 * 60 * 60));
+      const minutesLeft = Math.ceil(diff / (1000 * 60));
+
+      if (diff <= 0) {
+        setBannerText('LIVE NOW -- Mexico vs South Africa -- Predict before it locks!');
+        setBgColor('#EF4444');
+      } else if (minutesLeft <= 60) {
+        setBannerText('KICKS OFF IN ' + minutesLeft + ' MINUTES -- Last chance to predict!');
+        setBgColor('#EF4444');
+      } else if (hoursLeft <= 24) {
+        setBannerText('TODAY -- Mexico vs South Africa kicks off 19:00 UTC -- Predict NOW!');
+        setBgColor('#DC2626');
+      } else if (daysLeft === 1) {
+        setBannerText('TOMORROW -- World Cup kicks off! Predict before it is too late!');
+        setBgColor('#B45309');
+      } else if (daysLeft === 2) {
+        setBannerText('2 DAYS TO GO -- 88 Founding Forecaster spots remaining!');
+        setBgColor('#92400E');
+      } else if (daysLeft === 3) {
+        setBannerText('3 DAYS TO GO -- World Cup 2026 predictions closing soon!');
+        setBgColor('#1A7A4A');
+      } else if (daysLeft <= 7) {
+        setBannerText(daysLeft + ' days until World Cup -- Only 88 Founding Forecaster spots left!');
+        setBgColor('#1A7A4A');
+      } else {
+        setBannerText('FIFA World Cup 2026 starts June 11 -- Build your permanent football reputation!');
+        setBgColor('#1A7A4A');
+      }
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div style={{ backgroundColor: bgColor, padding: '10px 20px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.2)', position: 'sticky', top: 0, zIndex: 50 }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
+          &#x26BD; {bannerText}
+        </span>
+        <a href="/auth" style={{ backgroundColor: 'white', color: bgColor, padding: '5px 18px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+          Join Free &#x2192;
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -371,17 +433,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* STICKY SIGNUP BANNER */}
-      <div style={{ backgroundColor: '#1A7A4A', padding: '12px 20px', textAlign: 'center', borderBottom: '1px solid #2E9E5E', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '14px', color: 'white', fontWeight: 'bold' }}>
-            &#x26BD; FIFA World Cup 2026 starts June 11 -- Build your football reputation now!
-          </span>
-          <a href="/auth" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '6px 20px', borderRadius: '999px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-            Join Free &#x2192;
-          </a>
-        </div>
-      </div>
+      {/* DYNAMIC URGENCY BANNER */}
+      <DynamicBanner />
 
       {/* HERO -- Punchier */}
       <section style={{ textAlign: 'center', padding: '80px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
