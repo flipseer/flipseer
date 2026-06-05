@@ -145,6 +145,86 @@ function DynamicBanner() {
   );
 }
 
+// -- LIVE SCORECARD COMPONENT --
+function LiveScoreCard() {
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  const fetchLive = async () => {
+    try {
+      const res = await fetch('/api/live-scores');
+      const data = await res.json();
+      if (data.live && data.live.length > 0) {
+        setLiveMatches(data.live);
+        setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      } else {
+        setLiveMatches([]);
+      }
+    } catch (e) {
+      setLiveMatches([]);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    fetchLive();
+    // Poll every 60 seconds
+    const interval = setInterval(fetchLive, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!mounted || liveMatches.length === 0) return null;
+
+  return (
+    <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#EF4444', letterSpacing: '2px' }}>LIVE NOW</span>
+          </div>
+          <span style={{ fontSize: '11px', color: '#4B5563' }}>Updated {lastUpdated}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {liveMatches.map((match) => (
+            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', boxShadow: '0 0 16px rgba(239,68,68,0.08)' }}>
+              {/* Minute */}
+              <div style={{ minWidth: '48px', textAlign: 'center' }}>
+                <div style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>
+                  {match.elapsed ? match.elapsed + "'" : 'LIVE'}
+                </div>
+                <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>
+                  {match.status === 'HT' ? 'HT' : match.status === 'FT' ? 'FT' : ''}
+                </div>
+              </div>
+              {/* Teams + Score */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'right', flex: 1 }}>{match.home}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '6px 16px', minWidth: '80px', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{match.home_score}</span>
+                  <span style={{ fontSize: '16px', color: '#4B5563' }}>-</span>
+                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{match.away_score}</span>
+                </div>
+                <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'left', flex: 1 }}>{match.away}</span>
+              </div>
+              {/* Round */}
+              <div style={{ fontSize: '11px', color: '#6B7280', whiteSpace: 'nowrap' }}>
+                {match.round?.replace('Group Stage - ', 'Group ')}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '12px' }}>
+          <a href="/predict" style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', textDecoration: 'none' }}>
+            &#x1F3AF; Predict upcoming matches &#x2192;
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -437,6 +517,9 @@ export default function Home() {
 
       {/* DYNAMIC BANNER */}
       <DynamicBanner />
+
+      {/* LIVE SCORECARD - shows only during matches */}
+      <LiveScoreCard />
 
       {/* HERO */}
       <section style={{ textAlign: 'center', padding: '80px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
