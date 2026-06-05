@@ -290,7 +290,7 @@ export default function GroupsPage() {
         {/* MY GROUPS */}
         {myGroups.length > 0 && (
           <div style={{ marginBottom: '28px' }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '12px', color: '#9CA3AF', letterSpacing: '1px', fontSize: '12px', fontWeight: 'bold' }}>YOUR GROUPS</h2>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '12px', marginBottom: '12px', color: '#9CA3AF', letterSpacing: '1px', fontWeight: 'bold' }}>YOUR GROUPS</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {myGroups.map((group) => (
                 <div key={group.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px' }}>
