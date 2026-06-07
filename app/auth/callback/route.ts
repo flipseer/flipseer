@@ -53,6 +53,18 @@ export async function GET(request: NextRequest) {
 
     const isBeforeLaunch = new Date() < new Date('2026-06-11T19:00:00Z')
 
+    // -- Check founding forecaster count (max 100) --
+    let foundingCount = 0
+    if (isBeforeLaunch) {
+      const { count } = await supabase
+        .from('user_badges')
+        .select('*', { count: 'exact', head: true })
+        .eq('badge_type', 'founding_forecaster')
+      foundingCount = count || 0
+    }
+
+    const awardFoundingBadge = isBeforeLaunch && foundingCount < 100
+
     // -- Run profile + badge inserts in parallel --
     await Promise.all([
       supabase.from('profiles').upsert([{
@@ -69,7 +81,7 @@ export async function GET(request: NextRequest) {
         rank_icon: '&#x1F949;',
       }], { onConflict: 'id' }),
 
-      isBeforeLaunch
+      awardFoundingBadge
         ? supabase.from('user_badges').insert({
             user_id: data.user.id,
             badge_type: 'founding_forecaster',
