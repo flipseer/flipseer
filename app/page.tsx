@@ -393,6 +393,60 @@ function WelcomeConfetti() {
   );
 }
 
+// -- STICKY BOTTOM CTA --
+function StickyBottomCTA() {
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [spotsLeft, setSpotsLeft] = useState(83);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+
+    // Fetch real spots
+    fetch('/api/founding-spots')
+      .then(r => r.json())
+      .then(d => { if (d.spots_left !== undefined) setSpotsLeft(d.spots_left); })
+      .catch(() => {});
+
+    // Show after scrolling 400px
+    const onScroll = () => {
+      if (window.scrollY > 400 && !dismissed) setVisible(true);
+      else if (window.scrollY <= 400) setVisible(false);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [dismissed]);
+
+  if (!mounted || dismissed || !visible) return null;
+
+  return (
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200, padding: '12px 16px 20px', background: 'linear-gradient(180deg, transparent 0%, #0D1F0F 20%)', pointerEvents: 'none' }}>
+      <div style={{ maxWidth: '480px', margin: '0 auto', pointerEvents: 'all' }}>
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 -4px 32px rgba(46,158,94,0.25)' }}>
+          {/* Left: urgency text */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', marginBottom: '2px' }}>
+              &#x26BD; Only <span style={{ color: '#F59E0B' }}>{spotsLeft} spots</span> left
+            </div>
+            <div style={{ fontSize: '11px', color: '#6B7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              Founding Forecaster badge -- never awarded again
+            </div>
+          </div>
+          {/* CTA Button */}
+          <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '10px 18px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap', boxShadow: '0 0 20px rgba(46,158,94,0.4)', flexShrink: 0 }}>
+            Join Free &#x2192;
+          </a>
+          {/* Dismiss */}
+          <button onClick={() => setDismissed(true)} style={{ backgroundColor: 'transparent', border: 'none', color: '#4B5563', cursor: 'pointer', fontSize: '18px', padding: '0 4px', flexShrink: 0, lineHeight: 1 }}>
+            &#x2715;
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [tickerItems, setTickerItems] = useState<any[]>([]);
   const [useRealTicker, setUseRealTicker] = useState(false);
@@ -701,6 +755,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* STICKY BOTTOM CTA */}
+      <StickyBottomCTA />
 
       {/* FINAL CTA */}
       <section style={{ textAlign: 'center', padding: '80px 20px 100px', position: 'relative', overflow: 'hidden' }}>
