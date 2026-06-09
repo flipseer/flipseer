@@ -9,9 +9,6 @@ export async function GET() {
       return NextResponse.json({ live: [] })
     }
 
-    // FIFA World Cup 2026 league ID = 1 is wrong
-    // World Cup = league 1 in API-Football v3
-    // But safer to fetch ALL live and filter by name
     const res = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
       headers: { 'x-apisports-key': apiKey },
       cache: 'no-store',
@@ -24,11 +21,32 @@ export async function GET() {
     const data = await res.json()
     const fixtures = data?.response || []
 
-    // Filter only World Cup 2026 matches
+    // Strict filter: FIFA World Cup 2026 mens only
+    // League ID 1 = FIFA World Cup (mens)
+    // Exclude womens (league 6), youth, friendlies
+    const WORLD_CUP_2026_IDS = [1] // FIFA World Cup mens
+
     const live = fixtures
       .filter((f: any) => {
-        const leagueName = f.league?.name || ''
-        return leagueName.includes('World Cup') || leagueName.includes('FIFA')
+        const leagueId = f.league?.id
+        const season = f.league?.season
+        const leagueName: string = f.league?.name || ''
+
+        // Primary: match by league ID + season
+        if (WORLD_CUP_2026_IDS.includes(leagueId) && season === 2026) return true
+
+        // Fallback: name match but strict -- must have 2026 and not Women
+        if (
+          leagueName.includes('2026') &&
+          (leagueName.includes('World Cup') || leagueName.includes('FIFA')) &&
+          !leagueName.toLowerCase().includes('women') &&
+          !leagueName.toLowerCase().includes('u20') &&
+          !leagueName.toLowerCase().includes('u17') &&
+          !leagueName.toLowerCase().includes('youth') &&
+          !leagueName.toLowerCase().includes('friendly')
+        ) return true
+
+        return false
       })
       .map((f: any) => ({
         id: f.fixture?.id,
