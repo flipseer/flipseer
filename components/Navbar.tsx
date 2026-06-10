@@ -72,6 +72,7 @@ export default function Navbar() {
           <Link href="/epl" style={linkStyle}>EPL</Link>
           <Link href="/leaderboard" style={linkStyle}>Rankings</Link>
           <Link href="/groups" style={linkStyle}>Groups</Link>
+          <Link href="/nations" style={{ ...linkStyle, color: '#F59E0B', border: '1px solid #F59E0B40' }}>&#x1F30D; Nations</Link>
           {user ? (
             <Link href="/profile" style={activeStyle}>Profile</Link>
           ) : (
@@ -113,6 +114,10 @@ export default function Navbar() {
           <a href="/epl" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>EPL</a>
           <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Rankings</a>
           <a href="/groups" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Groups</a>
+          <a href="/nations" onClick={() => setMenuOpen(false)} style={{ color: '#F59E0B', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 'bold' }}>
+            <span>&#x1F30D; Nation Battle</span>
+            <span style={{ fontSize: '11px', backgroundColor: '#F59E0B', color: 'black', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>LIVE</span>
+          </a>
 
           {/* PROFILE OR SIGN IN */}
           {user ? (
