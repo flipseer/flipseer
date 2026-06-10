@@ -62,6 +62,63 @@ const TOP_NATIONS = [
   { flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal', slug: 'portugal' },
 ];
 
+// -- LIVE BUZZ COUNTER --
+function BuzzCounter() {
+  const [count24h, setCount24h] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const fetch24h = async () => {
+      try {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count: predCount } = await supabase
+          .from('predictions')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', since);
+        const { count: userCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+        setCount24h(predCount || 0);
+        setTotalUsers(userCount || 0);
+      } catch (e) {}
+    };
+    fetch24h();
+    const interval = setInterval(fetch24h, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!mounted || (count24h === 0 && totalUsers === 0)) return null;
+
+  return (
+    <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
+        {count24h > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x26A1; {count24h} predictions</span> made in last 24 hours
+            </span>
+          </div>
+        )}
+        {totalUsers > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>&#x1F465; {totalUsers} forecasters</span> building their legacy
+            </span>
+          </div>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+            <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x1F3C6; 104 matches</span> to predict
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // -- DYNAMIC BANNER with real spots count --
 function DynamicBanner() {
   const [bannerText, setBannerText] = useState('FIFA World Cup 2026 -- Build your football reputation!');
@@ -568,6 +625,9 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* LIVE BUZZ COUNTER */}
+      <BuzzCounter />
 
       {/* DYNAMIC BANNER */}
       <DynamicBanner />
