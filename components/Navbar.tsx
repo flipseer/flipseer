@@ -30,6 +30,17 @@ export default function Navbar() {
           .hamburger { display: none !important; }
           .mobile-menu { display: none !important; }
         }
+        @keyframes navPulse {
+          0%, 100% { box-shadow: 0 0 0px rgba(46,158,94,0); background-color: #1A7A4A; }
+          50% { box-shadow: 0 0 12px rgba(46,158,94,0.9); background-color: #2E9E5E; }
+        }
+        @keyframes navDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        .predict-blink {
+          animation: navPulse 1.5s ease-in-out infinite !important;
+        }
       `}</style>
 
       <nav style={{
@@ -53,10 +64,13 @@ export default function Navbar() {
         {/* DESKTOP NAV LINKS */}
         <div className="nav-links" style={{ display: 'flex', gap: '2px', alignItems: 'center', flexWrap: 'nowrap' }}>
           <Link href="/" style={linkStyle}>Home</Link>
-          <Link href="/predict" style={linkStyle}>Predict</Link>
+          <Link href="/predict" style={{ ...linkStyle, position: 'relative', backgroundColor: '#1A7A4A', color: 'white', border: '1px solid #2E9E5E', fontWeight: 'bold' }} className="predict-blink">
+            &#x26BD; Predict
+            <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', backgroundColor: '#F59E0B', borderRadius: '50%', display: 'inline-block', animation: 'navDot 1.5s ease-in-out infinite' }} />
+          </Link>
           <Link href="/world-cup-2026" style={linkStyle}>WC2026</Link>
           <Link href="/epl" style={linkStyle}>EPL</Link>
-          <Link href="/leaderboard" style={linkStyle}>Leaderboard</Link>
+          <Link href="/leaderboard" style={linkStyle}>Rankings</Link>
           <Link href="/groups" style={linkStyle}>Groups</Link>
           {user ? (
             <Link href="/profile" style={activeStyle}>Profile</Link>
@@ -91,7 +105,10 @@ export default function Navbar() {
         }}>
           {/* NAV LINKS */}
           <a href="/" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Home</a>
-          <a href="/predict" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Predict</a>
+          <a href="/predict" onClick={() => setMenuOpen(false)} style={{ color: 'white', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#1A7A4A', fontWeight: 'bold', animation: 'navPulse 1.5s ease-in-out infinite' }}>
+            <span>&#x26BD; Predict Matches</span>
+            <span style={{ fontSize: '11px', backgroundColor: '#F59E0B', color: 'black', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>NEW</span>
+          </a>
           <a href="/world-cup-2026" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>World Cup 2026</a>
           <a href="/epl" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>EPL</a>
           <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Rankings</a>
