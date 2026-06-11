@@ -227,6 +227,29 @@ export default function Auth() {
             </span>
           </div>
 
+          {/* TRUST SHIELD */}
+          <div style={{ marginTop: '20px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '12px', padding: '14px 16px' }}>
+            <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center', marginBottom: '10px' }}>YOUR DATA. YOUR RULES.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {[
+                { icon: '&#x1F512;', text: 'Your personal data stays yours' },
+                { icon: '&#x1F6E1;', text: 'Encrypted & Secure' },
+                { icon: '&#x1F6AB;', text: 'Never Sold' },
+                { icon: '&#x2699;', text: 'Under Your Control' },
+              ].map(({ icon, text }) => (
+                <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                  <span style={{ fontSize: '11px', color: '#6EE7B7' }}>{text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '10px' }}>
+              <a href="/privacy" style={{ fontSize: '11px', color: '#4B5563', textDecoration: 'none' }}>
+                Full privacy policy &#x2192;
+              </a>
+            </div>
+          </div>
+
           <p style={{ textAlign: 'center', color: '#4B5563', fontSize: '11px', marginTop: '16px' }}>
             Free. No betting. No gambling. Pure football.
           </p>
