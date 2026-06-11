@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { headers } from 'next/headers'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  // Secure: check Vercel cron header OR admin password
-  // Vercel automatically adds this header for cron jobs
-  const headersList = headers()
-  const isVercelCron = headersList.get('x-vercel-cron') === '1'
-  const adminPassword = req.nextUrl.searchParams.get('pwd')
-  const isAdmin = adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD
+  // Auth: Vercel cron header OR cron secret
+  const cronSecret = req.nextUrl.searchParams.get('secret')
+  const authHeader = req.headers.get('authorization')
+  const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
+  const isManual = cronSecret === process.env.CRON_SECRET
 
-  if (!isVercelCron && !isAdmin) {
+  if (!isVercelCron && !isManual) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -37,22 +35,27 @@ export async function GET(req: NextRequest) {
     const { data: matches } = await supabase
       .from('matches')
       .select('id, home_team, away_team, api_id')
-      .like('api_id::text', '2026%')
 
-    log.push('Fake IDs to fix: ' + (matches?.length || 0))
+    // Only fix fake IDs
+    const fakeMatches = (matches || []).filter((m: any) =>
+      String(m.api_id).startsWith('2026')
+    )
+    log.push('Fake IDs to fix: ' + fakeMatches.length)
 
     let updated = 0
     let notFound: string[] = []
 
-    for (const match of matches || []) {
+    for (const match of fakeMatches) {
       const dbHome = match.home_team?.toLowerCase() || ''
       const dbAway = match.away_team?.toLowerCase() || ''
 
       const fixture = fixtures.find((f: any) => {
         const apiHome = f.teams?.home?.name?.toLowerCase() || ''
         const apiAway = f.teams?.away?.name?.toLowerCase() || ''
-        const homeMatch = apiHome.startsWith(dbHome.slice(0, 4)) || dbHome.startsWith(apiHome.slice(0, 4))
-        const awayMatch = apiAway.startsWith(dbAway.slice(0, 4)) || dbAway.startsWith(apiAway.slice(0, 4))
+        const homeMatch = apiHome.startsWith(dbHome.slice(0, 4)) ||
+                         dbHome.startsWith(apiHome.slice(0, 4))
+        const awayMatch = apiAway.startsWith(dbAway.slice(0, 4)) ||
+                         dbAway.startsWith(apiAway.slice(0, 4))
         return homeMatch && awayMatch
       })
 
