@@ -452,15 +452,27 @@ export default function Home() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const target = new Date('2026-06-12T01:00:00Z');
+    // World Cup runs June 11 - July 19 2026
+    const wcStart = new Date('2026-06-11T19:00:00Z');
+    const wcEnd = new Date('2026-07-19T20:00:00Z');
     const interval = setInterval(() => {
       const now = new Date();
-      const diff = target.getTime() - now.getTime();
-      if (diff <= 0) { clearInterval(interval); return; }
-      setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
-      setHours(Math.floor((diff / (1000 * 60 * 60)) % 24));
-      setMinutes(Math.floor((diff / (1000 * 60)) % 60));
-      setSeconds(Math.floor((diff / 1000) % 60));
+      const started = now >= wcStart;
+      if (started) {
+        // WC is live -- count UP from start
+        const elapsed = now.getTime() - wcStart.getTime();
+        setDays(Math.floor(elapsed / (1000 * 60 * 60 * 24)));
+        setHours(Math.floor((elapsed / (1000 * 60 * 60)) % 24));
+        setMinutes(Math.floor((elapsed / (1000 * 60)) % 60));
+        setSeconds(Math.floor((elapsed / 1000) % 60));
+      } else {
+        const diff = wcStart.getTime() - now.getTime();
+        if (diff <= 0) { clearInterval(interval); return; }
+        setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
+        setHours(Math.floor((diff / (1000 * 60 * 60)) % 24));
+        setMinutes(Math.floor((diff / (1000 * 60)) % 60));
+        setSeconds(Math.floor((diff / 1000) % 60));
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -581,7 +593,10 @@ export default function Home() {
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '32px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            {mounted ? 'WORLD CUP 2026 \u00B7 ' + days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's' : 'WORLD CUP 2026 \u00B7 June 11, 2026'}
+            {mounted ? (new Date() >= new Date('2026-06-11T19:00:00Z')
+            ? 'WORLD CUP 2026 \u00B7 LIVE \u00B7 Day ' + (days + 1)
+            : 'WORLD CUP 2026 \u00B7 ' + days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's')
+            : 'WORLD CUP 2026 \u00B7 LIVE NOW'}
           </span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '60px', lineHeight: '1.1', marginBottom: '20px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
