@@ -66,6 +66,7 @@ const TOP_NATIONS = [
 function BuzzCounter() {
   const [count24h, setCount24h] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [foundingAwarded, setFoundingAwarded] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -515,6 +516,7 @@ export default function Home() {
   const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
   const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [foundingAwarded, setFoundingAwarded] = useState(0);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -561,6 +563,13 @@ export default function Home() {
         const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
         const userCount = count || 0;
         setTotalUsers(userCount);
+
+        // Get real founding forecaster count
+        try {
+          const spotsRes = await fetch('/api/founding-spots');
+          const spotsData = await spotsRes.json();
+          if (spotsData.awarded !== undefined) setFoundingAwarded(spotsData.awarded);
+        } catch (e) { setFoundingAwarded(userCount); }
         if (userCount >= REAL_USER_THRESHOLD) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
@@ -653,7 +662,7 @@ export default function Home() {
         </p>
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '32px' }}>
           <span style={{ fontSize: '13px', color: '#6B7280' }}>
-            {totalUsers > 0 ? 'Join ' + totalUsers + ' Founding Forecasters -- ' : 'Only 100 Founding Forecaster spots -- '}
+            {foundingAwarded > 0 ? 'Join ' + foundingAwarded + ' Founding Forecasters -- ' : 'Only 100 Founding Forecaster spots -- '}
             <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Exclusive badge. Never awarded again.</span>
           </span>
         </div>
@@ -666,20 +675,27 @@ export default function Home() {
             How It Works
           </a>
         </div>
-        {/* TRUST BADGES */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '40px' }}>
-          {[
-            { icon: '&#x1F512;', text: 'No password stored' },
-            { icon: '&#x1F6AB;', text: 'No betting ever' },
-            { icon: '&#x1F4B3;', text: 'No card needed' },
-            { icon: '&#x1F6AB;', text: 'Data never sold' },
-            { icon: '&#x1F193;', text: 'Free forever' },
-          ].map(({ icon, text }) => (
-            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-              <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold' }}>{text}</span>
-            </div>
-          ))}
+        {/* TRUST SHIELD */}
+        <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '14px 24px', marginBottom: '40px' }}>
+          <div style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '10px', textAlign: 'center' }}>YOUR DATA. YOUR RULES.</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            {[
+              { icon: '&#x1F512;', text: 'Your personal data stays yours' },
+              { icon: '&#x1F6E1;', text: 'Encrypted & Secure' },
+              { icon: '&#x1F6AB;', text: 'Never Sold' },
+              { icon: '&#x2699;', text: 'Under Your Control' },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                <span style={{ fontSize: '12px', color: '#6EE7B7', fontWeight: 'bold' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '10px' }}>
+            <a href="/privacy" style={{ fontSize: '11px', color: '#4B5563', textDecoration: 'none' }}>
+              Full privacy policy &#x2192;
+            </a>
+          </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
@@ -759,7 +775,7 @@ export default function Home() {
                 <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '16px', lineHeight: '1.7' }}>The national leaderboard goes live June 11.<br />Early predictors shape their country's position from day one.</p>
                 <p style={{ fontSize: '13px', color: '#4B5563' }}>
                   {totalUsers > 0
-                    ? totalUsers + ' forecasters registered -- ' + (REAL_USER_THRESHOLD - totalUsers > 0 ? (REAL_USER_THRESHOLD - totalUsers) + ' more until live rankings' : 'rankings activating soon!')
+                    ? totalUsers + ' forecasters registered -- ' + (100 - totalUsers > 0 ? (100 - foundingAwarded) + ' Founding spots remaining' : 'rankings activating soon!')
                     : "Be among the founding forecasters. Claim your country's #1 spot."
                   }
                 </p>
