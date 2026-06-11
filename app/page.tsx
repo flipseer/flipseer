@@ -666,6 +666,22 @@ export default function Home() {
             How It Works
           </a>
         </div>
+        {/* TRUST BADGES */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', marginBottom: '40px' }}>
+          {[
+            { icon: '&#x1F512;', text: 'No password stored' },
+            { icon: '&#x1F6AB;', text: 'No betting ever' },
+            { icon: '&#x1F4B3;', text: 'No card needed' },
+            { icon: '&#x1F6AB;', text: 'Data never sold' },
+            { icon: '&#x1F193;', text: 'Free forever' },
+          ].map(({ icon, text }) => (
+            <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+              <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold' }}>{text}</span>
+            </div>
+          ))}
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
           {[{ value: '104', label: 'Matches to Predict' }, { value: '48', label: 'Nations' }, { value: '39', label: 'Days of Football' }].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', animation: 'countup 0.6s ease ' + (i * 0.2) + 's both' }}>
