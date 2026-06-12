@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'match_id required' }, { status: 400 });
     }
 
+    // Get match
     const { data: match, error: matchError } = await supabaseAdmin
       .from('matches')
       .select('*')
@@ -38,9 +39,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Match not found', match_id }, { status: 404 });
     }
 
+    // Get predictions separately
     const { data: predictions, error: predError } = await supabaseAdmin
       .from('predictions')
-      .select('*, profiles(id, username, total_points, correct_count, prediction_count, accuracy_pct, streak)')
+      .select('*')
       .eq('match_id', match_id)
       .eq('prediction_processed', true);
 
@@ -49,11 +51,21 @@ export async function POST(req: NextRequest) {
         success: true,
         message: 'No processed predictions',
         sent: 0,
-        debug: { match_id, pred_count: predictions?.length, error: predError?.message }
+        debug: { match_id, pred_count: predictions?.length || 0, error: predError?.message }
       });
     }
 
+    // Get profiles separately
     const userIds = predictions.map((p: any) => p.user_id);
+    const { data: profiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, username, total_points, correct_count, prediction_count, accuracy_pct, streak')
+      .in('id', userIds);
+
+    const profileMap: { [key: string]: any } = {};
+    profiles?.forEach((p: any) => { profileMap[p.id] = p; });
+
+    // Get emails
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
     const emailMap: { [key: string]: string } = {};
     if (authUsers?.users) {
@@ -76,7 +88,7 @@ export async function POST(req: NextRequest) {
       const email = emailMap[pred.user_id];
       if (!email) continue;
 
-      const profile = pred.profiles;
+      const profile = profileMap[pred.user_id];
       const username = profile?.username || 'Forecaster';
       const won = pred.points_earned > 0;
       const points = pred.points_earned || 0;
@@ -167,7 +179,6 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Notify result error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
