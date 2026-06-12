@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { match_id } = await req.json();
+    const body = await req.json();
+    const match_id = Number(body.match_id);
+
     if (!match_id) {
       return NextResponse.json({ error: 'match_id required' }, { status: 400 });
     }
@@ -33,17 +35,22 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (matchError || !match) {
-      return NextResponse.json({ error: 'Match not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Match not found', match_id }, { status: 404 });
     }
 
-    const { data: predictions } = await supabaseAdmin
+    const { data: predictions, error: predError } = await supabaseAdmin
       .from('predictions')
-      .select(`*, profiles(id, username, total_points, correct_count, prediction_count, accuracy_pct, streak)`)
+      .select('*, profiles(id, username, total_points, correct_count, prediction_count, accuracy_pct, streak)')
       .eq('match_id', match_id)
       .eq('prediction_processed', true);
 
     if (!predictions || predictions.length === 0) {
-      return NextResponse.json({ success: true, message: 'No processed predictions', sent: 0 });
+      return NextResponse.json({
+        success: true,
+        message: 'No processed predictions',
+        sent: 0,
+        debug: { match_id, pred_count: predictions?.length, error: predError?.message }
+      });
     }
 
     const userIds = predictions.map((p: any) => p.user_id);
@@ -94,7 +101,6 @@ export async function POST(req: NextRequest) {
 
       const html = `
 <div style="background:#0D1F0F;padding:40px 32px;font-family:Arial,sans-serif;color:white;max-width:580px;margin:0 auto;border-radius:16px">
-
   <div style="text-align:center;margin-bottom:28px">
     <div style="font-size:44px;margin-bottom:10px">${won ? '&#x2705;' : '&#x274C;'}</div>
     <h1 style="font-family:Georgia,serif;color:${won ? '#2E9E5E' : '#EF4444'};font-size:26px;margin:0 0 6px">
@@ -102,14 +108,12 @@ export async function POST(req: NextRequest) {
     </h1>
     <p style="color:#9CA3AF;font-size:14px;margin:0">@${username}</p>
   </div>
-
   <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
     <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 8px">FULL TIME</p>
     <p style="color:white;font-size:18px;font-weight:bold;margin:0 0 8px">${matchName}</p>
     <p style="color:#2E9E5E;font-size:36px;font-weight:bold;font-family:Georgia,serif;margin:0 0 8px">${actualScore}</p>
     ${isUpset ? '<p style="color:#F59E0B;font-size:12px;font-weight:bold;margin:0">UPSET RESULT</p>' : ''}
   </div>
-
   <div style="background:#0D2B14;border:2px solid ${won ? '#2E9E5E' : '#7F1D1D'};border-radius:12px;padding:20px;margin-bottom:20px">
     <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 14px">YOUR PREDICTION</p>
     <table style="width:100%;border-collapse:collapse">
@@ -117,11 +121,6 @@ export async function POST(req: NextRequest) {
         <td style="color:#9CA3AF;font-size:13px;padding:4px 0">You picked</td>
         <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${outcomeLabel}</td>
       </tr>
-      ${pred.predicted_home_score !== null ? `
-      <tr>
-        <td style="color:#9CA3AF;font-size:13px;padding:4px 0">Predicted score</td>
-        <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${pred.predicted_home_score}-${pred.predicted_away_score}</td>
-      </tr>` : ''}
       <tr>
         <td style="color:#9CA3AF;font-size:13px;padding:4px 0">Confidence</td>
         <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${pred.confidence_pct}%</td>
@@ -132,54 +131,17 @@ export async function POST(req: NextRequest) {
       ${breakdown.length > 0 ? '<p style="color:#6B7280;font-size:11px;margin:4px 0 0">' + breakdown.join(' &middot; ') + '</p>' : ''}
     </div>
   </div>
-
-  <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-    <tr>
-      <td style="width:33%;padding-right:6px">
-        <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:10px;padding:12px;text-align:center">
-          <p style="color:#6B7280;font-size:9px;font-weight:bold;letter-spacing:1px;margin:0 0 4px">TOTAL PTS</p>
-          <p style="color:#2E9E5E;font-size:18px;font-weight:bold;margin:0">${totalPoints}</p>
-        </div>
-      </td>
-      <td style="width:33%;padding:0 3px">
-        <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:10px;padding:12px;text-align:center">
-          <p style="color:#6B7280;font-size:9px;font-weight:bold;letter-spacing:1px;margin:0 0 4px">ACCURACY</p>
-          <p style="color:#2E9E5E;font-size:18px;font-weight:bold;margin:0">${accuracy}%</p>
-        </div>
-      </td>
-      <td style="width:33%;padding-left:6px">
-        <div style="background:#0D2B14;border:1px solid ${streak > 0 ? '#F59E0B' : '#1A7A4A'};border-radius:10px;padding:12px;text-align:center">
-          <p style="color:#6B7280;font-size:9px;font-weight:bold;letter-spacing:1px;margin:0 0 4px">STREAK</p>
-          <p style="color:${streak > 0 ? '#F59E0B' : '#6B7280'};font-size:18px;font-weight:bold;margin:0">${streak > 0 ? streak : '0'}</p>
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  ${streak >= 3 ? `
-  <div style="background:rgba(245,158,11,0.1);border:1px solid #F59E0B;border-radius:10px;padding:14px;margin-bottom:20px;text-align:center">
-    <p style="color:#F59E0B;font-size:14px;font-weight:bold;margin:0">&#x1F525; ${streak}-match streak active! Keep it going!</p>
-  </div>` : ''}
-
-  <a href="https://flipseer.com/result?match_id=${match_id}" style="display:block;background:linear-gradient(135deg,#1A7A4A,#2E9E5E);color:white;padding:18px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:17px;margin-bottom:12px;box-shadow:0 0 20px rgba(46,158,94,0.4)">
-    &#x1F3C6; Reveal Your Result &#x2192;
-  </a>
-
   <a href="https://flipseer.com/predict" style="display:block;background:#1A7A4A;color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
     Predict Next Match &#x2192;
   </a>
-
   <a href="https://flipseer.com/leaderboard" style="display:block;background:transparent;color:#2E9E5E;padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid #2E9E5E;margin-bottom:24px">
     View Leaderboard &#x2192;
   </a>
-
   <div style="border-top:1px solid #1A7A4A;padding-top:16px;text-align:center">
     <p style="color:#4B5563;font-size:11px;margin:0">
-      Flipseer &middot; Pure football reputation. No betting. Ever.<br/>
-      <a href="https://flipseer.com" style="color:#2E9E5E;text-decoration:none">flipseer.com</a>
+      Flipseer &middot; Pure football reputation. No betting. Ever.
     </p>
   </div>
-
 </div>`;
 
       try {
