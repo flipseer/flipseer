@@ -69,6 +69,7 @@ export default function Navbar() {
             <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', backgroundColor: '#F59E0B', borderRadius: '50%', display: 'inline-block', animation: 'navDot 1.5s ease-in-out infinite' }} />
           </Link>
           <Link href="/world-cup-2026" style={linkStyle}>WC2026</Link>
+          <Link href="/results" style={linkStyle}>Results</Link>
           <Link href="/epl" style={linkStyle}>EPL</Link>
           <Link href="/leaderboard" style={linkStyle}>Rankings</Link>
           <Link href="/groups" style={linkStyle}>Groups</Link>
@@ -111,6 +112,7 @@ export default function Navbar() {
             <span style={{ fontSize: '11px', backgroundColor: '#F59E0B', color: 'black', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>NEW</span>
           </a>
           <a href="/world-cup-2026" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>World Cup 2026</a>
+          <a href="/results" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>&#x1F4CA; Results</a>
           <a href="/epl" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>EPL</a>
           <a href="/leaderboard" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Rankings</a>
           <a href="/groups" onClick={() => setMenuOpen(false)} style={{ color: '#9CA3AF', textDecoration: 'none', fontSize: '15px', padding: '10px 12px', borderRadius: '8px', borderBottom: '1px solid #1A3A1A', display: 'block' }}>Groups</a>
