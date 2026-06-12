@@ -66,8 +66,11 @@ export async function GET(req: NextRequest) {
 
       log.push(match.home_team + ' vs ' + match.away_team + ' | status: ' + status)
 
-      // LOCK at kick-off
-      if (['1H', 'HT', '2H', 'ET', 'P'].includes(status) && match.status === 'upcoming') {
+      // LOCK 5 mins before kickoff OR at kick-off
+      const kickoffTime = new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z').getTime();
+      const fiveMinsBeforeKickoff = kickoffTime - 5 * 60 * 1000;
+      const shouldLock = ['1H', 'HT', '2H', 'ET', 'P'].includes(status) || (now.getTime() >= fiveMinsBeforeKickoff && match.status === 'upcoming');
+      if (shouldLock && match.status === 'upcoming') {
         await supabase.from('matches').update({ status: 'locked' }).eq('id', match.id)
         log.push('LOCKED: ' + match.home_team + ' vs ' + match.away_team)
       }
