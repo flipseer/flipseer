@@ -26,8 +26,8 @@ async function getLiveData() {
   ]);
   return {
     leaderboard: leaderboard.data || [],
-    nextMatch: nextMatch.data.[0] || null,
-    liveMatch: liveMatch.data.[0] || null,
+    nextMatch: nextMatch.data?.[0] || null,
+    liveMatch: liveMatch.data?.[0] || null,
     totalUsers: stats.count || 0,
   };
 }
