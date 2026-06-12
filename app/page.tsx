@@ -134,16 +134,16 @@ function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
     const minutesLeft = Math.ceil(diff / (1000 * 60));
 
     if (diff <= 0) {
-      setBannerText('LIVE NOW -- Mexico vs South Africa -- Predict before it locks!');
+      setBannerText('LIVE NOW -- World Cup 2026 is underway -- Predict upcoming matches!');
       setBgColor('#EF4444');
     } else if (minutesLeft <= 60) {
       setBannerText('KICKS OFF IN ' + minutesLeft + ' MINUTES -- Last chance to predict!');
       setBgColor('#EF4444');
     } else if (hoursLeft <= 24) {
-      setBannerText('TODAY -- Mexico vs South Africa kicks off 19:00 UTC -- Predict NOW!');
+      setBannerText('TODAY -- World Cup 2026 is LIVE -- Predict upcoming matches NOW!');
       setBgColor('#DC2626');
     } else if (daysLeft === 1) {
-      setBannerText('TOMORROW -- World Cup kicks off! Only ' + spots + ' Founding spots left!');
+      setBannerText('World Cup 2026 LIVE -- Only ' + spots + ' Founding spots left!');
       setBgColor('#B45309');
     } else if (daysLeft === 2) {
       setBannerText('2 DAYS TO GO -- Only ' + spots + ' Founding Forecaster spots remaining!');
