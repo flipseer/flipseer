@@ -11,7 +11,13 @@ const supabaseAdmin = createClient(
 export async function POST(req: NextRequest) {
   try {
     const adminPassword = req.headers.get('x-admin-password');
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    const cronSecret = req.headers.get('x-cron-secret');
+
+    const validAdmin = adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD ||
+                       adminPassword === process.env.ADMIN_PASSWORD
+    const validCron = cronSecret === process.env.CRON_SECRET
+
+    if (!validAdmin && !validCron) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
