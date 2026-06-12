@@ -75,7 +75,7 @@ function formatKickoffLocal(kickoffUtc: string): string {
 
 // Countdown hook
 function useCountdown(kickoff: string) {
-  const LOCK_BEFORE_MS = 0;
+  const LOCK_BEFORE_MS = 5 * 60 * 1000 // 5 minutes before kickoff;
   const compute = useCallback(() => {
     const diff = new Date(kickoff).getTime() - Date.now();
     const locked = diff <= LOCK_BEFORE_MS;
