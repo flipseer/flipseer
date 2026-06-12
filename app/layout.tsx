@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
+import FlipseerChat from '@/components/FlipseerChat';
 
 export const metadata: Metadata = {
   title: 'Flipseer -- Build Your Football Reputation | World Cup 2026 Predictor',
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
         <Navbar />
         {children}
+        <FlipseerChat />
 
         {/* FOOTER */}
         <footer style={{
