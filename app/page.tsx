@@ -66,7 +66,6 @@ const TOP_NATIONS = [
 function BuzzCounter() {
   const [count24h, setCount24h] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [foundingAwarded, setFoundingAwarded] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -125,6 +124,7 @@ function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
   const [bannerText, setBannerText] = useState('FIFA World Cup 2026 -- Build your football reputation!');
   const [bgColor, setBgColor] = useState('#1A7A4A');
   const [mounted, setMounted] = useState(false);
+
   const updateBannerText = (spots: number) => {
     const now = new Date();
     const kickoff = new Date('2026-06-11T19:00:00Z');
@@ -162,11 +162,7 @@ function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
 
   useEffect(() => {
     setMounted(true);
-
-    // Use spotsLeft prop from parent
     updateBannerText(spotsLeft);
-
-    // Refresh countdown every minute
     const interval = setInterval(() => {
       updateBannerText(spotsLeft);
     }, 60000);
@@ -213,7 +209,6 @@ function LiveScoreCard() {
   useEffect(() => {
     setMounted(true);
     fetchLive();
-    // Poll every 60 seconds
     const interval = setInterval(fetchLive, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -233,7 +228,6 @@ function LiveScoreCard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {liveMatches.map((match) => (
             <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', boxShadow: '0 0 16px rgba(239,68,68,0.08)' }}>
-              {/* Minute */}
               <div style={{ minWidth: '48px', textAlign: 'center' }}>
                 <div style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>
                   {match.elapsed ? match.elapsed + "'" : 'LIVE'}
@@ -242,7 +236,6 @@ function LiveScoreCard() {
                   {match.status === 'HT' ? 'HT' : match.status === 'FT' ? 'FT' : ''}
                 </div>
               </div>
-              {/* Teams + Score */}
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'right', flex: 1 }}>{match.home}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '6px 16px', minWidth: '80px', justifyContent: 'center' }}>
@@ -252,7 +245,6 @@ function LiveScoreCard() {
                 </div>
                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'left', flex: 1 }}>{match.away}</span>
               </div>
-              {/* Round */}
               <div style={{ fontSize: '11px', color: '#6B7280', whiteSpace: 'nowrap' }}>
                 {match.round?.replace('Group Stage - ', 'Group ')}
               </div>
@@ -351,8 +343,8 @@ function UpcomingMatches() {
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#2E9E5E' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none' }}>
-                <div style={{ minWidth: '90px', textAlign: 'center' }}>
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#2E9E5E' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'nowrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none', overflow: 'hidden' }}>
+                <div style={{ minWidth: '90px', textAlign: 'center', flexShrink: 0 }}>
                   {live ? (
                     <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', letterSpacing: '1px' }}>LIVE</span>
                   ) : countdown ? (
@@ -362,16 +354,16 @@ function UpcomingMatches() {
                   )}
                   <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '4px', fontWeight: 'bold' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '12px', color: '#4B5563', fontWeight: 'bold' }}>vs</span>
-                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white' }}>{match.away_team}</span>
+                <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', flexShrink: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                    <span style={{ fontSize: '12px', color: '#4B5563', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', flexShrink: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{match.league}</div>
                 </div>
-                <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                  {kickoffPast ? 'Locked' : 'Predict ->'}
+                <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {kickoffPast ? 'Locked' : 'Predict \u2192'}
                 </a>
               </div>
             );
@@ -436,6 +428,7 @@ function WelcomeConfetti() {
     </div>
   );
 }
+
 export default function Home() {
   const [tickerItems, setTickerItems] = useState<any[]>([]);
   const [useRealTicker, setUseRealTicker] = useState(false);
@@ -452,14 +445,11 @@ export default function Home() {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    // World Cup runs June 11 - July 19 2026
     const wcStart = new Date('2026-06-11T19:00:00Z');
-    const wcEnd = new Date('2026-07-19T20:00:00Z');
     const interval = setInterval(() => {
       const now = new Date();
       const started = now >= wcStart;
       if (started) {
-        // WC is live -- count UP from start
         const elapsed = now.getTime() - wcStart.getTime();
         setDays(Math.floor(elapsed / (1000 * 60 * 60 * 24)));
         setHours(Math.floor((elapsed / (1000 * 60 * 60)) % 24));
@@ -507,12 +497,12 @@ export default function Home() {
         const userCount = count || 0;
         setTotalUsers(userCount);
 
-        // Get real founding forecaster count
         try {
           const spotsRes = await fetch('/api/founding-spots');
           const spotsData = await spotsRes.json();
           if (spotsData.awarded !== undefined) setFoundingAwarded(spotsData.awarded);
         } catch (e) { setFoundingAwarded(userCount); }
+
         if (userCount >= REAL_USER_THRESHOLD) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
@@ -584,7 +574,7 @@ export default function Home() {
       {/* DYNAMIC BANNER */}
       <DynamicBanner spotsLeft={100 - foundingAwarded} />
 
-      {/* LIVE SCORECARD - shows only during matches */}
+      {/* LIVE SCORECARD */}
       <LiveScoreCard />
 
       {/* HERO */}
