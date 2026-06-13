@@ -23,7 +23,6 @@ type CommunityStats = {
 
 // Browser timezone conversion
 function formatKickoffLocal(kickoffUtc: string): string {
-  // Force UTC parsing by appending Z if not present
   const utcString = kickoffUtc.endsWith('Z') ? kickoffUtc : kickoffUtc.replace(' ', 'T') + 'Z';
   const date = new Date(utcString);
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -73,14 +72,15 @@ function formatKickoffLocal(kickoffUtc: string): string {
   return formatted + (tzLabel ? ' ' + tzLabel : '');
 }
 
-// Countdown hook
+// Countdown hook — locks exactly at kickoff (0ms buffer)
 function useCountdown(kickoff: string) {
-  const LOCK_BEFORE_MS = 5 * 60 * 1000 // 5 minutes before kickoff;
+  const LOCK_BEFORE_MS = 0;
   const compute = useCallback(() => {
-    const diff = new Date(kickoff).getTime() - Date.now();
+    const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
+    const diff = new Date(utcString).getTime() - Date.now();
     const locked = diff <= LOCK_BEFORE_MS;
     if (locked) return { locked: true, label: '' };
-    const totalSecs = Math.floor((diff - LOCK_BEFORE_MS) / 1000);
+    const totalSecs = Math.floor(diff / 1000);
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
     const s = totalSecs % 60;
@@ -133,8 +133,8 @@ function MatchCard({
     : pred?.outcome === 'away' ? match.away_team + ' Win' : 'Draw';
 
   const shareUrl = 'https://flipseer.com/u/' + username;
-  const shareText = '&#x26BD; I just predicted ' + match.home_team + ' vs ' + match.away_team
-    + '\n&#x1F3AF; ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
+  const shareText = '⚽ I just predicted ' + match.home_team + ' vs ' + match.away_team
+    + '\n🎯 ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
     + '\nMy World Cup 2026 record -> ' + shareUrl;
 
   const handleShare = async () => {
@@ -175,8 +175,8 @@ function MatchCard({
       {/* COMMUNITY SPLIT */}
       {comm && comm.total > 0 && (
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
-            <span>&#x1F30D; {comm.total} predictions</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '11px', color: '#6B7280', gap: '8px' }}>
+            <span>&#x1F30D; {comm.total} prediction{comm.total !== 1 ? 's' : ''}</span>
             <span>Community split</span>
           </div>
           <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', height: '8px', marginBottom: '6px' }}>
