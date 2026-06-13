@@ -16,6 +16,9 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'ID': '&#x1F1EE;&#x1F1E9;', 'ZA': '&#x1F1FF;&#x1F1E6;',
   'TR': '&#x1F1F9;&#x1F1F7;', 'SA': '&#x1F1F8;&#x1F1E6;',
   'KR': '&#x1F1F0;&#x1F1F7;', 'CO': '&#x1F1E8;&#x1F1F4;',
+  'CA': '&#x1F1E8;&#x1F1E6;', 'AU': '&#x1F1E6;&#x1F1FA;',
+  'PK': '&#x1F1F5;&#x1F1F0;', 'BD': '&#x1F1E7;&#x1F1E9;',
+  'GH': '&#x1F1EC;&#x1F1ED;', 'EG': '&#x1F1EA;&#x1F1EC;',
   'OTHER': '&#x1F30D;',
 };
 
@@ -27,7 +30,9 @@ const COUNTRY_NAMES: { [key: string]: string } = {
   'NG': 'Nigeria', 'SN': 'Senegal', 'MA': 'Morocco',
   'JP': 'Japan', 'ID': 'Indonesia', 'ZA': 'South Africa',
   'TR': 'Turkey', 'SA': 'Saudi Arabia', 'KR': 'South Korea',
-  'CO': 'Colombia', 'OTHER': 'Other',
+  'CO': 'Colombia', 'CA': 'Canada', 'AU': 'Australia',
+  'PK': 'Pakistan', 'BD': 'Bangladesh', 'GH': 'Ghana',
+  'EG': 'Egypt', 'OTHER': 'Other',
 };
 
 const MEDALS = ['&#x1F947;', '&#x1F948;', '&#x1F949;'];
@@ -38,10 +43,10 @@ export default function NationsPage() {
   const [userCountry, setUserCountry] = useState('');
   const [lastUpdated, setLastUpdated] = useState('');
   const [totalPredictions, setTotalPredictions] = useState(0);
+  const [totalForecasters, setTotalForecasters] = useState(0);
 
   useEffect(() => {
     const load = async () => {
-      // Get user country
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         const { data: profile } = await supabase
@@ -51,7 +56,6 @@ export default function NationsPage() {
           .single();
         if (profile?.country) setUserCountry(profile.country);
       }
-
       await fetchNations();
     };
     load();
@@ -60,25 +64,29 @@ export default function NationsPage() {
   const fetchNations = async () => {
     setLoading(true);
     try {
-      // Get all profiles with country + points
+      // Fetch ALL profiles — no filter on prediction_count or country
+      // We handle blank country by grouping them as 'OTHER'
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('country, total_points, accuracy_pct, prediction_count')
-        .not('country', 'is', null)
-        .gt('prediction_count', 0);
+        .select('country, total_points, accuracy_pct, prediction_count');
 
       if (!profiles) { setLoading(false); return; }
 
-      // Get total predictions count
-      const { count } = await supabase
+      // Total predictions count
+      const { count: predCount } = await supabase
         .from('predictions')
         .select('*', { count: 'exact', head: true });
-      setTotalPredictions(count || 0);
+      setTotalPredictions(predCount || 0);
+      setTotalForecasters(profiles.length);
 
-      // Group by country
+      // Group by country — skip profiles with no country AND no points
       const countryMap: { [key: string]: { points: number; forecasters: number; predictions: number; accuracy: number } } = {};
+
       profiles.forEach((p: any) => {
-        const c = p.country || 'OTHER';
+        // Skip completely empty profiles (no country, no points, no predictions)
+        if (!p.country && !p.total_points && !p.prediction_count) return;
+
+        const c = (p.country && p.country.trim() !== '') ? p.country.toUpperCase() : 'OTHER';
         if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0, predictions: 0, accuracy: 0 };
         countryMap[c].points += p.total_points || 0;
         countryMap[c].forecasters += 1;
@@ -86,7 +94,7 @@ export default function NationsPage() {
         countryMap[c].accuracy += p.accuracy_pct || 0;
       });
 
-      // Sort by points
+      // Sort by points desc, then forecasters desc as tiebreaker
       const sorted = Object.entries(countryMap)
         .map(([code, stats]) => ({
           code,
@@ -97,12 +105,13 @@ export default function NationsPage() {
           predictions: stats.predictions,
           accuracy: stats.forecasters > 0 ? Math.round(stats.accuracy / stats.forecasters) : 0,
         }))
-        .sort((a, b) => b.points - a.points);
+        .filter(n => n.forecasters > 0)
+        .sort((a, b) => b.points - a.points || b.forecasters - a.forecasters);
 
       setNations(sorted);
       setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
     } catch (e) {
-      console.error(e);
+      console.error('Nations fetch error:', e);
     }
     setLoading(false);
   };
@@ -112,8 +121,8 @@ export default function NationsPage() {
   const userRank = userNation ? nations.indexOf(userNation) + 1 : null;
 
   const shareText = userNation
-    ? '&#x1F30D; ' + userNation.name + ' is ranked #' + userRank + ' on Flipseer World Cup 2026 leaderboard with ' + userNation.points + ' pts! Join the battle -> flipseer.com/nations #WorldCup2026 #Flipseer'
-    : '&#x1F30D; The World Cup 2026 Nation Battle is live on Flipseer! Which country leads? flipseer.com/nations #WorldCup2026';
+    ? '\uD83C\uDF0D ' + userNation.name + ' is ranked #' + userRank + ' on Flipseer World Cup 2026 leaderboard with ' + userNation.points + ' pts! Join the battle -> flipseer.com/nations #WorldCup2026 #Flipseer'
+    : '\uD83C\uDF0D The World Cup 2026 Nation Battle is live on Flipseer! Which country leads? flipseer.com/nations #WorldCup2026';
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
@@ -133,14 +142,14 @@ export default function NationsPage() {
         </p>
 
         {/* Stats bar */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap', marginBottom: '16px' }}>
           {[
-            { label: 'Nations', value: nations.length },
-            { label: 'Forecasters', value: nations.reduce((a, n) => a + n.forecasters, 0) },
-            { label: 'Predictions', value: totalPredictions },
+            { label: 'Nations', value: loading ? '...' : nations.length },
+            { label: 'Forecasters', value: loading ? '...' : totalForecasters },
+            { label: 'Predictions', value: loading ? '...' : totalPredictions },
           ].map(({ label, value }) => (
-            <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{value}</div>
+            <div key={label} style={{ textAlign: 'center', minWidth: '70px' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{value}</div>
               <div style={{ fontSize: '11px', color: '#6B7280' }}>{label}</div>
             </div>
           ))}
@@ -149,7 +158,9 @@ export default function NationsPage() {
         {/* Live indicator */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '4px 14px' }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold' }}>LIVE -- Updated {lastUpdated}</span>
+          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold' }}>
+            LIVE {lastUpdated ? '· Updated ' + lastUpdated : ''}
+          </span>
         </div>
       </div>
 
@@ -159,21 +170,21 @@ export default function NationsPage() {
         {userNation && (
           <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '16px', padding: '20px', marginBottom: '24px', animation: 'slideIn 0.5s ease forwards' }}>
             <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>YOUR NATION</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <div style={{ fontSize: '48px' }} dangerouslySetInnerHTML={{ __html: userNation.flag }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '22px', fontWeight: 'bold', marginBottom: '4px' }}>{userNation.name}</div>
-                <div style={{ fontSize: '13px', color: '#6B7280' }}>
-                  {userNation.forecasters} forecaster{userNation.forecasters !== 1 ? 's' : ''} --  {userNation.predictions} predictions
+              <div style={{ flex: 1, minWidth: '120px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>{userNation.name}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                  {userNation.forecasters} forecaster{userNation.forecasters !== 1 ? 's' : ''} · {userNation.predictions} predictions
                 </div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '4px' }}>Rank</div>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>#{userRank}</div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>Rank</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>#{userRank}</div>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '4px' }}>Points</div>
-                <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{userNation.points}</div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>Points</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{userNation.points}</div>
               </div>
             </div>
 
@@ -188,7 +199,6 @@ export default function NationsPage() {
               </div>
             </div>
 
-            {/* Share + Predict CTAs */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
               <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
                 target="_blank" rel="noopener noreferrer"
@@ -203,63 +213,69 @@ export default function NationsPage() {
           </div>
         )}
 
-        {/* NO COUNTRY SET */}
-        {!userNation && !loading && (
+        {/* NO COUNTRY SET — prompt to set it */}
+        {!loading && !userNation && (
           <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '24px' }}>&#x1F30D;</span>
             <div style={{ flex: 1 }}>
               <div style={{ color: '#F59E0B', fontWeight: 'bold', fontSize: '14px' }}>Set your country to join the battle!</div>
-              <div style={{ color: '#9CA3AF', fontSize: '12px' }}>Earn points for your nation with every prediction</div>
+              <div style={{ color: '#9CA3AF', fontSize: '12px', marginTop: '2px' }}>Earn points for your nation with every prediction</div>
             </div>
-            <a href="/profile#country-selector" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold' }}>
+            <a href="/profile" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
               Set Country &#x2192;
             </a>
           </div>
         )}
 
-        {/* LEADERBOARD */}
+        {/* LEADERBOARD TABLE */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden' }}>
-          {/* Header */}
-          <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-            <span>RANK -- NATION</span>
-            <span>FORECASTERS -- PREDICTIONS -- POINTS</span>
+          <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
+            <span>RANK · NATION</span>
+            <span>FORECASTERS · PREDICTIONS · POINTS</span>
           </div>
 
           {loading ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>&#x1F30D;</div>
-              <p>Loading nation battle...</p>
+            <div style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F30D;</div>
+              <p style={{ fontSize: '14px' }}>Loading nation battle...</p>
             </div>
           ) : nations.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>&#x1F30D;</div>
-              <p>No nations yet. Be the first!</p>
-              <a href="/profile" style={{ color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Set your country &#x2192;</a>
+            <div style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F30D;</div>
+              <p style={{ marginBottom: '16px' }}>No nations yet — be the first to represent yours!</p>
+              <a href="/predict" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>
+                Start predicting &#x2192;
+              </a>
             </div>
           ) : (
             nations.map((nation, i) => {
               const isUser = nation.code === userCountry;
               const medal = i < 3 ? MEDALS[i] : null;
-              const barWidth = Math.round((nation.points / maxPoints) * 100);
+              const barWidth = Math.max(4, Math.round((nation.points / maxPoints) * 100));
 
               return (
-                <div key={nation.code} style={{ borderTop: i === 0 ? 'none' : '1px solid #1A3A1A', padding: '16px 20px', backgroundColor: isUser ? 'rgba(46,158,94,0.08)' : 'transparent', animation: 'slideIn 0.4s ease ' + (i * 0.05) + 's forwards' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                <div key={nation.code} style={{
+                  borderTop: i === 0 ? 'none' : '1px solid #1A3A1A',
+                  padding: '14px 20px',
+                  backgroundColor: isUser ? 'rgba(46,158,94,0.08)' : 'transparent',
+                  animation: 'slideIn 0.4s ease ' + (i * 0.04) + 's both',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                     {/* Rank */}
                     <div style={{ minWidth: '32px', textAlign: 'center' }}>
                       {medal ? (
                         <span style={{ fontSize: '20px' }} dangerouslySetInnerHTML={{ __html: medal }} />
                       ) : (
-                        <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 'bold' }}>#{i + 1}</span>
+                        <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 'bold' }}>#{i + 1}</span>
                       )}
                     </div>
 
                     {/* Flag */}
-                    <span style={{ fontSize: '24px' }} dangerouslySetInnerHTML={{ __html: nation.flag }} />
+                    <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: nation.flag }} />
 
-                    {/* Name + YOU badge */}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {/* Name */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                         {nation.name}
                         {isUser && (
                           <span style={{ fontSize: '10px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.2)', padding: '1px 8px', borderRadius: '999px', fontWeight: 'bold' }}>
@@ -268,21 +284,21 @@ export default function NationsPage() {
                         )}
                       </div>
                       <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
-                        {nation.forecasters} forecaster{nation.forecasters !== 1 ? 's' : ''} -- {nation.predictions} predictions -- {nation.accuracy}% avg accuracy
+                        {nation.forecasters} forecaster{nation.forecasters !== 1 ? 's' : ''} · {nation.predictions} predictions · {nation.accuracy}% avg accuracy
                       </div>
                     </div>
 
                     {/* Points */}
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: '20px', fontWeight: 'bold', color: i === 0 ? '#F59E0B' : '#2E9E5E', fontFamily: 'Georgia, serif' }}>{nation.points}</div>
                       <div style={{ fontSize: '10px', color: '#4B5563' }}>pts</div>
                     </div>
                   </div>
 
                   {/* Progress bar */}
-                  <div style={{ marginLeft: '44px' }}>
+                  <div style={{ marginLeft: '42px' }}>
                     <div style={{ backgroundColor: '#1A3A1A', borderRadius: '999px', height: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: barWidth + '%', backgroundColor: i === 0 ? '#F59E0B' : isUser ? '#2E9E5E' : '#1A7A4A', height: '100%', borderRadius: '999px' }} />
+                      <div style={{ width: barWidth + '%', backgroundColor: i === 0 ? '#F59E0B' : isUser ? '#2E9E5E' : '#1A7A4A', height: '100%', borderRadius: '999px', transition: 'width 0.8s ease' }} />
                     </div>
                   </div>
                 </div>
@@ -295,12 +311,8 @@ export default function NationsPage() {
         {!loading && nations.length > 0 && (
           <div style={{ textAlign: 'center', marginTop: '24px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '24px' }}>
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>&#x26BD;</div>
-            <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '8px' }}>
-              Every prediction moves your nation up
-            </h3>
-            <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '16px' }}>
-              Predict matches to earn points for your country
-            </p>
+            <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '8px' }}>Every prediction moves your nation up</h3>
+            <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '16px' }}>Predict matches to earn points for your country</p>
             <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
               Predict Now &#x2192;
             </a>
