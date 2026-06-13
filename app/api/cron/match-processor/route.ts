@@ -23,36 +23,61 @@ export async function GET(req: NextRequest) {
   log.push('Cron started: ' + now.toISOString())
 
   try {
-    const windowStart = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString()
+    // FIX 1: Two separate queries:
+    // (a) upcoming/locked/live matches within ±12h window (for locking + live scoring)
+    // (b) ANY locked/live match regardless of kickoff time (catches missed/long matches)
+    const windowStart = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString()
     const windowEnd = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
 
-    const { data: matches } = await supabase
+    const { data: windowMatches } = await supabase
       .from('matches')
       .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score')
       .in('status', ['upcoming', 'locked', 'live'])
       .gte('kickoff', windowStart)
       .lte('kickoff', windowEnd)
 
-    if (!matches || matches.length === 0) {
-      log.push('No matches in window')
+    // FIX 2: Also grab any locked/live match older than window — these got stuck
+    const { data: stuckMatches } = await supabase
+      .from('matches')
+      .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score')
+      .in('status', ['locked', 'live'])
+      .lt('kickoff', windowStart)
+
+    // Merge and deduplicate by id
+    const allMatches = [...(windowMatches || []), ...(stuckMatches || [])]
+    const seen = new Set<number>()
+    const matches = allMatches.filter((m: any) => {
+      if (seen.has(m.id)) return false
+      seen.add(m.id)
+      return true
+    })
+
+    if (matches.length === 0) {
+      log.push('No matches to process')
       return NextResponse.json({ ok: true, log })
     }
 
-    log.push('Matches in window: ' + matches.length)
+    log.push('Matches to process: ' + matches.length + ' (window: ' + (windowMatches?.length || 0) + ', stuck: ' + (stuckMatches?.length || 0) + ')')
 
-    const apiIds = matches.map((m: any) => m.api_id).join('-')
-    const liveRes = await fetch(
-      'https://v3.football.api-sports.io/fixtures?ids=' + apiIds,
-      { headers: { 'x-apisports-key': apiKey } }
-    )
+    // Batch API call — max 20 ids at once
+    const BATCH_SIZE = 20
+    const fixtures: any[] = []
 
-    if (!liveRes.ok) {
-      log.push('API-Football error: ' + liveRes.status)
-      return NextResponse.json({ ok: false, log }, { status: 500 })
+    for (let i = 0; i < matches.length; i += BATCH_SIZE) {
+      const batch = matches.slice(i, i + BATCH_SIZE)
+      const apiIds = batch.map((m: any) => m.api_id).join('-')
+      const res = await fetch(
+        'https://v3.football.api-sports.io/fixtures?ids=' + apiIds,
+        { headers: { 'x-apisports-key': apiKey } }
+      )
+      if (!res.ok) {
+        log.push('API-Football error: ' + res.status)
+        continue
+      }
+      const data = await res.json()
+      fixtures.push(...(data?.response || []))
     }
 
-    const liveData = await liveRes.json()
-    const fixtures = liveData?.response || []
     log.push('Fixtures from API: ' + fixtures.length)
 
     for (const fixture of fixtures) {
@@ -64,36 +89,50 @@ export async function GET(req: NextRequest) {
       const match = matches.find((m: any) => m.api_id === apiId)
       if (!match) continue
 
-      log.push(match.home_team + ' vs ' + match.away_team + ' | status: ' + status)
+      log.push(match.home_team + ' vs ' + match.away_team + ' | API status: ' + status + ' | DB status: ' + match.status)
 
-      // LOCK 5 mins before kickoff OR at kick-off
-      const kickoffTime = new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z').getTime();
-      const fiveMinsBeforeKickoff = kickoffTime - 5 * 60 * 1000;
-      const shouldLock = ['1H', 'HT', '2H', 'ET', 'P'].includes(status) || (now.getTime() >= fiveMinsBeforeKickoff && match.status === 'upcoming');
-      if (shouldLock && match.status === 'upcoming') {
+      // FIX 3: Lock at kickoff (0 min buffer), not 5 min early
+      const kickoffTime = new Date(
+        match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z'
+      ).getTime()
+
+      const isInPlay = ['1H', 'HT', '2H', 'ET', 'P', 'BT'].includes(status)
+      const isFinished = ['FT', 'AET', 'PEN'].includes(status)
+      const isAbandoned = ['CANC', 'ABD', 'AWD', 'WO'].includes(status)
+      const isPastKickoff = now.getTime() >= kickoffTime
+
+      // Lock if in play OR past kickoff
+      if ((isInPlay || isPastKickoff) && match.status === 'upcoming') {
         await supabase.from('matches').update({ status: 'locked' }).eq('id', match.id)
         log.push('LOCKED: ' + match.home_team + ' vs ' + match.away_team)
+        match.status = 'locked' // update local ref
       }
 
-      // UPDATE score during match
-      if (['1H', 'HT', '2H', 'ET', 'P'].includes(status)) {
+      // Update live score
+      if (isInPlay) {
         await supabase.from('matches')
-          .update({ home_score: homeScore, away_score: awayScore })
+          .update({ status: 'live', home_score: homeScore, away_score: awayScore })
           .eq('id', match.id)
-        log.push('SCORE: ' + homeScore + '-' + awayScore)
+        log.push('LIVE SCORE: ' + homeScore + '-' + awayScore)
+        match.status = 'live'
       }
 
-      // SETTLE at full time
-      if (['FT', 'AET', 'PEN'].includes(status) && match.status !== 'completed') {
-        await supabase.from('matches').update({
+      // Settle finished match
+      if (isFinished && match.status !== 'completed') {
+        const { error: updateErr } = await supabase.from('matches').update({
           status: 'completed',
           home_score: homeScore,
           away_score: awayScore,
         }).eq('id', match.id)
 
+        if (updateErr) {
+          log.push('UPDATE ERROR: ' + updateErr.message)
+          continue
+        }
+
         log.push('SETTLED: ' + match.home_team + ' ' + homeScore + '-' + awayScore + ' ' + match.away_team)
 
-        // Process results
+        // Process points
         const { error: pe } = await supabase.rpc('process_match_results', { p_match_id: match.id })
         if (pe) log.push('PROCESS ERROR: ' + pe.message)
         else log.push('POINTS AWARDED: match ' + match.id)
@@ -103,19 +142,30 @@ export async function GET(req: NextRequest) {
         if (be) log.push('BADGE ERROR: ' + be.message)
         else log.push('BADGES AWARDED: match ' + match.id)
 
-        // Wait 3s then send notifications
+        // Send notifications (after 3s delay)
         await new Promise(r => setTimeout(r, 3000))
         try {
           const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://flipseer.com'
           const nr = await fetch(origin + '/api/notify-result', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-cron-secret': process.env.CRON_SECRET || '' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-cron-secret': process.env.CRON_SECRET || '',
+            },
             body: JSON.stringify({ match_id: match.id }),
           })
           log.push(nr.ok ? 'NOTIFIED: match ' + match.id : 'NOTIFY FAILED: ' + nr.status)
         } catch (e: any) {
           log.push('NOTIFY ERROR: ' + e.message)
         }
+      }
+
+      // Handle abandoned/cancelled matches
+      if (isAbandoned && match.status !== 'completed') {
+        await supabase.from('matches')
+          .update({ status: 'cancelled' })
+          .eq('id', match.id)
+        log.push('CANCELLED: ' + match.home_team + ' vs ' + match.away_team + ' (' + status + ')')
       }
     }
 
