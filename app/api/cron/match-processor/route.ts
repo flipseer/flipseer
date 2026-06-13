@@ -6,7 +6,10 @@ export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret') || req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.CRON_SECRET) {
+  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null
+    || req.headers.get('user-agent')?.includes('vercel')
+
+  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -23,9 +26,6 @@ export async function GET(req: NextRequest) {
   log.push('Cron started: ' + now.toISOString())
 
   try {
-    // FIX 1: Two separate queries:
-    // (a) upcoming/locked/live matches within ±12h window (for locking + live scoring)
-    // (b) ANY locked/live match regardless of kickoff time (catches missed/long matches)
     const windowStart = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString()
     const windowEnd = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
 
@@ -36,14 +36,12 @@ export async function GET(req: NextRequest) {
       .gte('kickoff', windowStart)
       .lte('kickoff', windowEnd)
 
-    // FIX 2: Also grab any locked/live match older than window — these got stuck
     const { data: stuckMatches } = await supabase
       .from('matches')
       .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score')
       .in('status', ['locked', 'live'])
       .lt('kickoff', windowStart)
 
-    // Merge and deduplicate by id
     const allMatches = [...(windowMatches || []), ...(stuckMatches || [])]
     const seen = new Set<number>()
     const matches = allMatches.filter((m: any) => {
@@ -59,7 +57,6 @@ export async function GET(req: NextRequest) {
 
     log.push('Matches to process: ' + matches.length + ' (window: ' + (windowMatches?.length || 0) + ', stuck: ' + (stuckMatches?.length || 0) + ')')
 
-    // Batch API call — max 20 ids at once
     const BATCH_SIZE = 20
     const fixtures: any[] = []
 
@@ -91,7 +88,6 @@ export async function GET(req: NextRequest) {
 
       log.push(match.home_team + ' vs ' + match.away_team + ' | API status: ' + status + ' | DB status: ' + match.status)
 
-      // FIX 3: Lock at kickoff (0 min buffer), not 5 min early
       const kickoffTime = new Date(
         match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z'
       ).getTime()
@@ -101,14 +97,12 @@ export async function GET(req: NextRequest) {
       const isAbandoned = ['CANC', 'ABD', 'AWD', 'WO'].includes(status)
       const isPastKickoff = now.getTime() >= kickoffTime
 
-      // Lock if in play OR past kickoff
       if ((isInPlay || isPastKickoff) && match.status === 'upcoming') {
         await supabase.from('matches').update({ status: 'locked' }).eq('id', match.id)
         log.push('LOCKED: ' + match.home_team + ' vs ' + match.away_team)
-        match.status = 'locked' // update local ref
+        match.status = 'locked'
       }
 
-      // Update live score
       if (isInPlay) {
         await supabase.from('matches')
           .update({ status: 'live', home_score: homeScore, away_score: awayScore })
@@ -117,7 +111,6 @@ export async function GET(req: NextRequest) {
         match.status = 'live'
       }
 
-      // Settle finished match
       if (isFinished && match.status !== 'completed') {
         const { error: updateErr } = await supabase.from('matches').update({
           status: 'completed',
@@ -132,17 +125,14 @@ export async function GET(req: NextRequest) {
 
         log.push('SETTLED: ' + match.home_team + ' ' + homeScore + '-' + awayScore + ' ' + match.away_team)
 
-        // Process points
         const { error: pe } = await supabase.rpc('process_match_results', { p_match_id: match.id })
         if (pe) log.push('PROCESS ERROR: ' + pe.message)
         else log.push('POINTS AWARDED: match ' + match.id)
 
-        // Award badges
         const { error: be } = await supabase.rpc('award_badges', { p_match_id: match.id })
         if (be) log.push('BADGE ERROR: ' + be.message)
         else log.push('BADGES AWARDED: match ' + match.id)
 
-        // Send notifications (after 3s delay)
         await new Promise(r => setTimeout(r, 3000))
         try {
           const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://flipseer.com'
@@ -160,7 +150,6 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Handle abandoned/cancelled matches
       if (isAbandoned && match.status !== 'completed') {
         await supabase.from('matches')
           .update({ status: 'cancelled' })
