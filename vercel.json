@@ -1,7 +1,12 @@
-const secret = req.headers.get('x-cron-secret') || req.nextUrl.searchParams.get('secret')
-const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null 
-  || req.headers.get('user-agent')?.includes('vercel')
-
-if (secret !== process.env.CRON_SECRET && !isVercelCron) {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+{
+  "crons": [
+    {
+      "path": "/api/cron/match-processor",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/admin/fix-api-ids",
+      "schedule": "5 * * * *"
+    }
+  ]
 }
