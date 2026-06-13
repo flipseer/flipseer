@@ -284,7 +284,7 @@ export default function FlipseerChat() {
               }} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Flipseer AI Assistant</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Flipseer Assistant</div>
               <div style={{ fontSize: '11px', color: '#4ADE80' }}>● Online · World Cup 2026</div>
             </div>
             <button onClick={() => setOpen(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#6B7280', cursor: 'pointer', fontSize: '18px', padding: '2px 6px', borderRadius: '6px', lineHeight: 1 }}>✕</button>
