@@ -189,7 +189,7 @@ export default function FlipseerChat() {
           cursor: 'pointer',
         }} onClick={handleOpen}>
           <div style={{ fontSize: '13px', color: 'white', fontWeight: 'bold', marginBottom: '3px', fontFamily: 'Arial, sans-serif' }}>
-            ⚽ Ask Flipseer AI
+            ⚽ Ask Flipseer
           </div>
           <div style={{ fontSize: '11px', color: '#9CA3AF', fontFamily: 'Arial, sans-serif' }}>
             Who should I predict next?
@@ -246,7 +246,7 @@ export default function FlipseerChat() {
             whiteSpace: 'nowrap',
             letterSpacing: '0.3px',
           }}>
-            Ask AI
+            Ask Flipseer
           </span>
         )}
       </button>
@@ -284,7 +284,7 @@ export default function FlipseerChat() {
               }} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Flipseer Assistant</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white' }}>Flipseer AI Assistant</div>
               <div style={{ fontSize: '11px', color: '#4ADE80' }}>● Online · World Cup 2026</div>
             </div>
             <button onClick={() => setOpen(false)} style={{ backgroundColor: 'transparent', border: 'none', color: '#6B7280', cursor: 'pointer', fontSize: '18px', padding: '2px 6px', borderRadius: '6px', lineHeight: 1 }}>✕</button>
