@@ -596,12 +596,7 @@ export default function Home() {
           Predict every FIFA World Cup 2026 match before kick-off.<br />
           <strong style={{ color: '#D1FAE5' }}>Build your permanent football reputation. Free. No betting.</strong>
         </p>
-        <div style={{ display: 'inline-block', backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '32px' }}>
-          <span style={{ fontSize: '13px', color: '#6B7280' }}>
-            {totalUsers > 0 ? 'Join ' + totalUsers + ' Founding Forecasters -- ' : 'Only 100 Founding Forecaster spots -- '}
-            <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Exclusive badge. Never awarded again.</span>
-          </span>
-        </div>
+
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '56px' }}>
           <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '18px 44px', borderRadius: '10px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
             Sign-in/Sign-up to claim Your Record &#x2192;
@@ -704,17 +699,12 @@ export default function Home() {
             </div>
           ) : (
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', maxWidth: '560px', margin: '0 auto 16px', overflow: 'hidden' }}>
-              <div style={{ backgroundColor: '#050E05', padding: '14px 20px', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center' }}>GLOBAL NATION LEADERBOARD -- LAUNCHING JUNE 11</div>
+              <div style={{ backgroundColor: '#050E05', padding: '14px 20px', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center' }}>GLOBAL NATION LEADERBOARD · LIVE</div>
               <div style={{ padding: '32px 24px', textAlign: 'center' }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F30D;</div>
                 <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>Your nation needs you.</p>
-                <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '16px', lineHeight: '1.7' }}>The national leaderboard goes live June 11.<br />Early predictors shape their country's position from day one.</p>
-                <p style={{ fontSize: '13px', color: '#4B5563' }}>
-                  {totalUsers > 0
-                    ? totalUsers + ' forecasters registered -- ' + (100 - totalUsers > 0 ? (100 - foundingAwarded) + ' Founding spots remaining' : 'rankings activating soon!')
-                    : "Be among the founding forecasters. Claim your country's #1 spot."
-                  }
-                </p>
+                <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '16px', lineHeight: '1.7' }}>Predict matches to earn points for your country.<br />Every correct call moves your nation up the table.</p>
+                <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>View Nation Battle &#x2192;</a>
               </div>
             </div>
           )}
@@ -789,9 +779,9 @@ export default function Home() {
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ fontSize: '56px', marginBottom: '20px' }}>&#x1F3C6;</div>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '44px', marginBottom: '16px', lineHeight: '1.2' }}>
-          June 11. The whistle blows.<br /><span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
+          World Cup 2026 is live.<br /><span style={{ color: '#2E9E5E' }}>Is your record growing?</span>
         </h2>
-        <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>The forecasters who start now will have a head start.<br />Your legacy clock is ticking.</p>
+        <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>Every match is a chance to prove your football intelligence.<br />Predict. Earn. Build your legacy.</p>
         <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '20px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
           Start Your Legacy Now &#x2192;
         </a>
