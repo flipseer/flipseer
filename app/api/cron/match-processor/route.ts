@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       const apiIds = batch.map((m: any) => m.api_id).join('-')
       const res = await fetch(
         'https://v3.football.api-sports.io/fixtures?ids=' + apiIds,
-        { headers: { 'x-apisports-key': apiKey } }
+        { headers: { 'x-apisports-key': apiKey }, cache: 'no-store' }
       )
       if (!res.ok) {
         log.push('API-Football error: ' + res.status)
