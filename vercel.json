@@ -5,7 +5,7 @@
       "schedule": "*/2 * * * *"
     },
     {
-      "path": "/api/cron/notify-matches",
+      "path": "/api/notify-matches",
       "schedule": "*/10 * * * *"
     },
     {
