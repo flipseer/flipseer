@@ -6,7 +6,10 @@ export const runtime = 'nodejs'
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const isVercelCron = request.headers.get('x-vercel-cron-signature') !== null
+      || request.headers.get('user-agent')?.includes('vercel')
+
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && !isVercelCron) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -34,7 +37,7 @@ export async function GET(request: NextRequest) {
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
     if (usersError) throw usersError
 
-    // ── FIXED: Fetch ALL profiles in ONE query instead of N+1 ──
+    // ── Fetch ALL profiles in ONE query instead of N+1 ──
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, username')
@@ -54,7 +57,7 @@ export async function GET(request: NextRequest) {
       // ── Send in batches of 50 to avoid rate limits ──
       const userBatches = []
       const validUsers = (users ?? []).filter(u => u.email)
-      
+
       for (let i = 0; i < validUsers.length; i += 50) {
         userBatches.push(validUsers.slice(i, i + 50))
       }
