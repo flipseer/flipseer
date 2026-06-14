@@ -66,6 +66,7 @@ const TOP_NATIONS = [
 function BuzzCounter() {
   const [count24h, setCount24h] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [activeForecasters, setActiveForecasters] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -80,8 +81,13 @@ function BuzzCounter() {
         const { count: userCount } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true });
+        const { count: activeCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gt('prediction_count', 0);
         setCount24h(predCount || 0);
         setTotalUsers(userCount || 0);
+        setActiveForecasters(activeCount || 0);
       } catch (e) {}
     };
     fetch24h();
@@ -105,7 +111,7 @@ function BuzzCounter() {
         {totalUsers > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>&#x1F465; {totalUsers} forecasters</span> building their legacy
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>&#x1F465; {totalUsers} registered users</span> -- {activeForecasters} active forecasters
             </span>
           </div>
         )}
