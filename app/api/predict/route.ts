@@ -95,11 +95,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Match not found' }, { status: 404 })
     }
 
-    if (match.status === 'locked' || match.status === 'completed') {
+    // ── FIX: 'live' was missing here — without it, a match that has already
+    // kicked off (status flipped to 'live' by match-processor based on
+    // real-time API data) could still accept NEW predictions if the stored
+    // `kickoff` timestamp happens to be later than the real kickoff time
+    // (e.g. due to a seeding/timezone error). This closes that gap
+    // regardless of whether `kickoff` is accurate. ──
+    if (['locked', 'live', 'completed', 'cancelled'].includes(match.status)) {
       return NextResponse.json({ error: 'Predictions are locked for this match' }, { status: 400 })
     }
 
-    // ── Check kickoff hasn't passed ──
+    // ── Check kickoff hasn't passed (secondary safeguard) ──
     if (new Date(match.kickoff) <= new Date()) {
       return NextResponse.json({ error: 'Match has already started' }, { status: 400 })
     }
