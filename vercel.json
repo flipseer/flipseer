@@ -5,6 +5,10 @@
       "schedule": "*/2 * * * *"
     },
     {
+      "path": "/api/cron/notify-matches",
+      "schedule": "*/10 * * * *"
+    },
+    {
       "path": "/api/admin/fix-api-ids",
       "schedule": "5 * * * *"
     }
