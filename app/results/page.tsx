@@ -27,7 +27,7 @@ export default function ResultsPage() {
       const { count: liveCount } = await supabase
         .from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live');
       const { count: upcomingCount } = await supabase
-        .from('matches').select('*', { count: 'exact', head: true }).eq('status', 'upcoming');
+        .from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']);
 
       setMatches(completedMatches || []);
       setStats({
@@ -107,7 +107,7 @@ export default function ResultsPage() {
     { label: 'Total Matches', value: stats.total, color: '#9CA3AF' },
     { label: 'Completed', value: stats.completed, color: '#2E9E5E' },
     ...(stats.live > 0 ? [{ label: 'Live Now', value: stats.live, color: '#EF4444', pulse: true }] : []),
-    { label: 'Upcoming', value: stats.upcoming, color: '#F59E0B' },
+    { label: 'Pending', value: stats.upcoming, color: '#F59E0B' },
   ];
 
   return (
