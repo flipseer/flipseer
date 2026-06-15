@@ -5,7 +5,6 @@ export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-
   const username = searchParams.get('username') || 'Forecaster'
   const points   = searchParams.get('points')   || '0'
   const correct  = searchParams.get('correct')  || '0'
@@ -41,7 +40,6 @@ export async function GET(request: NextRequest) {
           transform: 'translate(-50%, -50%)',
           display: 'flex',
         }} />
-
         {/* Top badge */}
         <div style={{
           display: 'flex',
@@ -58,17 +56,14 @@ export async function GET(request: NextRequest) {
             FLIPSEER &middot; WORLD CUP 2026
           </span>
         </div>
-
         {/* Username */}
         <div style={{ fontSize: '52px', fontWeight: 'bold', color: 'white', marginBottom: '8px', display: 'flex' }}>
           @{username}
         </div>
-
         {/* Country */}
         <div style={{ fontSize: '20px', color: '#6B7280', marginBottom: '40px', display: 'flex' }}>
-          {country} {rank ? '&#xB7; Rank #' + rank : ''}
+          {country}{rank ? ` · Rank #${rank}` : ''}
         </div>
-
         {/* Stats row */}
         <div style={{ display: 'flex', gap: '32px', marginBottom: '40px' }}>
           {[
@@ -90,7 +85,6 @@ export async function GET(request: NextRequest) {
             </div>
           ))}
         </div>
-
         {/* Bottom tagline */}
         <div style={{ fontSize: '18px', color: '#4B5563', display: 'flex' }}>
           flipseer.com &middot; Free &middot; No Betting &middot; Pure Football
