@@ -36,6 +36,7 @@ export default function Navbar() {
     { href: '/leaderboard', label: 'Rankings' },
     { href: '/nations', label: '🌍 Nations', accent: true },
     { href: '/groups', label: 'Groups' },
+    { href: '/epl', label: '✨ EPL', glitter: true },
   ];
 
   return (
@@ -57,7 +58,28 @@ export default function Navbar() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.4; transform: scale(0.8); }
         }
+        @keyframes navGlitter {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0px rgba(139,92,246,0);
+            background-color: rgba(139,92,246,0.06);
+            border-color: rgba(139,92,246,0.4);
+          }
+          50% {
+            transform: scale(1.1);
+            box-shadow: 0 0 16px rgba(139,92,246,0.9), 0 0 4px rgba(255,255,255,0.6);
+            background-color: rgba(139,92,246,0.18);
+            border-color: #8B5CF6;
+          }
+        }
+        @keyframes sparkleSpin {
+          0% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(180deg) scale(1.3); }
+          100% { transform: rotate(360deg) scale(1); }
+        }
         .predict-btn { animation: navPulse 1.5s ease-in-out infinite; }
+        .glitter-btn { animation: navGlitter 1.8s ease-in-out infinite; }
+        .glitter-btn .sparkle { display: inline-block; animation: sparkleSpin 1.8s ease-in-out infinite; }
         .nav-link:hover { color: #ffffff !important; background-color: rgba(46,158,94,0.1) !important; }
       `}</style>
 
@@ -81,7 +103,7 @@ export default function Navbar() {
 
         {/* DESKTOP NAV */}
         <div className="nav-links" style={{ display: 'flex', gap: '2px', alignItems: 'center', flexWrap: 'nowrap' }}>
-          {navLinks.map(({ href, label, highlight, accent }) => {
+          {navLinks.map(({ href, label, highlight, accent, glitter }) => {
             if (highlight) {
               return (
                 <Link key={href} href={href}
@@ -89,6 +111,16 @@ export default function Navbar() {
                   style={{ position: 'relative', color: 'white', textDecoration: 'none', fontSize: '12px', padding: '5px 10px', borderRadius: '6px', border: '1px solid #2E9E5E', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                   {label}
                   <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', backgroundColor: '#F59E0B', borderRadius: '50%', display: 'inline-block', animation: 'navDot 1.5s ease-in-out infinite' }} />
+                </Link>
+              );
+            }
+            if (glitter) {
+              return (
+                <Link key={href} href={href}
+                  className="nav-link glitter-btn"
+                  style={{ position: 'relative', color: isActive(href) ? '#8B5CF6' : '#C4B5FD', textDecoration: 'none', fontSize: '12px', padding: '5px 10px', borderRadius: '6px', border: '1px solid rgba(139,92,246,0.4)', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <span className="sparkle">✨</span> EPL
+                  <span style={{ position: 'absolute', top: '-7px', right: '-10px', fontSize: '8px', backgroundColor: '#8B5CF6', color: 'white', padding: '1px 5px', borderRadius: '999px', fontWeight: 'bold', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>NEW</span>
                 </Link>
               );
             }
@@ -166,6 +198,11 @@ export default function Navbar() {
           </a>
 
           <a href="/groups" style={mobileLink(isActive('/groups'))}>&#x1F465; Groups</a>
+
+          <a href="/epl" className="glitter-btn" style={{ ...mobileLink(isActive('/epl')), color: '#C4B5FD', border: '1px solid rgba(139,92,246,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
+            <span><span className="sparkle" style={{ display: 'inline-block' }}>✨</span> Premier League</span>
+            <span style={{ fontSize: '10px', backgroundColor: '#8B5CF6', color: 'white', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>NEW</span>
+          </a>
 
           <div style={{ borderTop: '1px solid #1A3A1A', marginTop: '8px', paddingTop: '8px' }}>
             {user ? (
