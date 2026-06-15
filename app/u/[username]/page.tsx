@@ -118,7 +118,7 @@ export default function ForecastJournal({ params }: { params: { username: string
       }
 
       const preds = predData || [];
-      const matchIds = [...new Set(preds.map((p: any) => p.match_id))];
+      const matchIds = Array.from(new Set(preds.map((p: any) => p.match_id)));
 
       let matchMap: { [key: number]: any } = {};
       if (matchIds.length > 0) {
