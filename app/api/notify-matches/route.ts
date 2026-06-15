@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +43,6 @@ export async function GET(request: NextRequest) {
       .from('profiles')
       .select('id, username')
 
-    // Build lookup map for O(1) access
     const profileMap = new Map(
       profiles?.map(p => [p.id, p.username]) ?? []
     )
@@ -54,19 +54,19 @@ export async function GET(request: NextRequest) {
     const errors: string[] = []
 
     for (const match of matches) {
-      // ── Send in batches of 50 to avoid rate limits ──
-      const userBatches = []
       const validUsers = (users ?? []).filter(u => u.email)
 
-      for (let i = 0; i < validUsers.length; i += 50) {
-        userBatches.push(validUsers.slice(i, i + 50))
-      }
+      // ── Resend allows 5 requests/sec. Send sequentially with a 250ms
+      // gap (~4/sec) and retry once on 429 with a 1s backoff. The previous
+      // implementation fired up to 50 emails simultaneously via
+      // Promise.all(), which exceeded the rate limit and caused most
+      // emails in each batch to fail silently with 429. ──
+      for (const user of validUsers) {
+        const username = profileMap.get(user.id) || 'Forecaster'
+        let attempt = 0
 
-      for (const batch of userBatches) {
-        await Promise.all(batch.map(async (user) => {
+        while (attempt < 3) {
           try {
-            const username = profileMap.get(user.id) || 'Forecaster'
-
             await resend.emails.send({
               from: 'Flipseer <noreply@flipseer.com>',
               to: user.email!,
@@ -93,17 +93,25 @@ export async function GET(request: NextRequest) {
               `,
             })
             sent++
+            break
           } catch (err: any) {
+            const isRateLimit = err?.statusCode === 429 || String(err?.message).includes('429') || String(err?.message).toLowerCase().includes('rate limit')
+            if (isRateLimit && attempt < 2) {
+              attempt++
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              continue
+            }
             errors.push(`${user.email}: ${err.message}`)
+            break
           }
-        }))
+        }
 
-        // ── Small delay between batches to avoid rate limits ──
-        await new Promise(resolve => setTimeout(resolve, 200))
+        // ── Throttle: ~4 emails/sec, safely under Resend's 5/sec cap ──
+        await new Promise(resolve => setTimeout(resolve, 250))
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       sent,
       errors: errors.length > 0 ? errors : undefined,
       message: `✅ Sent ${sent} notifications`
