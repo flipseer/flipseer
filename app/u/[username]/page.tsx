@@ -13,8 +13,19 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'Netherlands': '🇳🇱', 'Italy': '🇮🇹', 'Mexico': '🇲🇽', 'USA': '🇺🇸',
   'Nigeria': '🇳🇬', 'Senegal': '🇸🇳', 'Morocco': '🇲🇦', 'Japan': '🇯🇵',
   'South Korea': '🇰🇷', 'Australia': '🇦🇺', 'Canada': '🇨🇦', 'Colombia': '🇨🇴',
+  'IN': '🇮🇳', 'BR': '🇧🇷', 'AR': '🇦🇷', 'FR': '🇫🇷', 'DE': '🇩🇪', 'GB': '🇬🇧',
+  'ES': '🇪🇸', 'PT': '🇵🇹', 'NL': '🇳🇱', 'IT': '🇮🇹', 'MX': '🇲🇽', 'US': '🇺🇸',
+  'NG': '🇳🇬', 'SN': '🇸🇳', 'MA': '🇲🇦', 'JP': '🇯🇵', 'KR': '🇰🇷', 'AU': '🇦🇺',
+  'CA': '🇨🇦', 'CO': '🇨🇴', 'ID': '🇮🇩', 'ZA': '🇿🇦', 'TR': '🇹🇷', 'SA': '🇸🇦',
   'Other': '🌍',
 };
+
+// Derive correctness from points_earned + prediction_processed
+// (predictions table has no `is_correct` column)
+function getOutcomeState(pred: any): 'correct' | 'wrong' | 'pending' {
+  if (!pred.prediction_processed) return 'pending';
+  return pred.points_earned > 0 ? 'correct' : 'wrong';
+}
 
 function getBadges(predictions: any[], accuracy: number) {
   const badges = [];
@@ -74,8 +85,12 @@ export default function ForecastJournal({ params }: { params: { username: string
 
       setProfile(profileData);
 
-      // ✅ FIX 1: Use DB join instead of hardcoded WC_MATCHES
-      const { data: predData } = await supabase
+      // FIX: removed `is_correct` — this column does not exist on
+      // `predictions` and was causing PostgREST to return an error,
+      // which silently resulted in an empty predictions array for
+      // every user. Correctness is now derived client-side from
+      // `prediction_processed` + `points_earned`.
+      const { data: predData, error: predError } = await supabase
         .from('predictions')
         .select(`
           id,
@@ -84,7 +99,7 @@ export default function ForecastJournal({ params }: { params: { username: string
           predicted_away_score,
           confidence_pct,
           points_earned,
-          is_correct,
+          prediction_processed,
           upset_bonus,
           created_at,
           matches (
@@ -100,6 +115,10 @@ export default function ForecastJournal({ params }: { params: { username: string
         .eq('user_id', profileData.id)
         .order('created_at', { ascending: false })
         .limit(100);
+
+      if (predError) {
+        console.error('Failed to load predictions:', predError);
+      }
 
       setPredictions((predData as any) || []);
       setLoading(false);
@@ -120,18 +139,22 @@ export default function ForecastJournal({ params }: { params: { username: string
     }
   };
 
-  // ✅ FIX 2: Use profile stats from DB instead of local calculation
   const accuracy = profile?.accuracy_pct || 0;
   const totalPoints = profile?.total_points || 0;
   const badges = getBadges(predictions, accuracy);
   const dimensions = getRepDimensions(predictions, accuracy);
 
   const filtered = predictions.filter((p: any) => {
-    if (filter === 'correct') return p.is_correct === true;
-    if (filter === 'wrong') return p.is_correct === false;
-    if (filter === 'pending') return p.is_correct === null;
+    const state = getOutcomeState(p);
+    if (filter === 'correct') return state === 'correct';
+    if (filter === 'wrong') return state === 'wrong';
+    if (filter === 'pending') return state === 'pending';
     return true;
   });
+
+  const correctCount = predictions.filter((p: any) => getOutcomeState(p) === 'correct').length;
+  const wrongCount = predictions.filter((p: any) => getOutcomeState(p) === 'wrong').length;
+  const pendingCount = predictions.filter((p: any) => getOutcomeState(p) === 'pending').length;
 
   const flag = COUNTRY_FLAGS[profile?.country || ''] || '🌍';
   const joinedDate = profile
@@ -258,15 +281,15 @@ export default function ForecastJournal({ params }: { params: { username: string
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 style={{ fontSize: '16px', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>📖 Forecast Journal</h2>
 
-            {/* ✅ Filter tabs */}
+            {/* Filter tabs */}
             <div style={{ display: 'flex', gap: '6px' }}>
               {(['all', 'correct', 'wrong', 'pending'] as const).map(f => (
                 <button key={f} onClick={() => setFilter(f)}
                   style={{ padding: '4px 10px', borderRadius: '999px', border: '1px solid', borderColor: filter === f ? '#2E9E5E' : '#1A7A4A', backgroundColor: filter === f ? '#1A7A4A' : 'transparent', color: filter === f ? 'white' : '#9CA3AF', fontSize: '11px', cursor: 'pointer', fontWeight: filter === f ? 'bold' : 'normal' }}>
                   {f === 'all' ? `All (${predictions.length})` :
-                   f === 'correct' ? `✅ ${predictions.filter((p:any) => p.is_correct).length}` :
-                   f === 'wrong' ? `❌ ${predictions.filter((p:any) => p.is_correct === false).length}` :
-                   `⏳ ${predictions.filter((p:any) => p.is_correct === null).length}`}
+                   f === 'correct' ? `✅ ${correctCount}` :
+                   f === 'wrong' ? `❌ ${wrongCount}` :
+                   `⏳ ${pendingCount}`}
                 </button>
               ))}
             </div>
@@ -286,13 +309,11 @@ export default function ForecastJournal({ params }: { params: { username: string
               </div>
 
               {filtered.map((pred: any, i: number) => {
-                // ✅ FIX 1: Use joined match data from DB
                 const match = pred.matches;
                 const matchName = match
                   ? `${match.home_team} vs ${match.away_team}`
                   : 'Unknown Match';
-                const isSettled = pred.points_earned !== null;
-                const isCorrect = pred.points_earned > 0;
+                const state = getOutcomeState(pred);
                 const pickLabel = pred.predicted_outcome === 'home'
                   ? (match?.home_team || 'Home') + ' Win'
                   : pred.predicted_outcome === 'away'
@@ -307,7 +328,7 @@ export default function ForecastJournal({ params }: { params: { username: string
                     padding: '12px',
                     backgroundColor: '#0D1F0F',
                     borderRadius: '10px',
-                    border: `1px solid ${isSettled ? (isCorrect ? '#1A7A4A' : '#7F1D1D') : '#1A3A20'}`,
+                    border: `1px solid ${state === 'correct' ? '#1A7A4A' : state === 'wrong' ? '#7F1D1D' : '#1A3A20'}`,
                     alignItems: 'center',
                     fontSize: '13px',
                   }}>
@@ -315,16 +336,16 @@ export default function ForecastJournal({ params }: { params: { username: string
                     <span style={{ color: '#9CA3AF' }}>{pickLabel}</span>
                     <span style={{ color: '#2E9E5E' }}>{pred.confidence_pct}%</span>
                     <span>
-                      {!isSettled ? (
+                      {state === 'pending' ? (
                         <span style={{ color: '#6B7280' }}>⏳ Pending</span>
-                      ) : isCorrect ? (
+                      ) : state === 'correct' ? (
                         <span style={{ color: '#2E9E5E' }}>✅ Correct</span>
                       ) : (
                         <span style={{ color: '#EF4444' }}>❌ Wrong</span>
                       )}
                     </span>
-                    <span style={{ color: isCorrect ? '#2E9E5E' : '#6B7280', fontWeight: 'bold' }}>
-                      {isSettled ? `+${pred.points_earned}` : '—'}
+                    <span style={{ color: state === 'correct' ? '#2E9E5E' : '#6B7280', fontWeight: 'bold' }}>
+                      {state !== 'pending' ? `+${pred.points_earned}` : '—'}
                     </span>
                   </div>
                 );
