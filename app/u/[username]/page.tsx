@@ -85,15 +85,18 @@ export default function ForecastJournal({ params }: { params: { username: string
 
       setProfile(profileData);
 
-      // FIX: removed `is_correct` — this column does not exist on
-      // `predictions` and was causing PostgREST to return an error,
-      // which silently resulted in an empty predictions array for
-      // every user. Correctness is now derived client-side from
-      // `prediction_processed` + `points_earned`.
+      // FIX: removed `is_correct` (column doesn't exist) AND removed the
+      // embedded `matches (...)` relationship -- predictions.match_id has
+      // no foreign key to matches.id, so PostgREST cannot resolve that
+      // embed and the whole query errored, returning null/empty for every
+      // user. Fetch predictions and matches separately and merge client-side
+      // (same pattern as results/page.tsx). Correctness is derived from
+      // prediction_processed + points_earned.
       const { data: predData, error: predError } = await supabase
         .from('predictions')
         .select(`
           id,
+          match_id,
           predicted_outcome,
           predicted_home_score,
           predicted_away_score,
@@ -101,16 +104,7 @@ export default function ForecastJournal({ params }: { params: { username: string
           points_earned,
           prediction_processed,
           upset_bonus,
-          created_at,
-          matches (
-            home_team,
-            away_team,
-            home_score,
-            away_score,
-            kickoff,
-            status,
-            is_upset
-          )
+          created_at
         `)
         .eq('user_id', profileData.id)
         .order('created_at', { ascending: false })
@@ -118,9 +112,33 @@ export default function ForecastJournal({ params }: { params: { username: string
 
       if (predError) {
         console.error('Failed to load predictions:', predError);
+        setPredictions([]);
+        setLoading(false);
+        return;
       }
 
-      setPredictions((predData as any) || []);
+      const preds = predData || [];
+      const matchIds = [...new Set(preds.map((p: any) => p.match_id))];
+
+      let matchMap: { [key: number]: any } = {};
+      if (matchIds.length > 0) {
+        const { data: matchData, error: matchErr } = await supabase
+          .from('matches')
+          .select('id, home_team, away_team, home_score, away_score, kickoff, status, is_upset')
+          .in('id', matchIds);
+
+        if (matchErr) {
+          console.error('Failed to load matches:', matchErr);
+        }
+        (matchData || []).forEach((m: any) => { matchMap[m.id] = m; });
+      }
+
+      const merged = preds.map((p: any) => ({
+        ...p,
+        matches: matchMap[p.match_id] || null,
+      }));
+
+      setPredictions(merged);
       setLoading(false);
     };
 
