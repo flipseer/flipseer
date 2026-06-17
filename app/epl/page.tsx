@@ -222,7 +222,7 @@ export default function EPLPage() {
             <span style={{ color: '#8B5CF6' }}>One reputation. Forever.</span>
           </h2>
           <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '32px', lineHeight: '1.7' }}>
-            Join thousands of serious football fans building their permanent forecasting record on Flipseer.
+            Join Flipseer's growing community of serious football fans building their permanent forecasting record..
           </p>
           <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '18px 56px', borderRadius: '12px', textDecoration: 'none', fontSize: '20px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(139,92,246,0.4)' }}>
             Join Free &#x2192;
