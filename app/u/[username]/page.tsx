@@ -351,8 +351,12 @@ export default function ForecastJournal({ params }: { params: { username: string
                     fontSize: '13px',
                   }}>
                     <span style={{ color: '#D1FAE5', fontWeight: 'bold' }}>{matchName}</span>
-                    <span style={{ color: '#9CA3AF' }}>{pickLabel}</span>
-                    <span style={{ color: '#2E9E5E' }}>{pred.confidence_pct}%</span>
+                    <span style={{ color: state === 'pending' ? '#4B5563' : '#9CA3AF' }}>
+                      {state === 'pending' ? '🔒 Hidden' : pickLabel}
+                    </span>
+                    <span style={{ color: state === 'pending' ? '#4B5563' : '#2E9E5E' }}>
+                      {state === 'pending' ? '—' : pred.confidence_pct + '%'}
+                    </span>
                     <span>
                       {state === 'pending' ? (
                         <span style={{ color: '#6B7280' }}>⏳ Pending</span>
