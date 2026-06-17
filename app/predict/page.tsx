@@ -98,9 +98,36 @@ function useCountdown(kickoff: string) {
   return state;
 }
 
+// Build the branded prediction-card share URL
+function buildShareUrl({
+  match,
+  pred,
+  username,
+  country,
+}: {
+  match: Match;
+  pred: any;
+  username: string;
+  country: string;
+}) {
+  const params = new URLSearchParams();
+  params.set('home', match.home_team);
+  params.set('away', match.away_team);
+  params.set('outcome', pred?.outcome || 'draw');
+  if (pred?.predicted_home_score !== undefined && pred?.predicted_away_score !== undefined) {
+    params.set('hs', String(pred.predicted_home_score));
+    params.set('as', String(pred.predicted_away_score));
+  }
+  params.set('conf', String(pred?.confidence || 50));
+  params.set('user', username);
+  if (country) params.set('country', country);
+  if (match.league) params.set('league', match.league);
+  return 'https://flipseer.com/predict/share?' + params.toString();
+}
+
 // Match card
 function MatchCard({
-  match, pred, isSaved, isLoading, comm, username,
+  match, pred, isSaved, isLoading, comm, username, country,
   onPredict, onConfidence, onScore, onSave,
 }: {
   match: Match;
@@ -109,6 +136,7 @@ function MatchCard({
   isLoading: boolean;
   comm: CommunityStats | undefined;
   username: string;
+  country: string;
   onPredict: (id: number, outcome: string) => void;
   onConfidence: (id: number, val: number) => void;
   onScore: (id: number, side: 'predicted_home_score' | 'predicted_away_score', val: number) => void;
@@ -132,15 +160,15 @@ function MatchCard({
   const pickLabel = pred?.outcome === 'home' ? match.home_team + ' Win'
     : pred?.outcome === 'away' ? match.away_team + ' Win' : 'Draw';
 
-  const shareUrl = 'https://flipseer.com/u/' + username;
+  const predictionShareUrl = buildShareUrl({ match, pred, username, country });
   const shareText = '⚽ I just predicted ' + match.home_team + ' vs ' + match.away_team
     + '\n🎯 ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
-    + '\nMy World Cup 2026 record -> ' + shareUrl;
+    + '\nThink you can call it better? -> ' + predictionShareUrl;
 
   const handleShare = async () => {
     if (!pred?.outcome) return;
     if (navigator.share) {
-      await navigator.share({ title: 'My Flipseer Prediction', text: shareText, url: shareUrl });
+      await navigator.share({ title: 'My Flipseer Prediction', text: shareText, url: predictionShareUrl });
     } else {
       window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
     }
@@ -323,6 +351,7 @@ function MatchCard({
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState('forecaster');
+  const [country, setCountry] = useState('');
   const [matches, setMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [predictions, setPredictions] = useState<{ [key: number]: any }>({});
@@ -340,8 +369,9 @@ export default function Predict() {
       setUser(user);
 
       const { data: profile } = await supabase
-        .from('profiles').select('username').eq('id', user.id).single();
+        .from('profiles').select('username, country').eq('id', user.id).single();
       if (profile?.username) setUsername(profile.username);
+      if (profile?.country) setCountry(profile.country);
 
       setMatchesLoading(true);
       const { data: matchData } = await supabase
@@ -497,6 +527,7 @@ export default function Predict() {
               isLoading={loading[match.id] ?? false}
               comm={community[match.id]}
               username={username}
+              country={country}
               onPredict={handlePredict}
               onConfidence={handleConfidence}
               onScore={handleScore}
