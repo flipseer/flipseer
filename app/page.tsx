@@ -45,7 +45,7 @@ const COMING_SOON = [
   { icon: '&#x1F91D;', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
 ];
 
-const REAL_USER_THRESHOLD = 100;
+const REAL_USER_THRESHOLD = 10;
 
 const TOP_NATIONS = [
   { flag: '&#x1F1EE;&#x1F1F3;', name: 'India', slug: 'india' },
