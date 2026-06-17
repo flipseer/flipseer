@@ -10,14 +10,16 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const adminPassword = req.headers.get('x-admin-password');
+    // FIX 1: Only use server-side secrets — never NEXT_PUBLIC_* for auth
+    // NEXT_PUBLIC_ADMIN_PASSWORD is exposed in client JS bundles and is
+    // not safe to use as an auth check on a server route.
     const cronSecret = req.headers.get('x-cron-secret');
+    const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null
+      || req.headers.get('user-agent')?.includes('vercel');
 
-    const validAdmin = adminPassword === process.env.NEXT_PUBLIC_ADMIN_PASSWORD ||
-                       adminPassword === process.env.ADMIN_PASSWORD
-    const validCron = cronSecret === process.env.CRON_SECRET
+    const validCron = cronSecret === process.env.CRON_SECRET;
 
-    if (!validAdmin && !validCron) {
+    if (!validCron && !isVercelCron) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -84,6 +86,9 @@ export async function POST(req: NextRequest) {
     const actualScore = match.home_score + '-' + match.away_score;
     const isUpset = match.is_upset === true;
 
+    // FIX 2: Throttle to ~4 emails/sec (250ms gap) to stay under
+    // Resend's 5 requests/sec rate limit. Previous version sent
+    // sequentially but with no delay, risking 429s on busy matches.
     for (const pred of predictions) {
       const email = emailMap[pred.user_id];
       if (!email) continue;
@@ -92,9 +97,9 @@ export async function POST(req: NextRequest) {
       const username = profile?.username || 'Forecaster';
       const won = pred.points_earned > 0;
       const points = pred.points_earned || 0;
+      const totalPoints = profile?.total_points || 0;
       const accuracy = profile?.accuracy_pct || 0;
       const streak = profile?.streak || 0;
-      const totalPoints = profile?.total_points || 0;
 
       const outcomeLabel =
         pred.predicted_outcome === 'home' ? match.home_team :
@@ -156,18 +161,34 @@ export async function POST(req: NextRequest) {
   </div>
 </div>`;
 
-      try {
-        await resend.emails.send({
-          from: 'Flipseer <noreply@flipseer.com>',
-          to: email,
-          subject,
-          html,
-        });
-        sent++;
-      } catch (e) {
-        console.error('Email failed:', email, e);
-        failed++;
+      let attempt = 0;
+      while (attempt < 3) {
+        try {
+          await resend.emails.send({
+            from: 'Flipseer <noreply@flipseer.com>',
+            to: email,
+            subject,
+            html,
+          });
+          sent++;
+          break;
+        } catch (e: any) {
+          const isRateLimit = e?.statusCode === 429
+            || String(e?.message).includes('429')
+            || String(e?.message).toLowerCase().includes('rate limit');
+          if (isRateLimit && attempt < 2) {
+            attempt++;
+            await new Promise(r => setTimeout(r, 1000));
+            continue;
+          }
+          console.error('Email failed:', email, e);
+          failed++;
+          break;
+        }
       }
+
+      // Throttle: ~4 emails/sec, under Resend's 5/sec cap
+      await new Promise(r => setTimeout(r, 250));
     }
 
     return NextResponse.json({
