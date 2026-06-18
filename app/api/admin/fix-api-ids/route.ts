@@ -5,11 +5,16 @@ export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  // Auth: Vercel cron header OR cron secret
   const cronSecret = req.nextUrl.searchParams.get('secret')
   const authHeader = req.headers.get('authorization')
-  const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`
+
+  // FIX: Added Vercel cron signature check — previous version only checked
+  // Authorization: Bearer header which Vercel cron runner never sends,
+  // causing every auto-trigger to return 401 silently.
+  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null
+    || req.headers.get('user-agent')?.includes('vercel')
   const isManual = cronSecret === process.env.CRON_SECRET
+    || authHeader === `Bearer ${process.env.CRON_SECRET}`
 
   if (!isVercelCron && !isManual) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -19,6 +24,7 @@ export async function GET(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
+
   const apiKey = process.env.API_FOOTBALL_KEY!
   const log: string[] = []
 
@@ -26,7 +32,10 @@ export async function GET(req: NextRequest) {
     log.push('Fetching WC2026 fixtures from API-Football...')
     const res = await fetch(
       'https://v3.football.api-sports.io/fixtures?league=1&season=2026',
-      { headers: { 'x-apisports-key': apiKey } }
+      {
+        headers: { 'x-apisports-key': apiKey },
+        cache: 'no-store',
+      }
     )
     const data = await res.json()
     const fixtures = data?.response || []
@@ -38,7 +47,7 @@ export async function GET(req: NextRequest) {
 
     // Only fix fake IDs
     const fakeMatches = (matches || []).filter((m: any) =>
-      String(m.api_id).startsWith('2026')
+      String(m.api_id).startsWith('2026') || Number(m.api_id) < 1400000
     )
     log.push('Fake IDs to fix: ' + fakeMatches.length)
 
