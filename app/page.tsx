@@ -575,7 +575,7 @@ function ClaimModal() {
           const data = await res.json();
           if (data && data.length > 0) {
             const countryMap: { [key: string]: number } = {};
-            leaderboardData.forEach((u: any) => {
+            data.forEach((u: any) => {
               const c = u.country || 'Other';
               countryMap[c] = (countryMap[c] || 0) + (u.total_points || 0);
             });
