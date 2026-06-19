@@ -921,7 +921,7 @@ export default function Home() {
             'America/Port-au-Prince': 'HT',
           };
           const visitorCode = tzToCode[tz] || '';
-          data.forEach((u: any) => {
+          leaderboardData.forEach((u: any) => {
             const c = u.country || 'Other';
             if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0 };
             countryMap[c].points += u.total_points || 0;
