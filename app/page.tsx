@@ -575,7 +575,7 @@ function ClaimModal() {
           const data = await res.json();
           if (data && data.length > 0) {
             const countryMap: { [key: string]: number } = {};
-            data.forEach((u: any) => {
+            leaderboardData.forEach((u: any) => {
               const c = u.country || 'Other';
               countryMap[c] = (countryMap[c] || 0) + (u.total_points || 0);
             });
@@ -802,9 +802,11 @@ export default function Home() {
           if (spotsData.awarded !== undefined) setFoundingAwarded(spotsData.awarded);
         } catch (e) { setFoundingAwarded(userCount); }
 
+        let leaderboardData: any[] = [];
         if (userCount >= REAL_USER_THRESHOLD) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
+          if (data && Array.isArray(data)) leaderboardData = data;
           if (data && data.length >= 5) {
             const countryMap: { [key: string]: { points: number; forecasters: number } } = {};
             data.forEach((user: any) => {
@@ -889,7 +891,7 @@ export default function Home() {
         }
 
         // ── Get nation rank from leaderboard ──
-        if (data && data.length > 0) {
+        if (leaderboardData && leaderboardData.length > 0) {
           const countryMap: { [key: string]: { points: number; forecasters: number } } = {};
           const tzToCode: { [key: string]: string } = {
             'Asia/Calcutta': 'IN', 'Asia/Kolkata': 'IN',
