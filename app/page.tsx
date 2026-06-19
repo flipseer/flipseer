@@ -149,16 +149,16 @@ function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
       setBannerText('TODAY -- World Cup 2026 is LIVE -- Predict upcoming matches NOW!');
       setBgColor('#DC2626');
     } else if (daysLeft === 1) {
-      setBannerText('World Cup 2026 LIVE -- Only ' + spots + ' Founding spots left!');
+      setBannerText('LIVE -- World Cup 2026 -- Represent your nation. Predict every match free.');
       setBgColor('#B45309');
     } else if (daysLeft === 2) {
-      setBannerText('2 DAYS TO GO -- Only ' + spots + ' Founding Forecaster spots remaining!');
+      setBannerText('LIVE -- World Cup 2026 -- Group Stage ends June 27. Predict now!');
       setBgColor('#92400E');
     } else if (daysLeft === 3) {
-      setBannerText('3 DAYS TO GO -- Only ' + spots + ' Founding Forecaster spots left!');
+      setBannerText('LIVE -- World Cup 2026 -- Round of 32 starts June 28. Get your predictions in!');
       setBgColor('#1A7A4A');
     } else if (daysLeft <= 7) {
-      setBannerText(daysLeft + ' days until World Cup -- Only ' + spots + ' Founding spots left!');
+      setBannerText('LIVE -- World Cup 2026 -- ' + (daysLeft > 0 ? daysLeft + ' days of football remaining!' : 'Predict every match free.'));
       setBgColor('#1A7A4A');
     } else {
       setBannerText('LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.');
@@ -529,7 +529,7 @@ function WelcomeConfetti() {
         <div style={{ fontSize: '56px', marginBottom: '12px' }}>&#x26BD;</div>
         <div style={{ fontFamily: 'Georgia, serif', fontSize: '26px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
         <div style={{ fontSize: '15px', color: '#2E9E5E', marginTop: '8px' }}>Build your permanent football legacy</div>
-        <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '6px' }}>World Cup 2026 &#xB7; June 11</div>
+        <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '6px' }}>World Cup 2026 &#xB7; LIVE NOW</div>
       </div>
       {PARTICLES.map((p) => (
         <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
