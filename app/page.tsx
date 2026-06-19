@@ -161,7 +161,7 @@ function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
       setBannerText(daysLeft + ' days until World Cup -- Only ' + spots + ' Founding spots left!');
       setBgColor('#1A7A4A');
     } else {
-      setBannerText('FIFA World Cup 2026 starts June 11 -- Build your permanent football reputation!');
+      setBannerText('LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.');
       setBgColor('#1A7A4A');
     }
   };
