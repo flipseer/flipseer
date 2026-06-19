@@ -368,23 +368,32 @@ export default function Predict() {
       const user = session.user;
       setUser(user);
 
-      const { data: profile } = await supabase
-        .from('profiles').select('username, country').eq('id', user.id).single();
-      if (profile?.username) setUsername(profile.username);
-      if (profile?.country) setCountry(profile.country);
-
+      // ── FIX: Run all 4 queries in parallel instead of sequentially
+      // Previous version ran profile → matches → predictions → community
+      // one after another, causing visible "Loading matches..." delay.
+      // Promise.all fires all 4 simultaneously — ~3x faster page load. ──
       setMatchesLoading(true);
-      const { data: matchData } = await supabase
-        .from('matches')
-        .select('id, api_id, home_team, away_team, kickoff, status, league')
-        .in('status', ['upcoming', 'locked'])
-        .order('kickoff', { ascending: true });
-      setMatches(matchData || []);
+
+      const [profileRes, matchRes, predRes, commRes] = await Promise.all([
+        supabase.from('profiles').select('username, country').eq('id', user.id).single(),
+        supabase.from('matches')
+          .select('id, api_id, home_team, away_team, kickoff, status, league')
+          .in('status', ['upcoming', 'locked'])
+          .order('kickoff', { ascending: true }),
+        supabase.from('predictions').select('*').eq('user_id', user.id),
+        supabase.from('predictions').select('match_id, predicted_outcome'),
+      ]);
+
+      // Profile
+      if (profileRes.data?.username) setUsername(profileRes.data.username);
+      if (profileRes.data?.country) setCountry(profileRes.data.country);
+
+      // Matches
+      setMatches(matchRes.data || []);
       setMatchesLoading(false);
 
-      const { data: predData } = await supabase
-        .from('predictions').select('*').eq('user_id', user.id);
-
+      // User predictions
+      const predData = predRes.data;
       if (predData) {
         const existing: any = {};
         const savedMap: any = {};
@@ -407,8 +416,8 @@ export default function Predict() {
         setDailyUsed(todayCount);
       }
 
-      const { data: commData } = await supabase
-        .from('predictions').select('match_id, predicted_outcome');
+      // Community stats
+      const commData = commRes.data;
       if (commData) {
         const stats: { [key: number]: CommunityStats } = {};
         commData.forEach((p: any) => {
