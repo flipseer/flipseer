@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
@@ -13,6 +13,15 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [detectedNation, setDetectedNation] = useState('');
+
+  // Read detected nation from homepage localStorage prefill
+  useEffect(() => {
+    try {
+      const nation = localStorage.getItem('flipseer_detected_nation');
+      if (nation) setDetectedNation(nation);
+    } catch (e) {}
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -112,10 +121,14 @@ export default function Auth() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
 
-      {/* URGENCY BANNER */}
+      {/* URGENCY BANNER — live, competition-first */}
       <div style={{ backgroundColor: '#1A7A4A', padding: '10px 20px', textAlign: 'center' }}>
         <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-          &#x26BD; World Cup 2026 starts June 11 -- Join now to earn the Founding Forecaster badge
+          &#x26BD; World Cup 2026 is LIVE —{' '}
+          {detectedNation
+            ? `Represent ${detectedNation}. Predict every match free.`
+            : 'Predict every match. Represent your nation. Free forever.'
+          }
         </span>
       </div>
 
@@ -126,10 +139,15 @@ export default function Auth() {
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '36px', marginBottom: '8px' }}>&#x26BD;</div>
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>
-              {isLogin ? 'Welcome back' : 'Build your reputation'}
+              {isLogin ? 'Welcome back' : detectedNation ? `Represent ${detectedNation}` : 'Build your reputation'}
             </h1>
             <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
-              {isLogin ? 'Sign in to your forecasting profile' : 'Join the football forecasting network'}
+              {isLogin
+                ? 'Sign in to your forecasting profile'
+                : detectedNation
+                  ? `Join ${detectedNation}'s forecasters. Predict. Earn points. Build legacy.`
+                  : 'Join the global football forecasting competition'
+              }
             </p>
           </div>
 
@@ -214,7 +232,7 @@ export default function Auth() {
 
           <button onClick={handleAuth} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : isLogin ? 'Sign In ->' : 'Create Account ->'}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In ->' : detectedNation ? `Join & Represent ${detectedNation} →` : 'Create Account ->'}
           </button>
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
