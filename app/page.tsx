@@ -45,7 +45,7 @@ const COMING_SOON = [
   { icon: '&#x1F91D;', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
 ];
 
-const REAL_USER_THRESHOLD = 10;
+const REAL_USER_THRESHOLD = 100;
 
 const TOP_NATIONS = [
   { flag: '&#x1F1EE;&#x1F1F3;', name: 'India', slug: 'india' },
@@ -530,7 +530,7 @@ export default function Home() {
                 forecasters: stats.forecasters.toLocaleString(),
                 points: stats.points.toLocaleString(),
               }));
-            if (sorted.length >= 3) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
+            if (sorted.length >= 1) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
           }
         }
       } catch (err) { console.error('Leaderboard error:', err); }
@@ -697,7 +697,9 @@ export default function Home() {
                 <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A' }}>
                   <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
                   <span style={{ fontSize: '20px', marginRight: '10px' }} dangerouslySetInnerHTML={{ __html: flag }} />
-                  <span style={{ flex: 1, fontSize: '15px', color: 'white' }}>{country}</span>
+                  <span style={{ flex: 1, fontSize: '15px', color: 'white' }}>
+                    {country === 'IN' ? 'India' : country === 'ID' ? 'Indonesia' : country === 'NG' ? 'Nigeria' : country === 'BR' ? 'Brazil' : country === 'AR' ? 'Argentina' : country === 'FR' ? 'France' : country === 'DE' ? 'Germany' : country === 'GB' ? 'England' : country === 'ES' ? 'Spain' : country === 'PT' ? 'Portugal' : country === 'MX' ? 'Mexico' : country === 'US' ? 'USA' : country === 'Other' ? 'Other' : country}
+                  </span>
                   <span style={{ fontSize: '12px', color: '#6B7280', marginRight: '16px' }}>{forecasters}</span>
                   <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: 'bold' }}>{points} pts</span>
                 </div>
