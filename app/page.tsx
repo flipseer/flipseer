@@ -405,6 +405,242 @@ function WelcomeConfetti() {
   );
 }
 
+// ── PLAYER SPOTLIGHT COMPONENT ──
+// Rotates every 12 seconds. Static bios + real WC 2026 nation data.
+// Positioned below hero CTA. Links to /predict for each nation.
+// Zero extra API calls — uses existing Supabase data.
+
+const PLAYERS = [
+  {
+    name: 'Lionel Messi',
+    country: 'Argentina',
+    code: 'AR',
+    flag: '🇦🇷',
+    club: 'Inter Miami · Forward',
+    bio: 'The greatest of all time. 8 World Cup goals across 5 tournaments. At 38, chasing one final moment of immortality on football\'s biggest stage.',
+    wc_fact: '3 goals vs Algeria in Group Stage 2026',
+    color: '#74ACDF',
+  },
+  {
+    name: 'Cristiano Ronaldo',
+    country: 'Portugal',
+    code: 'PT',
+    flag: '🇵🇹',
+    club: 'Al-Nassr · Forward',
+    bio: 'Five Ballon d\'Or. 900+ career goals. At 41, still defying age. Portugal\'s captain leads his nation in what may be his final World Cup.',
+    wc_fact: 'Scored in Portugal\'s 1-1 draw vs DR Congo',
+    color: '#006600',
+  },
+  {
+    name: 'Kylian Mbappé',
+    country: 'France',
+    code: 'FR',
+    flag: '🇫🇷',
+    club: 'Real Madrid · Forward',
+    bio: 'The heir to the throne. World Cup winner at 19. Now leads France as captain. The fastest player in the tournament — and the most dangerous.',
+    wc_fact: '3 goals vs Senegal. France Group leaders.',
+    color: '#002395',
+  },
+  {
+    name: 'Vinicius Jr',
+    country: 'Brazil',
+    code: 'BR',
+    flag: '🇧🇷',
+    club: 'Real Madrid · Forward',
+    bio: 'Two-time Champions League winner. Ballon d\'Or 2024. Brazil\'s most electric attacker — unpredictable, unstoppable, and hungry for World Cup glory.',
+    wc_fact: 'Brazil drew 1-1 vs Morocco in Group Stage',
+    color: '#009C3B',
+  },
+  {
+    name: 'Erling Haaland',
+    country: 'Norway',
+    code: 'NO',
+    flag: '🇳🇴',
+    club: 'Manchester City · Forward',
+    bio: 'The scoring machine. 50+ Premier League goals in two seasons. Norway\'s greatest ever striker makes his World Cup debut — the tournament\'s most feared forward.',
+    wc_fact: 'Norway beat Iraq 4-1. Haaland leads Group F.',
+    color: '#EF2B2D',
+  },
+  {
+    name: 'Jude Bellingham',
+    country: 'England',
+    code: 'GB',
+    flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    club: 'Real Madrid · Midfielder',
+    bio: 'England\'s golden generation leader. Champions League winner at 20. Commands Real Madrid\'s midfield. Now carries England\'s 60-year World Cup dream on his shoulders.',
+    wc_fact: 'England beat Croatia 4-2 in Group Stage opener',
+    color: '#CF081F',
+  },
+  {
+    name: 'Mohamed Salah',
+    country: 'Egypt',
+    code: 'EG',
+    flag: '🇪🇬',
+    club: 'Al-Qadsiah · Forward',
+    bio: 'The Egyptian King. 200+ Premier League goals. Africa\'s greatest modern player leads Egypt on their first World Cup stage in years — a nation\'s hero.',
+    wc_fact: 'Egypt vs Belgium — Group Stage battle',
+    color: '#CE1126',
+  },
+  {
+    name: 'Victor Osimhen',
+    country: 'Nigeria',
+    code: 'NG',
+    flag: '🇳🇬',
+    club: 'Galatasaray · Forward',
+    bio: 'Africa\'s most lethal striker. Serie A top scorer. Nigeria\'s Super Eagles captain carries the hopes of 220 million fans. The tournament\'s most physical forward.',
+    wc_fact: 'Nigeria in Group Stage — Super Eagles flying',
+    color: '#008751',
+  },
+  {
+    name: 'Weston McKennie',
+    country: 'USA',
+    code: 'US',
+    flag: '🇺🇸',
+    club: 'Juventus · Midfielder',
+    bio: 'USA co-hosts the World Cup on home soil. McKennie leads the midfield of a young, hungry American team playing in front of their own fans for the first time.',
+    wc_fact: 'USA beat Paraguay 4-1 in stunning Group opener',
+    color: '#B22234',
+  },
+  {
+    name: 'Egy Maulana Vikri',
+    country: 'Indonesia',
+    code: 'ID',
+    flag: '🇮🇩',
+    club: 'Lechia Gdańsk · Forward',
+    bio: 'Indonesia\'s brightest star. The first Indonesian to play in Europe\'s top leagues. Leads the Garuda at their first-ever World Cup — 280 million fans watching.',
+    wc_fact: 'Indonesia making history at their first World Cup',
+    color: '#CE1126',
+  },
+];
+
+function PlayerSpotlight() {
+  const [current, setCurrent] = useState(0);
+  const [fade, setFade] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const interval = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrent(prev => (prev + 1) % PLAYERS.length);
+        setFade(true);
+      }, 400);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const goTo = (idx: number) => {
+    setFade(false);
+    setTimeout(() => { setCurrent(idx); setFade(true); }, 400);
+  };
+
+  const prev = () => goTo((current - 1 + PLAYERS.length) % PLAYERS.length);
+  const next = () => goTo((current + 1) % PLAYERS.length);
+
+  if (!mounted) return null;
+
+  const p = PLAYERS[current];
+
+  return (
+    <section style={{ padding: '0 20px 48px', maxWidth: '800px', margin: '0 auto' }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .player-card { transition: opacity 0.4s ease, transform 0.4s ease; }
+        .player-card.visible { opacity: 1; transform: translateY(0); animation: fadeIn 0.4s ease forwards; }
+        .player-card.hidden { opacity: 0; transform: translateY(8px); }
+        .player-dot { width: 8px; height: 8px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.2s; }
+        .player-nav { background: rgba(46,158,94,0.1); border: 1px solid #1A7A4A; color: #2E9E5E; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .player-nav:hover { background: rgba(46,158,94,0.2); }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>⭐ WORLD CUP 2026 STARS</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="player-nav" onClick={prev}>‹</button>
+          <button className="player-nav" onClick={next}>›</button>
+        </div>
+      </div>
+
+      {/* Card */}
+      <div
+        className={`player-card ${fade ? 'visible' : 'hidden'}`}
+        style={{
+          backgroundColor: '#0D2B14',
+          border: '1px solid #1A7A4A',
+          borderRadius: '16px',
+          padding: '24px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Colored accent top bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: p.color, opacity: 0.8 }} />
+
+        {/* Player header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '28px' }}>{p.flag}</span>
+              <div>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{p.name}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>{p.club}</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: '11px', color: p.color, fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + p.color, whiteSpace: 'nowrap' }}>
+            {p.country}
+          </div>
+        </div>
+
+        {/* Bio */}
+        <p style={{ fontSize: '14px', color: '#9CA3AF', lineHeight: '1.7', marginBottom: '16px', fontStyle: 'italic' }}>
+          &ldquo;{p.bio}&rdquo;
+        </p>
+
+        {/* WC 2026 fact */}
+        <div style={{ backgroundColor: '#050E05', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
+          <span style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '1px' }}>⚽ WC 2026 · </span>
+          <span style={{ fontSize: '12px', color: '#D1FAE5' }}>{p.wc_fact}</span>
+        </div>
+
+        {/* CTA */}
+        <a href="/predict" style={{
+          display: 'block', textAlign: 'center',
+          backgroundColor: 'rgba(46,158,94,0.15)',
+          border: '1px solid #2E9E5E',
+          color: '#2E9E5E', padding: '10px',
+          borderRadius: '8px', textDecoration: 'none',
+          fontSize: '13px', fontWeight: 'bold',
+        }}>
+          🎯 Predict {p.country}&apos;s next match →
+        </a>
+      </div>
+
+      {/* Dots */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '14px' }}>
+        {PLAYERS.map((_, i) => (
+          <button
+            key={i}
+            className="player-dot"
+            onClick={() => goTo(i)}
+            style={{ backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }}
+          />
+        ))}
+      </div>
+
+      {/* Auto-rotate indicator */}
+      <p style={{ textAlign: 'center', fontSize: '10px', color: '#4B5563', marginTop: '8px' }}>
+        Auto-rotating every 12s · {current + 1}/{PLAYERS.length}
+      </p>
+    </section>
+  );
+}
+
+
 // ── MAIN HOME PAGE ──
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -713,6 +949,9 @@ export default function Home() {
         </div>
         <p style={{ fontSize: '12px', color: '#4B5563' }}>100% Free · No Betting · No Gambling · Predict. Prove. Repeat.</p>
       </section>
+
+      {/* ── PLAYER SPOTLIGHT ── */}
+      <PlayerSpotlight />
 
       {/* ── SECTION 4: UPCOMING MATCHES ── */}
       <UpcomingMatches />
