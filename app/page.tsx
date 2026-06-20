@@ -544,16 +544,6 @@ function PlayerSpotlight() {
 
   return (
     <section style={{ padding: '0 20px 48px', maxWidth: '800px', margin: '0 auto' }}>
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .player-card { transition: opacity 0.4s ease, transform 0.4s ease; }
-        .player-card.visible { opacity: 1; transform: translateY(0); animation: fadeIn 0.4s ease forwards; }
-        .player-card.hidden { opacity: 0; transform: translateY(8px); }
-        .player-dot { width: 8px; height: 8px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.2s; }
-        .player-nav { background: rgba(46,158,94,0.1); border: 1px solid #1A7A4A; color: #2E9E5E; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .player-nav:hover { background: rgba(46,158,94,0.2); }
-      `}</style>
-
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -817,6 +807,13 @@ export default function Home() {
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.8; } 94% { opacity: 1; } }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .player-card { transition: opacity 0.4s ease, transform 0.4s ease; }
+        .player-card.visible { opacity: 1; transform: translateY(0); animation: fadeIn 0.4s ease forwards; }
+        .player-card.hidden { opacity: 0; transform: translateY(8px); }
+        .player-dot { width: 8px; height: 8px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.2s; }
+        .player-nav { background: rgba(46,158,94,0.1); border: 1px solid #1A7A4A; color: #2E9E5E; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .player-nav:hover { background: rgba(46,158,94,0.2); }
       `}</style>
 
       {/* -- SECTION 1: LIVE TICKER + BUZZ BAR -- */}
