@@ -32,7 +32,7 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
-// -- LIVE ACTIVITY FEED --
+// ── LIVE ACTIVITY FEED ──
 function LiveActivity() {
   const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
@@ -93,7 +93,7 @@ function LiveActivity() {
               <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
                 {a.processed && a.points > 0
                   ? <>gained <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>+{a.points} pts</span></>
-                  : <>predicted <span style={{ color: 'white', fontWeight: 'bold' }}>{a.pick}</span> . <span style={{ color: '#2E9E5E' }}>{a.confidence}%</span></>
+                  : <>predicted <span style={{ color: 'white', fontWeight: 'bold' }}>{a.pick}</span> · <span style={{ color: '#2E9E5E' }}>{a.confidence}%</span></>
                 }
               </span>
               <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: 'auto' }}>{a.timeAgo}</span>
@@ -105,7 +105,7 @@ function LiveActivity() {
   );
 }
 
-// -- LIVE SCORECARD --
+// ── LIVE SCORECARD ──
 function LiveScoreCard() {
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [lastUpdated, setLastUpdated] = useState('');
@@ -165,7 +165,7 @@ function LiveScoreCard() {
   );
 }
 
-// -- UPCOMING MATCHES --
+// ── UPCOMING MATCHES ──
 function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -265,21 +265,21 @@ function UpcomingMatches() {
                   <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.league}</div>
                 </div>
                 <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {kickoffPast ? 'Locked' : 'Predict ->'}
+                  {kickoffPast ? 'Locked' : 'Predict →'}
                 </a>
               </div>
             );
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>View all 104 World Cup matches -></a>
+          <a href="/predict" style={{ color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>View all 104 World Cup matches →</a>
         </div>
       </div>
     </section>
   );
 }
 
-// -- CLAIM MODAL --
+// ── CLAIM MODAL ──
 function ClaimModal() {
   const [show, setShow] = useState(false);
   const [forecasters, setForecasters] = useState(33);
@@ -331,10 +331,10 @@ function ClaimModal() {
       `}</style>
       <div className="claim-backdrop" onClick={() => setShow(false)}>
         <div className="claim-box" onClick={e => e.stopPropagation()}>
-          <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#4B5563', fontSize: '20px', cursor: 'pointer' }}>x</button>
+          <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#4B5563', fontSize: '20px', cursor: 'pointer' }}>×</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 'bold', letterSpacing: '2px' }}>WORLD CUP 2026 . LIVE NOW</span>
+            <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 'bold', letterSpacing: '2px' }}>WORLD CUP 2026 · LIVE NOW</span>
           </div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '21px', color: 'white', marginBottom: '14px', lineHeight: '1.3' }}>
             <span dangerouslySetInnerHTML={{ __html: topNation.flag }} />{' '}
@@ -344,26 +344,26 @@ function ClaimModal() {
           </h2>
           <div style={{ backgroundColor: '#050E05', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
             <div style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>{topNation.points} pts</span> . <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>{forecasters} forecasters</span> competing globally
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>{topNation.points} pts</span> · <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>{forecasters} forecasters</span> competing globally
             </div>
             <div style={{ fontSize: '11px', color: '#4B5563', fontStyle: 'italic', marginTop: '8px', borderTop: '1px solid #1A3A1A', paddingTop: '8px' }}>
-              Every match without a prediction is a call your nation can never reclaim. &#x1F512;
+              Every match without a prediction is a call your nation can never reclaim. 🔒
             </div>
           </div>
           <button onClick={() => window.location.href = '/auth'} style={{ width: '100%', padding: '13px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 0 20px rgba(46,158,94,0.3)' }}>
-            &#x1F30D; Represent Your Nation Free ->
+            🌍 Represent Your Nation Free →
           </button>
           <button onClick={() => setShow(false)} style={{ width: '100%', padding: '9px', backgroundColor: 'transparent', color: '#6B7280', border: 'none', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>
             Maybe Later
           </button>
-          <p style={{ fontSize: '10px', color: '#4B5563', textAlign: 'center', marginTop: '8px' }}>Free forever . No betting . No card required</p>
+          <p style={{ fontSize: '10px', color: '#4B5563', textAlign: 'center', marginTop: '8px' }}>Free forever · No betting · No card required</p>
         </div>
       </div>
     </>
   );
 }
 
-// -- WELCOME CONFETTI --
+// ── WELCOME CONFETTI ──
 const PARTICLES = [
   { id: 0, left: 5, delay: 0.0, dur: 3.0, icon: '&#x26BD;', size: 24 },
   { id: 1, left: 20, delay: 0.3, dur: 2.8, icon: '&#x1F3C6;', size: 18 },
@@ -395,7 +395,7 @@ function WelcomeConfetti() {
         <div style={{ fontSize: '48px', marginBottom: '10px' }}>&#x26BD;</div>
         <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
         <div style={{ fontSize: '13px', color: '#2E9E5E', marginTop: '6px' }}>Build your permanent football legacy</div>
-        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>World Cup 2026 . LIVE NOW</div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>World Cup 2026 · LIVE NOW</div>
       </div>
       {PARTICLES.map((p) => (
         <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
@@ -405,112 +405,19 @@ function WelcomeConfetti() {
   );
 }
 
-// -- PLAYER SPOTLIGHT COMPONENT --
-// Rotates every 12 seconds. Static bios + real WC 2026 nation data.
-// Positioned below hero CTA. Links to /predict for each nation.
-// Zero extra API calls -- uses existing Supabase data.
+// ── MAIN HOME PAGE ──
 
 const PLAYERS = [
-  {
-    name: 'Lionel Messi',
-    country: 'Argentina',
-    code: 'AR',
-    flag: '&#x1F1E6;&#x1F1F7;',
-    club: 'Inter Miami . Forward',
-    bio: 'The greatest of all time. 8 World Cup goals across 5 tournaments. At 38, chasing one final moment of immortality on football\'s biggest stage.',
-    wc_fact: '3 goals vs Algeria in Group Stage 2026',
-    color: '#74ACDF',
-  },
-  {
-    name: 'Cristiano Ronaldo',
-    country: 'Portugal',
-    code: 'PT',
-    flag: '&#x1F1F5;&#x1F1F9;',
-    club: 'Al-Nassr . Forward',
-    bio: 'Five Ballon d\'Or. 900+ career goals. At 41, still defying age. Portugal\'s captain leads his nation in what may be his final World Cup.',
-    wc_fact: 'Scored in Portugal\'s 1-1 draw vs DR Congo',
-    color: '#006600',
-  },
-  {
-    name: 'Kylian Mbappe',
-    country: 'France',
-    code: 'FR',
-    flag: '&#x1F1EB;&#x1F1F7;',
-    club: 'Real Madrid . Forward',
-    bio: 'The heir to the throne. World Cup winner at 19. Now leads France as captain. The fastest player in the tournament -- and the most dangerous.',
-    wc_fact: '3 goals vs Senegal. France Group leaders.',
-    color: '#002395',
-  },
-  {
-    name: 'Vinicius Jr',
-    country: 'Brazil',
-    code: 'BR',
-    flag: '&#x1F1E7;&#x1F1F7;',
-    club: 'Real Madrid . Forward',
-    bio: 'Two-time Champions League winner. Ballon d\'Or 2024. Brazil\'s most electric attacker -- unpredictable, unstoppable, and hungry for World Cup glory.',
-    wc_fact: 'Brazil drew 1-1 vs Morocco in Group Stage',
-    color: '#009C3B',
-  },
-  {
-    name: 'Erling Haaland',
-    country: 'Norway',
-    code: 'NO',
-    flag: '&#x1F1F3;&#x1F1F4;',
-    club: 'Manchester City . Forward',
-    bio: 'The scoring machine. 50+ Premier League goals in two seasons. Norway\'s greatest ever striker makes his World Cup debut -- the tournament\'s most feared forward.',
-    wc_fact: 'Norway beat Iraq 4-1. Haaland leads Group F.',
-    color: '#EF2B2D',
-  },
-  {
-    name: 'Jude Bellingham',
-    country: 'England',
-    code: 'GB',
-    flag: '&#x1F3F4;',
-    club: 'Real Madrid . Midfielder',
-    bio: 'England\'s golden generation leader. Champions League winner at 20. Commands Real Madrid\'s midfield. Now carries England\'s 60-year World Cup dream on his shoulders.',
-    wc_fact: 'England beat Croatia 4-2 in Group Stage opener',
-    color: '#CF081F',
-  },
-  {
-    name: 'Mohamed Salah',
-    country: 'Egypt',
-    code: 'EG',
-    flag: '&#x1F1EA;&#x1F1EC;',
-    club: 'Al-Qadsiah . Forward',
-    bio: 'The Egyptian King. 200+ Premier League goals. Africa\'s greatest modern player leads Egypt on their first World Cup stage in years -- a nation\'s hero.',
-    wc_fact: 'Egypt vs Belgium -- Group Stage battle',
-    color: '#CE1126',
-  },
-  {
-    name: 'Victor Osimhen',
-    country: 'Nigeria',
-    code: 'NG',
-    flag: '&#x1F1F3;&#x1F1EC;',
-    club: 'Galatasaray . Forward',
-    bio: 'Africa\'s most lethal striker. Serie A top scorer. Nigeria\'s Super Eagles captain carries the hopes of 220 million fans. The tournament\'s most physical forward.',
-    wc_fact: 'Nigeria in Group Stage -- Super Eagles flying',
-    color: '#008751',
-  },
-  {
-    name: 'Weston McKennie',
-    country: 'USA',
-    code: 'US',
-    flag: '&#x1F1FA;&#x1F1F8;',
-    club: 'Juventus . Midfielder',
-    bio: 'USA co-hosts the World Cup on home soil. McKennie leads the midfield of a young, hungry American team playing in front of their own fans for the first time.',
-    wc_fact: 'USA beat Paraguay 4-1 in stunning Group opener',
-    color: '#B22234',
-  },
-  {
-    name: 'Egy Maulana Vikri',
-    country: 'Indonesia',
-    code: 'ID',
-    flag: '&#x1F1EE;&#x1F1E9;',
-    club: 'Lechia Gdansk . Forward',
-    bio: 'Indonesia\'s brightest star. The first Indonesian to play in Europe\'s top leagues. Leads the Garuda at their first-ever World Cup -- 280 million fans watching.',
-    wc_fact: 'Indonesia making history at their first World Cup',
-    color: '#CE1126',
-  },
+  { name: 'Lionel Messi', country: 'Argentina', code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', club: 'Inter Miami - Forward', bio: 'The greatest of all time. 8 World Cup goals across 5 tournaments. At 38, chasing immortality on football\'s biggest stage.', wc_fact: '3 goals vs Algeria in Group Stage 2026', color: '#74ACDF' },
+  { name: 'Cristiano Ronaldo', country: 'Portugal', code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', club: 'Al-Nassr - Forward', bio: 'Five Ballon d\'Or. 900+ career goals. At 41, still defying age. Portugal\'s captain in what may be his final World Cup.', wc_fact: 'Scored in Portugal 1-1 draw vs DR Congo', color: '#006600' },
+  { name: 'Kylian Mbappe', country: 'France', code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', club: 'Real Madrid - Forward', bio: 'World Cup winner at 19. Now leads France as captain. The fastest and most dangerous player in the tournament.', wc_fact: '3 goals vs Senegal. France Group leaders.', color: '#002395' },
+  { name: 'Vinicius Jr', country: 'Brazil', code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', club: 'Real Madrid - Forward', bio: 'Ballon d\'Or 2024. Brazil\'s most electric attacker -- unpredictable and unstoppable on the World Cup stage.', wc_fact: 'Brazil drew 1-1 vs Morocco in Group Stage', color: '#009C3B' },
+  { name: 'Erling Haaland', country: 'Norway', code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', club: 'Manchester City - Forward', bio: '50+ Premier League goals in two seasons. Norway\'s greatest striker makes his World Cup debut. The most feared forward.', wc_fact: 'Norway beat Iraq 4-1. Haaland leads Group F.', color: '#EF2B2D' },
+  { name: 'Jude Bellingham', country: 'England', code: 'GB', flag: '&#x1F3F4;', club: 'Real Madrid - Midfielder', bio: 'Champions League winner at 20. Now carries England\'s 60-year World Cup dream on his shoulders as captain.', wc_fact: 'England beat Croatia 4-2 in Group Stage opener', color: '#CF081F' },
+  { name: 'Mohamed Salah', country: 'Egypt', code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', club: 'Al-Qadsiah - Forward', bio: 'The Egyptian King. 200+ Premier League goals. Africa\'s greatest modern player leads Egypt on the biggest stage.', wc_fact: 'Egypt vs Belgium -- Group Stage battle', color: '#CE1126' },
+  { name: 'Victor Osimhen', country: 'Nigeria', code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', club: 'Galatasaray - Forward', bio: 'Africa\'s most lethal striker. Nigeria\'s Super Eagles captain carries the hopes of 220 million fans.', wc_fact: 'Nigeria in Group Stage -- Super Eagles flying', color: '#008751' },
+  { name: 'Weston McKennie', country: 'USA', code: 'US', flag: '&#x1F1FA;&#x1F1F8;', club: 'Juventus - Midfielder', bio: 'USA co-hosts on home soil. McKennie leads a young, hungry American team playing in front of their own fans.', wc_fact: 'USA beat Paraguay 4-1 in stunning Group opener', color: '#B22234' },
+  { name: 'Egy Maulana Vikri', country: 'Indonesia', code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', club: 'Lechia Gdansk - Forward', bio: 'The first Indonesian to play in Europe\'s top leagues. Leads the Garuda at their first-ever World Cup.', wc_fact: 'Indonesia making history at their first World Cup', color: '#CE1126' },
 ];
 
 function PlayerSpotlight() {
@@ -520,118 +427,57 @@ function PlayerSpotlight() {
 
   useEffect(() => {
     setMounted(true);
-    const interval = setInterval(() => {
+    const iv = setInterval(() => {
       setFade(false);
-      setTimeout(() => {
-        setCurrent(prev => (prev + 1) % PLAYERS.length);
-        setFade(true);
-      }, 400);
+      setTimeout(() => { setCurrent(function(p) { return (p + 1) % PLAYERS.length; }); setFade(true); }, 400);
     }, 12000);
-    return () => clearInterval(interval);
+    return () => clearInterval(iv);
   }, []);
-
-  const goTo = (idx: number) => {
-    setFade(false);
-    setTimeout(() => { setCurrent(idx); setFade(true); }, 400);
-  };
-
-  const prev = () => goTo((current - 1 + PLAYERS.length) % PLAYERS.length);
-  const next = () => goTo((current + 1) % PLAYERS.length);
 
   if (!mounted) return null;
 
-  const p = PLAYERS[current];
+  const pl = PLAYERS[current];
 
   return (
     <section style={{ padding: '0 20px 48px', maxWidth: '800px', margin: '0 auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>&#x2B50; WORLD CUP 2026 STARS</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button className="player-nav" onClick={prev}><</button>
-          <button className="player-nav" onClick={next}>></button>
+        <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>&#x2B50; WORLD CUP 2026 STARS</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => { setFade(false); setTimeout(() => { setCurrent((current - 1 + PLAYERS.length) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'<'}</button>
+          <button onClick={() => { setFade(false); setTimeout(() => { setCurrent((current + 1) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'>'}</button>
         </div>
       </div>
-
-      {/* Card */}
-      <div
-        className={`player-card ${fade ? 'visible' : 'hidden'}`}
-        style={{
-          backgroundColor: '#0D2B14',
-          border: '1px solid #1A7A4A',
-          borderRadius: '16px',
-          padding: '24px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Colored accent top bar */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: p.color, opacity: 0.8 }} />
-
-        {/* Player header */}
+      <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden', opacity: fade ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: pl.color }} />
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '28px' }}>{p.flag}</span>
-              <div>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{p.name}</div>
-                <div style={{ fontSize: '12px', color: '#6B7280' }}>{p.club}</div>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '28px' }} dangerouslySetInnerHTML={{ __html: pl.flag }} />
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', fontFamily: 'Georgia, serif' }}>{pl.name}</div>
+              <div style={{ fontSize: '12px', color: '#6B7280' }}>{pl.club}</div>
             </div>
           </div>
-          <div style={{ fontSize: '11px', color: p.color, fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + p.color, whiteSpace: 'nowrap' }}>
-            {p.country}
-          </div>
+          <div style={{ fontSize: '11px', color: pl.color, fontWeight: 'bold', backgroundColor: 'rgba(0,0,0,0.3)', padding: '4px 10px', borderRadius: '999px', border: '1px solid ' + pl.color }}>{pl.country}</div>
         </div>
-
-        {/* Bio */}
-        <p style={{ fontSize: '14px', color: '#9CA3AF', lineHeight: '1.7', marginBottom: '16px', fontStyle: 'italic' }}>
-          &ldquo;{p.bio}&rdquo;
-        </p>
-
-        {/* WC 2026 fact */}
+        <p style={{ fontSize: '14px', color: '#9CA3AF', lineHeight: '1.7', marginBottom: '16px', fontStyle: 'italic' }}>{pl.bio}</p>
         <div style={{ backgroundColor: '#050E05', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px' }}>
-          <span style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '1px' }}>&#x26BD; WC 2026 . </span>
-          <span style={{ fontSize: '12px', color: '#D1FAE5' }}>{p.wc_fact}</span>
+          <span style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 'bold' }}>&#x26BD; WC 2026 - </span>
+          <span style={{ fontSize: '12px', color: '#D1FAE5' }}>{pl.wc_fact}</span>
         </div>
-
-        {/* CTA */}
-        <a href="/predict" style={{
-          display: 'block', textAlign: 'center',
-          backgroundColor: 'rgba(46,158,94,0.15)',
-          border: '1px solid #2E9E5E',
-          color: '#2E9E5E', padding: '10px',
-          borderRadius: '8px', textDecoration: 'none',
-          fontSize: '13px', fontWeight: 'bold',
-        }}>
-          &#x1F3AF; Predict {p.country}&apos;s next match ->
+        <a href="/predict" style={{ display: 'block', textAlign: 'center', backgroundColor: 'rgba(46,158,94,0.15)', border: '1px solid #2E9E5E', color: '#2E9E5E', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
+          &#x1F3AF; Predict {pl.country} next match -&gt;
         </a>
       </div>
-
-      {/* Dots */}
       <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '14px' }}>
         {PLAYERS.map((_, i) => (
-          <button
-            key={i}
-            className="player-dot"
-            onClick={() => goTo(i)}
-            style={{ backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }}
-          />
+          <button key={i} onClick={() => { setFade(false); setTimeout(() => { setCurrent(i); setFade(true); }, 400); }} style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }} />
         ))}
       </div>
-
-      {/* Auto-rotate indicator */}
-      <p style={{ textAlign: 'center', fontSize: '10px', color: '#4B5563', marginTop: '8px' }}>
-        Auto-rotating every 12s . {current + 1}/{PLAYERS.length}
-      </p>
+      <p style={{ textAlign: 'center', fontSize: '10px', color: '#4B5563', marginTop: '8px' }}>Auto-rotating every 12s - {current + 1}/{PLAYERS.length}</p>
     </section>
   );
 }
 
-
-// -- MAIN HOME PAGE --
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [days, setDays] = useState(0);
@@ -807,16 +653,9 @@ export default function Home() {
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.8; } 94% { opacity: 1; } }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .player-card { transition: opacity 0.4s ease, transform 0.4s ease; }
-        .player-card.visible { opacity: 1; transform: translateY(0); animation: fadeIn 0.4s ease forwards; }
-        .player-card.hidden { opacity: 0; transform: translateY(8px); }
-        .player-dot { width: 8px; height: 8px; border-radius: 50%; border: none; cursor: pointer; transition: all 0.2s; }
-        .player-nav { background: rgba(46,158,94,0.1); border: 1px solid #1A7A4A; color: #2E9E5E; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .player-nav:hover { background: rgba(46,158,94,0.2); }
       `}</style>
 
-      {/* -- SECTION 1: LIVE TICKER + BUZZ BAR -- */}
+      {/* ── SECTION 1: LIVE TICKER + BUZZ BAR ── */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '8px 0' }}>
         <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
           {[
@@ -838,7 +677,7 @@ export default function Home() {
             'The World Cup only comes every 4 years -- your record lasts forever',
           ].map((item, i) => (
             <span key={i} style={{ fontSize: '12px', color: '#6B7280', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ color: '#2E9E5E' }}>&#x26BD;</span> {item}
+              <span style={{ color: '#2E9E5E' }}>⚽</span> {item}
               <span style={{ color: '#1A3A20', marginLeft: '16px' }}>|</span>
             </span>
           ))}
@@ -850,14 +689,14 @@ export default function Home() {
         <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>&#x26A1; {predictions24h} predictions</span> in last 24h
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {predictions24h} predictions</span> in last 24h
             </span>
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x1F465; {totalUsers} registered</span> . {activeForecasters} active
+              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
             </span>
             {nextMatchCountdown && (
               <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>
-                &#x23F1; Next match in {nextMatchCountdown}
+                ⏱ Next match in {nextMatchCountdown}
               </span>
             )}
           </div>
@@ -868,19 +707,19 @@ export default function Home() {
       <div style={{ backgroundColor: '#1A7A4A', padding: '9px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-            &#x26BD; LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.
+            ⚽ LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.
           </span>
           <a href="/auth" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-            Join Free ->
+            Join Free →
           </a>
         </div>
       </div>
 
-      {/* -- SECTION 2: LIVE SCORES + ACTIVITY -- */}
+      {/* ── SECTION 2: LIVE SCORES + ACTIVITY ── */}
       <LiveScoreCard />
       <LiveActivity />
 
-      {/* -- SECTION 3: HERO -- */}
+      {/* ── SECTION 3: HERO ── */}
       <section style={{ textAlign: 'center', padding: '64px 20px 48px', maxWidth: '900px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
@@ -888,7 +727,7 @@ export default function Home() {
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '6px 18px', marginBottom: '28px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span suppressHydrationWarning style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            {mounted ? `WORLD CUP 2026 . LIVE . Day ${days + 1}` : 'WORLD CUP 2026 . LIVE NOW'}
+            {mounted ? `WORLD CUP 2026 · LIVE · Day ${days + 1}` : 'WORLD CUP 2026 · LIVE NOW'}
           </span>
         </div>
 
@@ -919,17 +758,17 @@ export default function Home() {
           <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
             {nationForecasters > 0 && (
               <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>
-                &#x1F525; {nationForecasters} {heroNation || 'global'} forecaster{nationForecasters !== 1 ? 's' : ''} already competing
+                🔥 {nationForecasters} {heroNation || 'global'} forecaster{nationForecasters !== 1 ? 's' : ''} already competing
               </span>
             )}
             {nationRank > 0 && (
               <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold' }}>
-                &#x1F30D; {heroNation} ranked #{nationRank} globally
+                🌍 {heroNation} ranked #{nationRank} globally
               </span>
             )}
             {nextMatchCountdown && (
               <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>
-                &#x23F1; Next match locks in {nextMatchCountdown}
+                ⏱ Next match locks in {nextMatchCountdown}
               </span>
             )}
           </div>
@@ -938,37 +777,37 @@ export default function Home() {
         {/* CTA */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '16px 40px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
-            &#x26BD; Predict Your First Match Free ->
+            ⚽ Predict Your First Match Free →
           </a>
           <a href="/how-to-play" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '16px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
             How It Works
           </a>
         </div>
-        <p style={{ fontSize: '12px', color: '#4B5563' }}>100% Free . No Betting . No Gambling . Predict. Prove. Repeat.</p>
+        <p style={{ fontSize: '12px', color: '#4B5563' }}>100% Free · No Betting · No Gambling · Predict. Prove. Repeat.</p>
       </section>
 
-      {/* -- PLAYER SPOTLIGHT -- */}
+      {/* ── SECTION 4: UPCOMING MATCHES ── */}
+      {/* PLAYER SPOTLIGHT */}
       <PlayerSpotlight />
 
-      {/* -- SECTION 4: UPCOMING MATCHES -- */}
       <UpcomingMatches />
 
-      {/* -- SECTION 5: NATION BATTLE -- */}
+      {/* ── SECTION 5: NATION BATTLE ── */}
       <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE . LIVE</p>
+          <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE · LIVE</p>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>
             {heroNation ? <>Can <span style={{ color: '#2E9E5E' }}>{heroNation}</span> top the world?</> : 'Which nation leads the world?'}
           </h2>
           <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '32px' }}>
-            Every prediction earns points for your country. The rivalry is real -- and it&apos;s live right now.
+            Every prediction earns points for your country. The rivalry is real — and it&apos;s live right now.
           </p>
 
           {isRealLeaderboard ? (
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', overflow: 'hidden', maxWidth: '520px', margin: '0 auto 24px' }}>
               <div style={{ backgroundColor: '#050E05', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-                <span>RANK . NATION</span>
-                <span style={{ color: '#2E9E5E' }}>LIVE . FORECASTERS . POINTS</span>
+                <span>RANK · NATION</span>
+                <span style={{ color: '#2E9E5E' }}>LIVE · FORECASTERS · POINTS</span>
               </div>
               {realLeaderboard.map(({ rank, flag, country, forecasters, points }) => (
                 <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '12px 20px', borderTop: '1px solid #1A3A1A' }}>
@@ -982,30 +821,30 @@ export default function Home() {
             </div>
           ) : (
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', maxWidth: '520px', margin: '0 auto 24px', padding: '32px 24px', textAlign: 'center' }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F30D;</div>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌍</div>
               <p style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>Your nation needs you.</p>
               <p style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '16px' }}>Predict matches to earn points for your country.</p>
-              <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>View Nation Battle -></a>
+              <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>View Nation Battle →</a>
             </div>
           )}
 
           <a href="/nations" style={{ color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>
-            Full Nation Battle standings ->
+            Full Nation Battle standings →
           </a>
         </div>
       </section>
 
-      {/* -- SECTION 6: HOW IT WORKS + FINAL CTA -- */}
+      {/* ── SECTION 6: HOW IT WORKS + FINAL CTA ── */}
       <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>HOW IT WORKS</p>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '32px', textAlign: 'center' }}>From prediction to legend.</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '48px' }}>
             {[
-              { step: '01', icon: '&#x1F3AF;', title: 'Call the match', desc: 'Pick the winner. Predict the exact score. Set your confidence before kick-off.' },
-              { step: '02', icon: '&#x1F512;', title: 'It locks forever', desc: 'Once the whistle blows, your call is sealed. No edits. No excuses. Pure record.' },
-              { step: '03', icon: '&#x26A1;', title: 'Earn reputation', desc: 'Correct calls earn points for you and your nation. Upsets earn glory.' },
-              { step: '04', icon: '&#x1F451;', title: 'Build your legacy', desc: 'World Cup -> EPL -> Champions League. One permanent record. Forever.' },
+              { step: '01', icon: '🎯', title: 'Call the match', desc: 'Pick the winner. Predict the exact score. Set your confidence before kick-off.' },
+              { step: '02', icon: '🔒', title: 'It locks forever', desc: 'Once the whistle blows, your call is sealed. No edits. No excuses. Pure record.' },
+              { step: '03', icon: '⚡', title: 'Earn reputation', desc: 'Correct calls earn points for you and your nation. Upsets earn glory.' },
+              { step: '04', icon: '👑', title: 'Build your legacy', desc: 'World Cup → EPL → Champions League. One permanent record. Forever.' },
             ].map(({ step, icon, title, desc }) => (
               <div key={step} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '22px 20px' }}>
                 <div style={{ fontSize: '10px', color: '#1A7A4A', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>STEP {step}</div>
@@ -1016,13 +855,13 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Trust signals -- compact */}
+          {/* Trust signals — compact */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '28px', flexWrap: 'wrap', marginBottom: '48px' }}>
             {[
-              { icon: '&#x1F6AB;', text: 'No Betting. Ever.' },
-              { icon: '&#x1F4D6;', text: 'Permanent Record.' },
-              { icon: '&#x1F30D;', text: 'Global Rankings.' },
-              { icon: '&#x1F193;', text: 'Always Free.' },
+              { icon: '🚫', text: 'No Betting. Ever.' },
+              { icon: '📖', text: 'Permanent Record.' },
+              { icon: '🌍', text: 'Global Rankings.' },
+              { icon: '🆓', text: 'Always Free.' },
             ].map(({ icon, text }) => (
               <div key={text} style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '24px', marginBottom: '4px' }}>{icon}</div>
@@ -1033,7 +872,7 @@ export default function Home() {
 
           {/* Final CTA */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F3C6;</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '12px', lineHeight: '1.2' }}>
               {heroNation
                 ? <>{heroNation}&apos;s #1 football mind<br /><span style={{ color: '#2E9E5E' }}>could be you.</span></>
@@ -1045,7 +884,7 @@ export default function Home() {
               Predict. Represent your nation. Build your legacy.
             </p>
             <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
-              &#x26BD; Predict Your First Match Free ->
+              ⚽ Predict Your First Match Free →
             </a>
             <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
           </div>
