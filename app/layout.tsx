@@ -1,6 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Navbar from '@/components/Navbar';
 import FlipseerChat from '@/components/FlipseerChat';
+
+// ── PWA Viewport ──
+export const viewport: Viewport = {
+  themeColor: '#1A7A4A',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: 'Flipseer -- Build Your Football Reputation | World Cup 2026 Predictor',
@@ -11,6 +20,17 @@ export const metadata: Metadata = {
   publisher: 'Flipseer',
   metadataBase: new URL('https://flipseer.com'),
   alternates: { canonical: 'https://flipseer.com' },
+
+  // ── PWA Manifest ──
+  manifest: '/manifest.json',
+
+  // ── PWA Apple ──
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Flipseer',
+  },
+
   openGraph: {
     title: 'Flipseer -- Your Football Legacy Starts Here',
     description: 'Predict World Cup 2026 matches before kick-off. Earn reputation points. Build a permanent record of your football intelligence. Free. No betting. Ever.',
@@ -39,10 +59,21 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+
+  // ── PWA Icons ──
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/icons/icon-96x96.png',
   },
+
   category: 'sports',
 };
 
@@ -64,6 +95,8 @@ const structuredData = {
     'Exact score predictions',
     'Permanent forecast journal',
     'Reputation points system',
+    'EPL 2026/27 predictions (August)',
+    'Champions League predictions (September)',
   ],
 };
 
@@ -71,10 +104,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+
+        {/* PostHog Analytics */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -86,6 +122,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
+
+        {/* PWA Meta Tags */}
+        <meta name="application-name" content="Flipseer" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Flipseer" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#1A7A4A" />
+        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+        <meta name="msapplication-tap-highlight" content="no" />
+
+        {/* Preconnect */}
+        <link rel="preconnect" href="https://us.i.posthog.com" />
       </head>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
         <Navbar />
@@ -103,7 +152,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div style={{ marginBottom: '16px' }}>
             <span style={{ color: '#2E9E5E', fontWeight: 'bold', fontSize: '16px' }}>-- FLIPSEER</span>
           </div>
-          {/* Legal/info links */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <a href="/about" style={footerLink}>About</a>
             <a href="/how-to-play" style={footerLink}>How to Play</a>
