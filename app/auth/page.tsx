@@ -4,10 +4,93 @@ import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
 
+const COUNTRIES = [
+  { code: 'IN', name: 'India', flag: '🇮🇳' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
+  { code: 'US', name: 'USA', flag: '🇺🇸' },
+  { code: 'GB', name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
+  { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'BE', name: 'Belgium', flag: '🇧🇪' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹' },
+  { code: 'GH', name: 'Ghana', flag: '🇬🇭' },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦' },
+  { code: 'MA', name: 'Morocco', flag: '🇲🇦' },
+  { code: 'EG', name: 'Egypt', flag: '🇪🇬' },
+  { code: 'SN', name: 'Senegal', flag: '🇸🇳' },
+  { code: 'CI', name: 'Ivory Coast', flag: '🇨🇮' },
+  { code: 'CD', name: 'DR Congo', flag: '🇨🇩' },
+  { code: 'TN', name: 'Tunisia', flag: '🇹🇳' },
+  { code: 'DZ', name: 'Algeria', flag: '🇩🇿' },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾' },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'PE', name: 'Peru', flag: '🇵🇪' },
+  { code: 'HT', name: 'Haiti', flag: '🇭🇹' },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: 'AE', name: 'UAE', flag: '🇦🇪' },
+  { code: 'IQ', name: 'Iraq', flag: '🇮🇶' },
+  { code: 'IR', name: 'Iran', flag: '🇮🇷' },
+  { code: 'JO', name: 'Jordan', flag: '🇯🇴' },
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿' },
+  { code: 'PK', name: 'Pakistan', flag: '🇵🇰' },
+  { code: 'BD', name: 'Bangladesh', flag: '🇧🇩' },
+  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰' },
+  { code: 'NP', name: 'Nepal', flag: '🇳🇵' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳' },
+  { code: 'HR', name: 'Croatia', flag: '🇭🇷' },
+  { code: 'SE', name: 'Sweden', flag: '🇸🇪' },
+  { code: 'NO', name: 'Norway', flag: '🇳🇴' },
+  { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿' },
+  { code: 'AT', name: 'Austria', flag: '🇦🇹' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭' },
+  { code: 'NZ', name: 'New Zealand', flag: '🇳🇿' },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷' },
+  { code: 'QA', name: 'Qatar', flag: '🇶🇦' },
+  { code: 'SC', name: 'Scotland', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿' },
+  { code: 'OTHER', name: 'Other', flag: '🌍' },
+];
+
+// Map detected nation name to country code
+const NATION_TO_CODE: { [key: string]: string } = {
+  'India': 'IN', 'Indonesia': 'ID', 'Nigeria': 'NG', 'Brazil': 'BR',
+  'Argentina': 'AR', 'Mexico': 'MX', 'USA': 'US', 'England': 'GB',
+  'France': 'FR', 'Germany': 'DE', 'Spain': 'ES', 'Portugal': 'PT',
+  'Netherlands': 'NL', 'Belgium': 'BE', 'Italy': 'IT', 'Ghana': 'GH',
+  'South Africa': 'ZA', 'Morocco': 'MA', 'Egypt': 'EG', 'Senegal': 'SN',
+  'Japan': 'JP', 'South Korea': 'KR', 'Australia': 'AU', 'Canada': 'CA',
+  'Colombia': 'CO', 'Pakistan': 'PK', 'Bangladesh': 'BD', 'Singapore': 'SG',
+  'Malaysia': 'MY', 'Philippines': 'PH', 'Thailand': 'TH', 'Turkey': 'TR',
+  'Saudi Arabia': 'SA', 'UAE': 'AE', 'Iraq': 'IQ', 'Iran': 'IR',
+  'Jordan': 'JO', 'Uzbekistan': 'UZ', 'Croatia': 'HR', 'Sweden': 'SE',
+  'Norway': 'NO', 'Czech Republic': 'CZ', 'Austria': 'AT', 'New Zealand': 'NZ',
+  'DR Congo': 'CD', 'Ivory Coast': 'CI', 'Tunisia': 'TN', 'Algeria': 'DZ',
+  'Kenya': 'KE', 'Haiti': 'HT', 'Uruguay': 'UY', 'Paraguay': 'PY',
+  'Chile': 'CL', 'Peru': 'PE', 'Qatar': 'QA', 'Switzerland': 'CH',
+};
+
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [country, setCountry] = useState('');
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,11 +98,15 @@ export default function Auth() {
   const [message, setMessage] = useState('');
   const [detectedNation, setDetectedNation] = useState('');
 
-  // Read detected nation from homepage localStorage prefill
+  // Prefill country from homepage localStorage detection
   useEffect(() => {
     try {
       const nation = localStorage.getItem('flipseer_detected_nation');
-      if (nation) setDetectedNation(nation);
+      if (nation) {
+        setDetectedNation(nation);
+        const code = NATION_TO_CODE[nation];
+        if (code) setCountry(code);
+      }
     } catch (e) {}
   }, []);
 
@@ -56,7 +143,7 @@ export default function Auth() {
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { setMessage(error.message); }
-      else { window.location.href = '/predict'; }
+      else { window.location.href = '/profile'; }
     } else {
       if (!username.trim()) { setMessage('Username is required'); setLoading(false); return; }
       const { data, error } = await supabase.auth.signUp({ email, password });
@@ -66,17 +153,18 @@ export default function Auth() {
         await supabase.from('profiles').upsert([{
           id: data.user.id,
           username: username.trim(),
+          country: country || null,
           reputation: 0, total_points: 0,
           prediction_count: 0, correct_count: 0,
           streak: 0, best_streak: 0,
-          accuracy_pct: 0, rank: 'Rookie', rank_icon: '&#x1F949;',
+          accuracy_pct: 0, rank: 'Rookie', rank_icon: '🥉',
         }], { onConflict: 'id' });
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username }),
         }).catch(() => {});
-        window.location.href = '/predict';
+        window.location.href = '/profile';
       }
     }
     setLoading(false);
@@ -87,7 +175,7 @@ export default function Auth() {
       <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '40px', width: '100%', maxWidth: '420px' }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F510;</div>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔐</div>
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Reset Password</h1>
             <p style={{ color: '#6B7280', fontSize: '14px', margin: 0 }}>Enter your email and we'll send a reset link</p>
           </div>
@@ -105,7 +193,7 @@ export default function Auth() {
           )}
           <button onClick={handleForgotPassword} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1, marginBottom: '16px' }}>
-            {loading ? 'Sending...' : 'Send Reset Link ->'}
+            {loading ? 'Sending...' : 'Send Reset Link →'}
           </button>
           <div style={{ textAlign: 'center' }}>
             <button onClick={() => { setIsForgot(false); setMessage(''); }}
@@ -118,13 +206,15 @@ export default function Auth() {
     );
   }
 
+  const selectedCountry = COUNTRIES.find(c => c.code === country);
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
 
-      {/* URGENCY BANNER — live, competition-first */}
+      {/* URGENCY BANNER */}
       <div style={{ backgroundColor: '#1A7A4A', padding: '10px 20px', textAlign: 'center' }}>
         <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-          &#x26BD; World Cup 2026 is LIVE —{' '}
+          ⚽ World Cup 2026 is LIVE —{' '}
           {detectedNation
             ? `Represent ${detectedNation}. Predict every match free.`
             : 'Predict every match. Represent your nation. Free forever.'
@@ -137,7 +227,7 @@ export default function Auth() {
 
           {/* HEADING */}
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '8px' }}>&#x26BD;</div>
+            <div style={{ fontSize: '36px', marginBottom: '8px' }}>⚽</div>
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>
               {isLogin ? 'Welcome back' : detectedNation ? `Represent ${detectedNation}` : 'Build your reputation'}
             </h1>
@@ -151,7 +241,7 @@ export default function Auth() {
             </p>
           </div>
 
-          {/* GOOGLE BUTTON -- PRIMARY */}
+          {/* GOOGLE BUTTON */}
           <button onClick={handleGoogleSignIn} disabled={googleLoading}
             style={{ width: '100%', padding: '14px', backgroundColor: 'white', color: '#1F2937', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px', opacity: googleLoading ? 0.7 : 1 }}>
             {googleLoading ? 'Connecting...' : (
@@ -186,15 +276,53 @@ export default function Auth() {
             </button>
           </div>
 
-          {/* USERNAME signup only */}
+          {/* SIGNUP FIELDS */}
           {!isLogin && (
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Username</label>
-              <input type="text" placeholder="e.g. football_oracle" value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_'))}
-                style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
-              <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Your permanent public identity</p>
-            </div>
+            <>
+              {/* USERNAME */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Username</label>
+                <input type="text" placeholder="e.g. football_oracle" value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_'))}
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
+                <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Your permanent public identity</p>
+              </div>
+
+              {/* COUNTRY — prefilled from detection */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>
+                  Your Nation <span style={{ color: '#2E9E5E', fontSize: '11px' }}>— earn points for your country</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: '8px',
+                      border: '1px solid ' + (country ? '#2E9E5E' : '#1A7A4A'),
+                      backgroundColor: '#0D1F0F', color: country ? 'white' : '#6B7280',
+                      fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+                      appearance: 'none', cursor: 'pointer',
+                    }}>
+                    <option value="">Select your nation...</option>
+                    {COUNTRIES.map(({ code, name, flag }) => (
+                      <option key={code} value={code}>{flag} {name}</option>
+                    ))}
+                  </select>
+                  <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: '#6B7280', pointerEvents: 'none', fontSize: '12px' }}>▼</span>
+                </div>
+                {country && selectedCountry && (
+                  <p style={{ fontSize: '11px', color: '#2E9E5E', marginTop: '4px' }}>
+                    {selectedCountry.flag} Every correct prediction earns points for {selectedCountry.name} 🏆
+                  </p>
+                )}
+                {!country && (
+                  <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>
+                    Required — join your nation's leaderboard
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           {/* EMAIL */}
@@ -232,7 +360,7 @@ export default function Auth() {
 
           <button onClick={handleAuth} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : isLogin ? 'Sign In ->' : detectedNation ? `Join & Represent ${detectedNation} →` : 'Create Account ->'}
+            {loading ? 'Please wait...' : isLogin ? 'Sign In →' : detectedNation ? `Join & Represent ${detectedNation} →` : 'Create Account →'}
           </button>
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -250,20 +378,20 @@ export default function Auth() {
             <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center', marginBottom: '10px' }}>YOUR DATA. YOUR RULES.</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {[
-                { icon: '&#x1F512;', text: 'Your personal data stays yours' },
-                { icon: '&#x1F6E1;', text: 'Encrypted & Secure' },
-                { icon: '&#x1F6AB;', text: 'Never Sold' },
-                { icon: '&#x2699;', text: 'Under Your Control' },
+                { icon: '🔒', text: 'Your personal data stays yours' },
+                { icon: '🛡️', text: 'Encrypted & Secure' },
+                { icon: '🚫', text: 'Never Sold' },
+                { icon: '⚙️', text: 'Under Your Control' },
               ].map(({ icon, text }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                  <span style={{ fontSize: '13px' }}>{icon}</span>
                   <span style={{ fontSize: '11px', color: '#6EE7B7' }}>{text}</span>
                 </div>
               ))}
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px' }}>
               <a href="/privacy" style={{ fontSize: '11px', color: '#4B5563', textDecoration: 'none' }}>
-                Full privacy policy &#x2192;
+                Full privacy policy →
               </a>
             </div>
           </div>
