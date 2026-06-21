@@ -709,7 +709,7 @@ export default function Home() {
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
             ⚽ LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.
           </span>
-          <a href="/auth" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+          <a href="/auth?utm_source=homepage&utm_medium=banner&utm_campaign=wc2026" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Join Free →
           </a>
         </div>
@@ -749,7 +749,7 @@ export default function Home() {
         <p style={{ fontSize: '17px', color: '#9CA3AF', lineHeight: '1.7', maxWidth: '540px', margin: '0 auto 16px' }}>
           {heroNation && nationRank > 0
             ? <><strong style={{ color: '#D1FAE5' }}>Predict World Cup 2026 matches. Earn points for {heroNation}.</strong><br />Beat Brazil, Argentina, England and every rival nation.</>
-            : <>Predict every World Cup 2026 match before kick-off.<br /><strong style={{ color: '#D1FAE5' }}>Represent your nation. Build your legacy. Free. No betting.</strong></>
+            : <>Your predictions. Locked forever.<br /><strong style={{ color: '#D1FAE5' }}>Permanent proof of your football intelligence.</strong></>
           }
         </p>
 
@@ -776,10 +776,10 @@ export default function Home() {
 
         {/* CTA */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '16px 40px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
+          <a href="/auth?utm_source=homepage&utm_medium=hero&utm_campaign=wc2026" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '16px 40px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
             ⚽ Predict Your First Match Free →
           </a>
-          <a href="/how-to-play" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '16px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
+          <a href="/how-to-play?utm_source=homepage&utm_medium=section&utm_campaign=how_it_works" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '16px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
             How It Works
           </a>
         </div>
@@ -883,13 +883,31 @@ export default function Home() {
               Every match is a chance to prove your football intelligence.<br />
               Predict. Represent your nation. Build your legacy.
             </p>
-            <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
+            <a href="/auth?utm_source=homepage&utm_medium=final&utm_campaign=wc2026" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
               ⚽ Predict Your First Match Free →
             </a>
             <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
           </div>
         </div>
       </section>
+
+      {/* FOOTER */}
+      <footer style={{ padding: '32px 20px', textAlign: 'center', color: '#4B5563', fontSize: '12px', borderTop: '1px solid #1A3A1A' }}>
+        <p style={{ marginBottom: '8px' }}>
+          Free forever &nbsp;&#xB7;&nbsp; No betting &nbsp;&#xB7;&nbsp; No gambling &nbsp;&#xB7;&nbsp; Your data stays yours
+        </p>
+        <p>
+          <a href="/privacy" style={{ color: '#6B7280', textDecoration: 'none' }}>Privacy Policy</a>
+          &nbsp;&#xB7;&nbsp;
+          <a href="/how-to-play" style={{ color: '#6B7280', textDecoration: 'none' }}>How It Works</a>
+          &nbsp;&#xB7;&nbsp;
+          <a href="/nations" style={{ color: '#6B7280', textDecoration: 'none' }}>Nation Battle</a>
+          &nbsp;&#xB7;&nbsp;
+          <a href="/epl" style={{ color: '#6B7280', textDecoration: 'none' }}>EPL 2026</a>
+          &nbsp;&#xB7;&nbsp;
+          <span style={{ color: '#4B5563' }}>&#xA9; 2026 Flipseer</span>
+        </p>
+      </footer>
 
     </main>
   );
