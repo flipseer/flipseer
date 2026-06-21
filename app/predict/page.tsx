@@ -529,7 +529,7 @@ export default function Predict() {
               <span dangerouslySetInnerHTML={{ __html: league.icon }} />
               {league.label}
               {!league.active && (
-                <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#4B5563', padding: '1px 6px', borderRadius: '999px', marginLeft: '2px' }}>
+                <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '2px 7px', borderRadius: '999px', marginLeft: '4px', letterSpacing: '0.5px' }}>
                   SOON
                 </span>
               )}
