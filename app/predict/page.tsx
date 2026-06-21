@@ -559,6 +559,69 @@ export default function Predict() {
         </section>
       )}
 
+      {/* FIRST PREDICTION PROMPT — shows only for new users */}
+      {activeLeagueData.active && dailyUsed === 0 && username !== 'forecaster' && (
+        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0D2B14, #1A3A1A)', border: '2px solid #2E9E5E', borderRadius: '14px', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', boxShadow: '0 0 20px rgba(46,158,94,0.15)' }}>
+            <div style={{ fontSize: '40px' }}>&#x1F44B;</div>
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '4px', fontFamily: 'Georgia, serif' }}>
+                Welcome, @{username}! Make your first prediction.
+              </div>
+              <div style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '1.5' }}>
+                Pick a match below. Set your confidence. Lock it in before kickoff.<br />
+                <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>Your permanent football record starts now.</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {[
+                { icon: '&#x1F3AF;', text: 'Pick outcome' },
+                { icon: '&#x1F512;', text: 'Lock before kickoff' },
+                { icon: '&#x26A1;', text: 'Earn points' },
+              ].map(({ icon, text }) => (
+                <div key={text} style={{ textAlign: 'center', minWidth: '60px' }}>
+                  <div style={{ fontSize: '20px', marginBottom: '2px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                  <div style={{ fontSize: '10px', color: '#6B7280' }}>{text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FIRST PREDICTION PROMPT */}
+      {activeLeagueData.active && dailyUsed === 0 && username !== 'forecaster' && (
+        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
+          <div style={{ background: 'linear-gradient(135deg, #0D2B14, #1A3A1A)', border: '2px solid #2E9E5E', borderRadius: '14px', padding: '20px 24px', boxShadow: '0 0 20px rgba(46,158,94,0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '36px' }}>&#x1F44B;</div>
+              <div style={{ flex: 1, minWidth: '200px' }}>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '6px', fontFamily: 'Georgia, serif' }}>
+                  Welcome, @{username}! Make your first prediction.
+                </div>
+                <div style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '1.6', marginBottom: '12px' }}>
+                  Pick a match below. Set your confidence. Lock it in before kickoff.<br />
+                  <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>Your permanent football record starts now. &#x1F512;</span>
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  {[
+                    { icon: '&#x1F3AF;', text: 'Pick outcome' },
+                    { icon: '&#x1F4CA;', text: 'Set confidence' },
+                    { icon: '&#x1F512;', text: 'Lock forever' },
+                    { icon: '&#x26A1;', text: 'Earn points' },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                      <span style={{ fontSize: '11px', color: '#6B7280' }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* CONTENT */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 40px' }}>
         {!activeLeagueData.active ? (
