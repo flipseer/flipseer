@@ -378,7 +378,7 @@ export default function Profile() {
   const [savingCountry, setSavingCountry] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('overview');
   const [activeCompetition, setActiveCompetition] = useState('all');
 
   useEffect(() => {
@@ -443,10 +443,10 @@ export default function Profile() {
   );
 
   const tabs = [
-    { key: 'overview', label: 'Overview', icon: '&#x1F4CA;' },
-    { key: 'predictions', label: 'Predictions', icon: '&#x1F3AF;' },
-    { key: 'badges', label: 'Badges', icon: '&#x1F3C5;' },
-    { key: 'settings', label: 'Settings', icon: '&#x2699;' },
+    { key: 'overview', label: 'Overview', icon: '&#x1F4CA;', color: '#2E9E5E' },
+    { key: 'predictions', label: 'Predictions', icon: '&#x1F3AF;', color: '#F59E0B' },
+    { key: 'badges', label: 'Badges', icon: '&#x1F3C5;', color: '#8B5CF6' },
+    { key: 'settings', label: 'Settings', icon: '&#x2699;', color: '#6B7280' },
   ];
 
   return (
@@ -487,17 +487,19 @@ export default function Profile() {
       </section>
 
       {/* QUICK STATS BAR */}
-      <div style={{ backgroundColor: '#0D2B14', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0A1A0C 100%)', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A7A4A', padding: '20px' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
           {[
-            { value: profile?.total_points ?? 0, label: 'Total Pts', color: '#2E9E5E' },
-            { value: profile?.prediction_count ?? 0, label: 'Predictions', color: '#9CA3AF' },
-            { value: (profile?.accuracy_pct ?? 0) + '%', label: 'Accuracy', color: '#F59E0B' },
-            { value: (profile?.streak ?? 0) + '&#x1F525;', label: 'Streak', color: '#EF4444' },
-          ].map(({ value, label, color }) => (
-            <div key={label}>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color, fontFamily: 'Georgia, serif' }} dangerouslySetInnerHTML={{ __html: String(value) }} />
-              <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '2px' }}>{label}</div>
+            { value: profile?.total_points ?? 0, label: 'TOTAL PTS', color: '#2E9E5E', big: true },
+            { value: profile?.prediction_count ?? 0, label: 'PREDICTIONS', color: '#9CA3AF', big: false },
+            { value: (profile?.accuracy_pct ?? 0) + '%', label: 'ACCURACY', color: '#F59E0B', big: false },
+            { value: (profile?.streak ?? 0), label: 'STREAK &#x1F525;', color: '#EF4444', big: false },
+          ].map(({ value, label, color, big }) => (
+            <div key={label} style={{ padding: '8px 4px', borderRight: '1px solid #1A3A1A' }}>
+              <div style={{ fontSize: big ? '28px' : '22px', fontWeight: 'bold', color, fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                {value}
+              </div>
+              <div style={{ fontSize: '9px', color: '#4B5563', marginTop: '4px', letterSpacing: '0.5px' }} dangerouslySetInnerHTML={{ __html: label }} />
             </div>
           ))}
         </div>
@@ -523,12 +525,27 @@ export default function Profile() {
 
       {/* MAIN TABS */}
       <div style={{ maxWidth: '600px', margin: '20px auto 0', padding: '0 20px' }}>
-        <div style={{ display: 'flex', backgroundColor: '#0D1F0F', borderRadius: '10px', padding: '4px', marginBottom: '20px', border: '1px solid #1A3A1A' }}>
-          {tabs.map(({ key, label, icon }) => (
+        {/* TAB NAVIGATION — bold card style */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+          {tabs.map(({ key, label, icon, color }) => (
             <button key={key} onClick={() => setActiveTab(key)}
-              style={{ flex: 1, padding: '8px 4px', borderRadius: '7px', border: 'none', backgroundColor: activeTab === key ? '#1A7A4A' : 'transparent', color: activeTab === key ? 'white' : '#6B7280', cursor: 'pointer', fontSize: '11px', fontWeight: activeTab === key ? 'bold' : 'normal', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-              <span dangerouslySetInnerHTML={{ __html: icon }} />
-              {label}
+              style={{
+                padding: '12px 4px',
+                borderRadius: '12px',
+                border: '2px solid ' + (activeTab === key ? color : '#1A3A1A'),
+                backgroundColor: activeTab === key ? color + '20' : '#0D2B14',
+                color: activeTab === key ? color : '#4B5563',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: activeTab === key ? 'bold' : 'normal',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                transition: 'all 0.2s ease',
+              }}>
+              <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+              <span style={{ letterSpacing: '0.5px' }}>{label.toUpperCase()}</span>
             </button>
           ))}
         </div>
