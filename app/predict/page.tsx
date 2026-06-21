@@ -12,6 +12,7 @@ type Match = {
   kickoff: string;
   status: string;
   league: string;
+  competition: string;
 };
 
 type CommunityStats = {
@@ -21,65 +22,43 @@ type CommunityStats = {
   total: number;
 };
 
-// Browser timezone conversion
+const LEAGUES = [
+  { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;', color: '#2E9E5E', active: true },
+  { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;', color: '#8B5CF6', active: false },
+  { key: 'Champions League', label: 'UCL', icon: '&#x2B50;', color: '#F59E0B', active: false },
+  { key: 'La Liga', label: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;', color: '#EF4444', active: false },
+];
+
 function formatKickoffLocal(kickoffUtc: string): string {
   const utcString = kickoffUtc.endsWith('Z') ? kickoffUtc : kickoffUtc.replace(' ', 'T') + 'Z';
   const date = new Date(utcString);
   const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
   const tzMap: { [key: string]: string } = {
-    'Asia/Calcutta': 'IST',
-    'Asia/Kolkata': 'IST',
-    'Africa/Lagos': 'WAT',
-    'Africa/Abuja': 'WAT',
-    'Asia/Jakarta': 'WIB',
-    'Asia/Makassar': 'WITA',
-    'Asia/Jayapura': 'WIT',
-    'America/Mexico_City': 'CST',
-    'America/New_York': 'EDT',
-    'America/Chicago': 'CDT',
-    'America/Los_Angeles': 'PDT',
-    'Europe/London': 'BST',
-    'Europe/Paris': 'CEST',
-    'Europe/Berlin': 'CEST',
-    'Asia/Dubai': 'GST',
-    'Asia/Singapore': 'SGT',
-    'Asia/Tokyo': 'JST',
-    'Asia/Seoul': 'KST',
-    'Australia/Sydney': 'AEST',
-    'America/Sao_Paulo': 'BRT',
-    'Asia/Riyadh': 'AST',
-    'Africa/Nairobi': 'EAT',
-    'Asia/Karachi': 'PKT',
-    'Asia/Dhaka': 'BST',
-    'Asia/Bangkok': 'ICT',
+    'Asia/Calcutta': 'IST', 'Asia/Kolkata': 'IST',
+    'Africa/Lagos': 'WAT', 'Africa/Abuja': 'WAT',
+    'Asia/Jakarta': 'WIB', 'Asia/Makassar': 'WITA',
+    'America/Mexico_City': 'CST', 'America/New_York': 'EDT',
+    'America/Chicago': 'CDT', 'America/Los_Angeles': 'PDT',
+    'Europe/London': 'BST', 'Europe/Paris': 'CEST',
+    'Asia/Dubai': 'GST', 'Asia/Singapore': 'SGT',
+    'Asia/Tokyo': 'JST', 'Asia/Seoul': 'KST',
+    'Australia/Sydney': 'AEST', 'America/Sao_Paulo': 'BRT',
+    'Asia/Karachi': 'PKT', 'Asia/Dhaka': 'BST',
     'Africa/Johannesburg': 'SAST',
-    'America/Toronto': 'EDT',
-    'America/Vancouver': 'PDT',
   };
-
   const tzLabel = tzMap[browserTz] || '';
-
   const formatted = date.toLocaleString('en-GB', {
-    timeZone: browserTz,
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
+    timeZone: browserTz, day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit', hour12: true,
   });
-
   return formatted + (tzLabel ? ' ' + tzLabel : '');
 }
 
-// Countdown hook — locks exactly at kickoff (0ms buffer)
 function useCountdown(kickoff: string) {
-  const LOCK_BEFORE_MS = 0;
   const compute = useCallback(() => {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const diff = new Date(utcString).getTime() - Date.now();
-    const locked = diff <= LOCK_BEFORE_MS;
-    if (locked) return { locked: true, label: '' };
+    if (diff <= 0) return { locked: true, label: '' };
     const totalSecs = Math.floor(diff / 1000);
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
@@ -87,7 +66,6 @@ function useCountdown(kickoff: string) {
     const label = h > 0 ? h + 'h ' + m + 'm ' + s + 's' : m > 0 ? m + 'm ' + s + 's' : s + 's';
     return { locked: false, label };
   }, [kickoff]);
-
   const [state, setState] = useState(compute);
   useEffect(() => {
     const tick = () => setState(compute());
@@ -98,17 +76,8 @@ function useCountdown(kickoff: string) {
   return state;
 }
 
-// Build the branded prediction-card share URL
-function buildShareUrl({
-  match,
-  pred,
-  username,
-  country,
-}: {
-  match: Match;
-  pred: any;
-  username: string;
-  country: string;
+function buildShareUrl({ match, pred, username, country }: {
+  match: Match; pred: any; username: string; country: string;
 }) {
   const params = new URLSearchParams();
   params.set('home', match.home_team);
@@ -125,18 +94,65 @@ function buildShareUrl({
   return 'https://flipseer.com/predict/share?' + params.toString();
 }
 
-// Match card
+// ── COMING SOON PLACEHOLDER ──
+function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
+  const launch = league.key === 'EPL 2026/27' ? 'August 16, 2026'
+    : league.key === 'Champions League' ? 'September 2026'
+    : 'October 2026';
+
+  return (
+    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+      <div style={{ fontSize: '64px', marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: league.icon }} />
+      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>
+        {league.key}
+      </h2>
+      <div style={{ display: 'inline-block', backgroundColor: league.color + '20', border: '1px solid ' + league.color, borderRadius: '999px', padding: '6px 20px', marginBottom: '20px' }}>
+        <span style={{ fontSize: '13px', color: league.color, fontWeight: 'bold' }}>
+          &#x23F3; Launches {launch}
+        </span>
+      </div>
+      <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
+        {league.key === 'EPL 2026/27'
+          ? 'Your World Cup reputation carries over. 380 Premier League matches. Every weekend. Your record continues forever.'
+          : 'Coming soon. Your prediction record continues across every competition — World Cup, EPL, UCL and beyond.'
+        }
+      </p>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <a href="/epl" style={{ backgroundColor: league.color, color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
+          Get Early Access &#x2192;
+        </a>
+        <a href="/predict" onClick={() => {}} style={{ backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
+          Predict World Cup Now
+        </a>
+      </div>
+      {league.key === 'EPL 2026/27' && (
+        <div style={{ marginTop: '40px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', maxWidth: '480px', margin: '40px auto 0' }}>
+          <p style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px' }}>EPL 2026/27 SEASON</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', textAlign: 'center' }}>
+            {[
+              { value: '380', label: 'Matches' },
+              { value: '38', label: 'Matchweeks' },
+              { value: '108', label: 'Max Pts' },
+            ].map(({ value, label }) => (
+              <div key={label}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: league.color, fontFamily: 'Georgia, serif' }}>{value}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── MATCH CARD ──
 function MatchCard({
   match, pred, isSaved, isLoading, comm, username, country,
   onPredict, onConfidence, onScore, onSave,
 }: {
-  match: Match;
-  pred: any;
-  isSaved: boolean;
-  isLoading: boolean;
-  comm: CommunityStats | undefined;
-  username: string;
-  country: string;
+  match: Match; pred: any; isSaved: boolean; isLoading: boolean;
+  comm: CommunityStats | undefined; username: string; country: string;
   onPredict: (id: number, outcome: string) => void;
   onConfidence: (id: number, val: number) => void;
   onScore: (id: number, side: 'predicted_home_score' | 'predicted_away_score', val: number) => void;
@@ -144,25 +160,18 @@ function MatchCard({
 }) {
   const { locked, label: timeLeft } = useCountdown(match.kickoff);
   const [shared, setShared] = useState(false);
-
   const kickoffDate = formatKickoffLocal(match.kickoff);
-
-  const getPct = (count: number, total: number) =>
-    total === 0 ? 0 : Math.round((count / total) * 100);
-
+  const getPct = (count: number, total: number) => total === 0 ? 0 : Math.round((count / total) * 100);
   const homePct = comm ? getPct(comm.home, comm.total) : 0;
   const drawPct = comm ? getPct(comm.draw, comm.total) : 0;
   const awayPct = comm ? getPct(comm.away, comm.total) : 0;
-
   const homeVal = pred?.predicted_home_score ?? 0;
   const awayVal = pred?.predicted_away_score ?? 0;
-
   const pickLabel = pred?.outcome === 'home' ? match.home_team + ' Win'
     : pred?.outcome === 'away' ? match.away_team + ' Win' : 'Draw';
-
   const predictionShareUrl = buildShareUrl({ match, pred, username, country });
-  const shareText = '⚽ I just predicted ' + match.home_team + ' vs ' + match.away_team
-    + '\n🎯 ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
+  const shareText = '&#x26BD; I just predicted ' + match.home_team + ' vs ' + match.away_team
+    + '\n&#x1F3AF; ' + pickLabel + ' - ' + (pred?.confidence || 50) + '% confidence'
     + '\nThink you can call it better? -> ' + predictionShareUrl;
 
   const handleShare = async () => {
@@ -178,8 +187,6 @@ function MatchCard({
 
   return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isSaved ? '#2E9E5E' : '#1A7A4A'), borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-
-      {/* MATCH HEADER */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
         <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} &middot; {kickoffDate}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -193,17 +200,15 @@ function MatchCard({
         </div>
       </div>
 
-      {/* TEAMS */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.home_team}</span>
         <span style={{ fontSize: '13px', color: '#6B7280' }}>vs</span>
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.away_team}</span>
       </div>
 
-      {/* COMMUNITY SPLIT */}
       {comm && comm.total > 0 && (
         <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', fontSize: '11px', color: '#6B7280', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
             <span>&#x1F30D; {comm.total} prediction{comm.total !== 1 ? 's' : ''}</span>
             <span>Community split</span>
           </div>
@@ -220,7 +225,6 @@ function MatchCard({
         </div>
       )}
 
-      {/* ACTIVE PREDICTION FORM */}
       {!locked && (
         <>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
@@ -299,7 +303,6 @@ function MatchCard({
         </>
       )}
 
-      {/* LOCKED STATE */}
       {locked && (
         <div style={{ backgroundColor: '#1A3A20', padding: '12px', borderRadius: '8px' }}>
           {pred?.outcome ? (
@@ -312,32 +315,27 @@ function MatchCard({
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleShare}
-                  style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
                   {shared ? 'Shared!' : 'Share'}
                 </button>
-                <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
-                  target="_blank" rel="noopener noreferrer"
+                <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
                   style={{ flex: 1, padding: '8px', backgroundColor: '#25D366', color: 'white', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>
                   WhatsApp
                 </a>
               </div>
             </div>
           ) : (
-            <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>&#x1F512; Predictions closed - no pick recorded</span>
+            <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>&#x1F512; Predictions closed</span>
           )}
         </div>
       )}
 
-      {/* SHARE AFTER SAVING */}
       {isSaved && !locked && pred?.outcome && (
         <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-          <button onClick={handleShare}
-            style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+          <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
             {shared ? 'Shared!' : 'Share Prediction'}
           </button>
-          <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)}
-            target="_blank" rel="noopener noreferrer"
+          <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
             style={{ flex: 1, padding: '8px', backgroundColor: '#25D366', color: 'white', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center' }}>
             WhatsApp
           </a>
@@ -347,11 +345,12 @@ function MatchCard({
   );
 }
 
-// Main page
+// ── MAIN PAGE ──
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState('forecaster');
   const [country, setCountry] = useState('');
+  const [activeLeague, setActiveLeague] = useState('World Cup 2026');
   const [matches, setMatches] = useState<Match[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(true);
   const [predictions, setPredictions] = useState<{ [key: number]: any }>({});
@@ -365,34 +364,25 @@ export default function Predict() {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/auth'; return; }
-      const user = session.user;
-      setUser(user);
-
-      // ── FIX: Run all 4 queries in parallel instead of sequentially
-      // Previous version ran profile → matches → predictions → community
-      // one after another, causing visible "Loading matches..." delay.
-      // Promise.all fires all 4 simultaneously — ~3x faster page load. ──
+      setUser(session.user);
       setMatchesLoading(true);
 
       const [profileRes, matchRes, predRes, commRes] = await Promise.all([
-        supabase.from('profiles').select('username, country').eq('id', user.id).single(),
+        supabase.from('profiles').select('username, country').eq('id', session.user.id).single(),
         supabase.from('matches')
-          .select('id, api_id, home_team, away_team, kickoff, status, league')
+          .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
           .in('status', ['upcoming', 'locked'])
+          .eq('competition', 'World Cup 2026')
           .order('kickoff', { ascending: true }),
-        supabase.from('predictions').select('*').eq('user_id', user.id),
+        supabase.from('predictions').select('*').eq('user_id', session.user.id),
         supabase.from('predictions').select('match_id, predicted_outcome'),
       ]);
 
-      // Profile
       if (profileRes.data?.username) setUsername(profileRes.data.username);
       if (profileRes.data?.country) setCountry(profileRes.data.country);
-
-      // Matches
       setMatches(matchRes.data || []);
       setMatchesLoading(false);
 
-      // User predictions
       const predData = predRes.data;
       if (predData) {
         const existing: any = {};
@@ -400,7 +390,6 @@ export default function Predict() {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         let todayCount = 0;
-
         predData.forEach((p: any) => {
           existing[p.match_id] = {
             outcome: p.predicted_outcome,
@@ -416,7 +405,6 @@ export default function Predict() {
         setDailyUsed(todayCount);
       }
 
-      // Community stats
       const commData = commRes.data;
       if (commData) {
         const stats: { [key: number]: CommunityStats } = {};
@@ -430,6 +418,21 @@ export default function Predict() {
     };
     init();
   }, []);
+
+  // Reload matches when league changes
+  const handleLeagueChange = async (leagueKey: string) => {
+    setActiveLeague(leagueKey);
+    const league = LEAGUES.find(l => l.key === leagueKey);
+    if (!league?.active) return; // Don't fetch for coming soon leagues
+    setMatchesLoading(true);
+    const { data } = await supabase.from('matches')
+      .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
+      .in('status', ['upcoming', 'locked'])
+      .eq('competition', leagueKey)
+      .order('kickoff', { ascending: true });
+    setMatches(data || []);
+    setMatchesLoading(false);
+  };
 
   const handlePredict = (matchId: number, outcome: string) => {
     setPredictions(prev => ({
@@ -465,10 +468,7 @@ export default function Predict() {
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch('/api/predict', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + session?.access_token,
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session?.access_token },
       body: JSON.stringify({
         match_id: matchId,
         predicted_outcome: predictions[matchId].outcome,
@@ -494,49 +494,95 @@ export default function Predict() {
   };
 
   const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
+  const activeLeagueData = LEAGUES.find(l => l.key === activeLeague) || LEAGUES[0];
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-      <section style={{ textAlign: 'center', padding: '40px 20px 20px' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>&#x26BD; World Cup 2026</h1>
-        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '12px' }}>Predict match outcomes before kick-off. Lock in your confidence.</p>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(46,158,94,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#2E9E5E'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#2E9E5E', fontWeight: 'bold' }}>
-            {remaining === 0
-              ? 'Daily limit reached - come back tomorrow!'
-              : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions used - ' + remaining + ' remaining'
-            }
-          </span>
-        </div>
-        {username !== 'forecaster' && (
-          <div>
-            <a href={'/u/' + username} style={{ color: '#2E9E5E', fontSize: '13px', textDecoration: 'none' }}>
-              View your journal &#x2192;
-            </a>
-          </div>
-        )}
+
+      {/* HEADER */}
+      <section style={{ textAlign: 'center', padding: '32px 20px 0' }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '6px' }}>
+          &#x26BD; Predict Matches
+        </h1>
+        <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '16px' }}>
+          Lock in your call before kickoff. Permanent record. Free forever.
+        </p>
       </section>
-      <section style={{ maxWidth: '700px', margin: '0 auto', padding: '20px' }}>
-        {matchesLoading ? (
-          <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>&#x26BD;</div>
-            <p>Loading matches...</p>
+
+      {/* LEAGUE TABS */}
+      <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {LEAGUES.map((league) => (
+            <button key={league.key} onClick={() => handleLeagueChange(league.key)}
+              style={{
+                flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: '6px',
+                padding: '10px 16px', borderRadius: '10px',
+                border: '2px solid ' + (activeLeague === league.key ? league.color : '#1A3A1A'),
+                backgroundColor: activeLeague === league.key ? league.color + '20' : '#0D2B14',
+                color: activeLeague === league.key ? league.color : '#4B5563',
+                cursor: 'pointer', fontSize: '13px',
+                fontWeight: activeLeague === league.key ? 'bold' : 'normal',
+                transition: 'all 0.2s',
+                position: 'relative',
+              }}>
+              <span dangerouslySetInnerHTML={{ __html: league.icon }} />
+              {league.label}
+              {!league.active && (
+                <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#4B5563', padding: '1px 6px', borderRadius: '999px', marginLeft: '2px' }}>
+                  SOON
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* DAILY LIMIT + JOURNAL LINK */}
+      {activeLeagueData.active && (
+        <section style={{ textAlign: 'center', padding: '0 20px 16px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(46,158,94,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#2E9E5E'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#2E9E5E', fontWeight: 'bold' }}>
+              {remaining === 0
+                ? 'Daily limit reached - come back tomorrow!'
+                : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions - ' + remaining + ' remaining'
+              }
+            </span>
+          </div>
+          {username !== 'forecaster' && (
+            <div>
+              <a href={'/u/' + username} style={{ color: '#2E9E5E', fontSize: '13px', textDecoration: 'none' }}>
+                View your journal &#x2192;
+              </a>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* CONTENT */}
+      <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 40px' }}>
+        {!activeLeagueData.active ? (
+          <ComingSoon league={activeLeagueData} />
+        ) : matchesLoading ? (
+          <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x26BD;</div>
+            <p>Loading {activeLeague} matches...</p>
           </div>
         ) : matches.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#6B7280', padding: '40px', backgroundColor: '#0D2B14', borderRadius: '12px' }}>
-            <p>No upcoming matches found.</p>
+          <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px', backgroundColor: '#0D2B14', borderRadius: '12px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F4C5;</div>
+            <p style={{ marginBottom: '8px' }}>No upcoming {activeLeague} matches right now.</p>
+            <p style={{ fontSize: '12px', color: '#4B5563' }}>Check back soon — new matches are added automatically.</p>
           </div>
         ) : (
           matches.map((match) => (
             <MatchCard
-              key={match.id}
-              match={match}
+              key={match.id} match={match}
               pred={predictions[match.id]}
               isSaved={saved[match.id] ?? false}
               isLoading={loading[match.id] ?? false}
               comm={community[match.id]}
-              username={username}
-              country={country}
+              username={username} country={country}
               onPredict={handlePredict}
               onConfidence={handleConfidence}
               onScore={handleScore}
