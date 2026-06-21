@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/predict'
+  const next = searchParams.get('next') ?? '/profile'  // FIX: was /predict
 
   if (!code) {
     return NextResponse.redirect(`${origin}/auth?error=no_code`)
@@ -28,13 +28,12 @@ export async function GET(request: NextRequest) {
   )
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-
   if (error || !data.user) {
     console.error('OAuth error:', error)
     return NextResponse.redirect(`${origin}/auth?error=oauth_error`)
   }
 
-  // -- Check profile exists --
+  // Check profile exists
   const { data: profile } = await supabase
     .from('profiles')
     .select('id')
@@ -42,18 +41,16 @@ export async function GET(request: NextRequest) {
     .single()
 
   if (!profile) {
-    // -- Build username -- no extra DB call --
+    // Build username
     const googleName = data.user.user_metadata?.full_name || ''
     const emailPrefix = data.user.email?.split('@')[0] || 'user'
     const base = googleName
       ? googleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
       : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, '')
-    // Timestamp suffix = always unique, no extra DB query needed
     const username = `${base.slice(0, 15)}_${Date.now().toString().slice(-4)}`
 
+    // Founding forecaster check (pre-launch only — always false now)
     const isBeforeLaunch = new Date() < new Date('2026-06-11T19:00:00Z')
-
-    // -- Check founding forecaster count (max 100) --
     let foundingCount = 0
     if (isBeforeLaunch) {
       const { count } = await supabase
@@ -62,10 +59,9 @@ export async function GET(request: NextRequest) {
         .eq('badge_type', 'founding_forecaster')
       foundingCount = count || 0
     }
-
     const awardFoundingBadge = isBeforeLaunch && foundingCount < 100
 
-    // -- Run profile + badge inserts in parallel --
+    // Run profile + badge inserts in parallel
     await Promise.all([
       supabase.from('profiles').upsert([{
         id: data.user.id,
@@ -80,7 +76,6 @@ export async function GET(request: NextRequest) {
         rank: 'Rookie',
         rank_icon: '&#x1F949;',
       }], { onConflict: 'id' }),
-
       awardFoundingBadge
         ? supabase.from('user_badges').insert({
             user_id: data.user.id,
@@ -92,14 +87,20 @@ export async function GET(request: NextRequest) {
         : Promise.resolve(),
     ])
 
-    // -- Welcome email -- fire and forget, don't block redirect --
+    // Welcome email — fire and forget
+    // Note: Google OAuth users don't have country set yet
+    // They can set it on /profile → Settings tab
     fetch(`${origin}/api/welcome`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: data.user.email, username }),
+      body: JSON.stringify({
+        email: data.user.email,
+        username,
+        country: null, // Google users set country on profile page
+      }),
     }).catch(e => console.error('Welcome email failed silently:', e))
   }
 
-  // -- Redirect immediately --
+  // Redirect to profile (new users) or profile (returning users)
   return NextResponse.redirect(`${origin}${next}`)
 }
