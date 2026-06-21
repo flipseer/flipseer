@@ -162,7 +162,7 @@ export default function Auth() {
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username }),
+          body: JSON.stringify({ email, username, country }),
         }).catch(() => {});
         window.location.href = '/profile';
       }
