@@ -882,13 +882,7 @@ export default function Home() {
           )}
         </h1>
 
-        {/* Single clean subline */}
-        <p style={{ fontSize: 'clamp(16px, 3vw, 22px)', color: '#6B7280', lineHeight: '1.6', maxWidth: '560px', margin: '0 auto 40px', fontWeight: '400' }}>
-          {heroNation && nationRank > 0
-            ? <>Predict every match. Earn points for <strong style={{ color: 'white' }}>{heroNation}</strong>. Beat every rival nation.</>
-            : <>Predict matches. Lock your call. Build your permanent football record.</>
-          }
-        </p>
+
 
         {/* CTA — primary only, clean */}
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
