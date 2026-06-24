@@ -715,75 +715,157 @@ export default function Home() {
         </div>
       </div>
 
+
+      {/* ── NATION TICKER — scrolling flags, click to set nation ── */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 0', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
+          {[
+            { code: 'IN', flag: '&#x1F1EE;&#x1F1F3;', name: 'India' },
+            { code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia' },
+            { code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', name: 'Nigeria' },
+            { code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', name: 'Brazil' },
+            { code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', name: 'Argentina' },
+            { code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', name: 'France' },
+            { code: 'DE', flag: '&#x1F1E9;&#x1F1EA;', name: 'Germany' },
+            { code: 'ES', flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain' },
+            { code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal' },
+            { code: 'GB', flag: '&#x1F3F4;', name: 'England' },
+            { code: 'MX', flag: '&#x1F1F2;&#x1F1FD;', name: 'Mexico' },
+            { code: 'US', flag: '&#x1F1FA;&#x1F1F8;', name: 'USA' },
+            { code: 'GH', flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana' },
+            { code: 'MA', flag: '&#x1F1F2;&#x1F1E6;', name: 'Morocco' },
+            { code: 'JP', flag: '&#x1F1EF;&#x1F1F5;', name: 'Japan' },
+            { code: 'KR', flag: '&#x1F1F0;&#x1F1F7;', name: 'S.Korea' },
+            { code: 'AU', flag: '&#x1F1E6;&#x1F1FA;', name: 'Australia' },
+            { code: 'CA', flag: '&#x1F1E8;&#x1F1E6;', name: 'Canada' },
+            { code: 'ZA', flag: '&#x1F1FF;&#x1F1E6;', name: 'S.Africa' },
+            { code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', name: 'Egypt' },
+            { code: 'PK', flag: '&#x1F1F5;&#x1F1F0;', name: 'Pakistan' },
+            { code: 'BD', flag: '&#x1F1E7;&#x1F1E9;', name: 'Bangladesh' },
+            { code: 'SA', flag: '&#x1F1F8;&#x1F1E6;', name: 'Saudi Arabia' },
+            { code: 'TR', flag: '&#x1F1F9;&#x1F1F7;', name: 'Turkey' },
+            { code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', name: 'Norway' },
+            { code: 'SE', flag: '&#x1F1F8;&#x1F1EA;', name: 'Sweden' },
+            { code: 'IN', flag: '&#x1F1EE;&#x1F1F3;', name: 'India' },
+            { code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia' },
+            { code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', name: 'Nigeria' },
+            { code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', name: 'Brazil' },
+            { code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', name: 'Argentina' },
+            { code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', name: 'France' },
+            { code: 'DE', flag: '&#x1F1E9;&#x1F1EA;', name: 'Germany' },
+            { code: 'ES', flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain' },
+            { code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal' },
+            { code: 'GB', flag: '&#x1F3F4;', name: 'England' },
+            { code: 'MX', flag: '&#x1F1F2;&#x1F1FD;', name: 'Mexico' },
+            { code: 'US', flag: '&#x1F1FA;&#x1F1F8;', name: 'USA' },
+            { code: 'GH', flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana' },
+            { code: 'MA', flag: '&#x1F1F2;&#x1F1E6;', name: 'Morocco' },
+            { code: 'JP', flag: '&#x1F1EF;&#x1F1F5;', name: 'Japan' },
+            { code: 'KR', flag: '&#x1F1F0;&#x1F1F7;', name: 'S.Korea' },
+            { code: 'AU', flag: '&#x1F1E6;&#x1F1FA;', name: 'Australia' },
+            { code: 'CA', flag: '&#x1F1E8;&#x1F1E6;', name: 'Canada' },
+            { code: 'ZA', flag: '&#x1F1FF;&#x1F1E6;', name: 'S.Africa' },
+            { code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', name: 'Egypt' },
+            { code: 'PK', flag: '&#x1F1F5;&#x1F1F0;', name: 'Pakistan' },
+            { code: 'BD', flag: '&#x1F1E7;&#x1F1E9;', name: 'Bangladesh' },
+            { code: 'SA', flag: '&#x1F1F8;&#x1F1E6;', name: 'Saudi Arabia' },
+            { code: 'TR', flag: '&#x1F1F9;&#x1F1F7;', name: 'Turkey' },
+            { code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', name: 'Norway' },
+            { code: 'SE', flag: '&#x1F1F8;&#x1F1EA;', name: 'Sweden' },
+          ].map((n, i) => (
+            <a key={i} href={'/auth?nation=' + n.code}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid #1A3A1A', backgroundColor: heroNation === n.name ? 'rgba(46,158,94,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
+              <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
+              <span style={{ fontSize: '11px', color: heroNation === n.name ? '#2E9E5E' : '#4B5563', fontWeight: heroNation === n.name ? 'bold' : 'normal' }}>{n.name}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
       {/* ── SECTION 2: LIVE SCORES + ACTIVITY ── */}
       <LiveScoreCard />
       <LiveActivity />
 
       {/* ── SECTION 3: HERO ── */}
-      <section style={{ textAlign: 'center', padding: '64px 20px 48px', maxWidth: '900px', margin: '0 auto', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <section style={{ textAlign: 'center', padding: '80px 20px 64px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Live day badge */}
-        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '6px 18px', marginBottom: '28px' }}>
-          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span suppressHydrationWarning style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            {mounted ? `WORLD CUP 2026 · LIVE · Day ${days + 1}` : 'WORLD CUP 2026 · LIVE NOW'}
+        {/* Live badge */}
+        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+          <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>
+            {mounted ? `WORLD CUP 2026 · LIVE · DAY ${days + 1}` : 'WORLD CUP 2026 · LIVE NOW'}
           </span>
         </div>
 
-        {/* Dynamic hero headline */}
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '52px', lineHeight: '1.1', marginBottom: '20px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
+        {/* Hero headline — large, bold, minimal */}
+        <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '28px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           {heroNation && nationRank > 0 ? (
             <>
-              <span style={{ fontSize: '38px' }}>{heroNation.toUpperCase()} IS RANKED</span><br />
-              <span style={{ color: '#F59E0B', fontSize: '68px' }}>#{nationRank}</span><br />
-              <span style={{ color: '#2E9E5E', fontSize: '40px' }}>CAN YOU HELP THEM REACH #1?</span>
+              <span style={{ fontSize: 'clamp(32px, 6vw, 56px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '-0.5px' }}>{heroNation.toUpperCase()} IS RANKED</span>
+              <span style={{ fontSize: 'clamp(80px, 18vw, 140px)', color: '#F59E0B', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
+              <span style={{ fontSize: 'clamp(28px, 5vw, 48px)', color: '#2E9E5E', display: 'block', marginTop: '12px' }}>CAN YOU HELP THEM REACH #1?</span>
             </>
           ) : heroNation ? (
-            <>WHO WILL BE <span style={{ color: '#2E9E5E' }}>{heroNation.toUpperCase()}&apos;S</span><br />#1 FOOTBALL MIND?</>
+            <>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>WHO WILL BE</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', color: '#2E9E5E', display: 'block', letterSpacing: '-2px' }}>{heroNation.toUpperCase()}&apos;S</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>#1 FOOTBALL MIND?</span>
+            </>
           ) : (
-            <>WHO WILL TOP THE<br /><span style={{ color: '#2E9E5E' }}>GLOBAL PREDICTION</span><br />RANKINGS?</>
+            <>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>PROVE YOUR</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', color: '#2E9E5E', display: 'block', letterSpacing: '-2px' }}>FOOTBALL</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>INTELLIGENCE.</span>
+            </>
           )}
         </h1>
 
-        <p style={{ fontSize: '17px', color: '#9CA3AF', lineHeight: '1.7', maxWidth: '540px', margin: '0 auto 16px' }}>
+        {/* Single clean subline */}
+        <p style={{ fontSize: 'clamp(16px, 3vw, 22px)', color: '#6B7280', lineHeight: '1.6', maxWidth: '560px', margin: '0 auto 40px', fontWeight: '400' }}>
           {heroNation && nationRank > 0
-            ? <><strong style={{ color: '#D1FAE5' }}>Predict World Cup 2026 matches. Earn points for {heroNation}.</strong><br />Beat Brazil, Argentina, England and every rival nation.</>
-            : <>Your predictions. Locked forever.<br /><strong style={{ color: '#D1FAE5' }}>Permanent proof of your football intelligence.</strong></>
+            ? <>Predict every match. Earn points for <strong style={{ color: 'white' }}>{heroNation}</strong>. Beat every rival nation.</>
+            : <>Predict matches. Lock your call. Build your permanent football record.</>
           }
         </p>
 
-        {/* FOMO bar */}
+        {/* CTA — primary only, clean */}
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <a href="/auth?utm_source=homepage&utm_medium=hero&utm_campaign=wc2026"
+            style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(46,158,94,0.4)', letterSpacing: '0.3px' }}>
+            Predict Free &#x2192;
+          </a>
+          <a href="/nations"
+            style={{ backgroundColor: 'transparent', color: '#9CA3AF', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid #1A3A1A' }}>
+            Nation Battle
+          </a>
+        </div>
+
+        {/* Minimal trust line */}
+        <p style={{ fontSize: '13px', color: '#4B5563', letterSpacing: '0.5px' }}>
+          Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
+        </p>
+
+        {/* FOMO — only if data exists, compact */}
         {mounted && (nationForecasters > 0 || nextMatchCountdown) && (
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-            {nationForecasters > 0 && (
-              <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>
-                🔥 {nationForecasters} {heroNation || 'global'} forecaster{nationForecasters !== 1 ? 's' : ''} already competing
-              </span>
-            )}
-            {nationRank > 0 && (
-              <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold' }}>
-                🌍 {heroNation} ranked #{nationRank} globally
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #1A3A1A' }}>
+            {nationForecasters > 0 && nationRank > 0 && (
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                &#x1F525; <strong style={{ color: '#F59E0B' }}>{nationForecasters}</strong> {heroNation} forecasters competing
               </span>
             )}
             {nextMatchCountdown && (
-              <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>
-                ⏱ Next match locks in {nextMatchCountdown}
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                &#x23F1; Next match locks in <strong style={{ color: '#EF4444' }}>{nextMatchCountdown}</strong>
+              </span>
+            )}
+            {totalUsers > 0 && (
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                &#x1F30D; <strong style={{ color: '#2E9E5E' }}>{totalUsers}</strong> forecasters globally
               </span>
             )}
           </div>
         )}
-
-        {/* CTA */}
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <a href="/auth?utm_source=homepage&utm_medium=hero&utm_campaign=wc2026" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '16px 40px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(46,158,94,0.35)' }}>
-            ⚽ Predict Your First Match Free →
-          </a>
-          <a href="/how-to-play?utm_source=homepage&utm_medium=section&utm_campaign=how_it_works" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '16px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
-            How It Works
-          </a>
-        </div>
-        <p style={{ fontSize: '12px', color: '#4B5563' }}>100% Free · No Betting · No Gambling · Predict. Prove. Repeat.</p>
       </section>
 
       {/* ── SECTION 4: UPCOMING MATCHES ── */}
