@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: `See what football fans predict for ${home} vs ${away}. Community prediction percentages, top forecasters, exact score predictions. Free. No betting.`,
     keywords: `${home} vs ${away} prediction, ${home} ${away} World Cup 2026, ${home} vs ${away} forecast, football prediction ${home} ${away}`,
     openGraph: {
-      title: `${home} vs ${away} — World Cup 2026 Predictions | Flipseer`,
+      title: `${home} vs ${away} -- World Cup 2026 Predictions | Flipseer`,
       description: `What are football fans predicting for ${home} vs ${away}? See community split, top forecasters and exact score predictions on Flipseer.`,
       url: `https://flipseer.com/matches/${params.match}`,
       images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
@@ -35,9 +35,9 @@ export default async function MatchPage({ params }: Props) {
     return (
       <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Arial, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x26BD;</div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Match not found</h1>
-          <a href="/predict" style={{ color: '#2E9E5E' }}>View all matches →</a>
+          <a href="/predict" style={{ color: '#2E9E5E' }}>View all matches &#x2192;</a>
         </div>
       </main>
     );
