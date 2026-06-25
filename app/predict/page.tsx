@@ -188,7 +188,10 @@ function MatchCard({
   return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isSaved ? '#2E9E5E' : '#1A7A4A'), borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
-        <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} &middot; {kickoffDate}</span>
+        <a href={`/matches/${match.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${match.away_team.toLowerCase().replace(/\s+/g, '-')}`}
+          style={{ fontSize: '12px', color: '#6B7280', textDecoration: 'none' }}>
+          {match.league} &middot; {kickoffDate} &#x2197;
+        </a>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {!locked && timeLeft && (
             <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
