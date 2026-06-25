@@ -64,7 +64,7 @@ export default async function NationPage({ params }: Props) {
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F30D;</div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Nation not found</h1>
-          <a href="/nations" style={{ color: '#2E9E5E' }}>View all nations -></a>
+          <a href="/nations" style={{ color: '#2E9E5E' }}>View all nations &#x2192;</a>
         </div>
       </main>
     );
