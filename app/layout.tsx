@@ -99,48 +99,17 @@ const structuredData = {
     'EPL 2026/27 predictions (August)',
     'Champions League predictions (September)',
   ],
-},
-{
-  '@context': 'https://schema.org',
-  '@type': 'SportsOrganization',
-  name: 'Flipseer Nation Battle',
-  url: 'https://flipseer.com/nations',
-  sport: 'Football',
-  description: 'Global nation vs nation football prediction competition. Predict World Cup 2026 matches and earn points for your country.',
-},
-{
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: 'Is Flipseer free to use?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Flipseer is 100% free. No card required. No betting. No gambling. Ever.' },
-    },
-    {
-      '@type': 'Question',
-      name: 'What is the Nation Battle?',
-      acceptedAnswer: { '@type': 'Answer', text: 'Every prediction you make earns points for your nation. Countries compete on a global leaderboard updated in real time.' },
-    },
-    {
-      '@type': 'Question',
-      name: 'Can I edit my predictions?',
-      acceptedAnswer: { '@type': 'Answer', text: 'No. Predictions lock permanently at kickoff. This is by design — your record is a permanent proof of your football intelligence.' },
-    },
-  ],
-},
-];
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         {/* Structured Data */}
-        {Array.isArray(structuredData) ? structuredData.map((schema, i) => (
-          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-        )) : (
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-        )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
 
         {/* PostHog Analytics */}
         <script
