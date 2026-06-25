@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   publisher: 'Flipseer',
   metadataBase: new URL('https://flipseer.com'),
   alternates: { canonical: 'https://flipseer.com' },
+  verification: {
+    google: 'add-your-google-search-console-verification-here',
+  },
 
   // ── PWA Manifest ──
   manifest: '/manifest.json',
@@ -63,15 +66,13 @@ export const metadata: Metadata = {
   // ── PWA Icons ──
   icons: {
     icon: [
-      { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [
       { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
-    shortcut: '/icons/icon-96x96.png',
+    shortcut: '/icons/icon-192x192.png',
   },
 
   category: 'sports',
@@ -98,17 +99,48 @@ const structuredData = {
     'EPL 2026/27 predictions (August)',
     'Champions League predictions (September)',
   ],
-};
+},
+{
+  '@context': 'https://schema.org',
+  '@type': 'SportsOrganization',
+  name: 'Flipseer Nation Battle',
+  url: 'https://flipseer.com/nations',
+  sport: 'Football',
+  description: 'Global nation vs nation football prediction competition. Predict World Cup 2026 matches and earn points for your country.',
+},
+{
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Flipseer free to use?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Yes. Flipseer is 100% free. No card required. No betting. No gambling. Ever.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is the Nation Battle?',
+      acceptedAnswer: { '@type': 'Answer', text: 'Every prediction you make earns points for your nation. Countries compete on a global leaderboard updated in real time.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I edit my predictions?',
+      acceptedAnswer: { '@type': 'Answer', text: 'No. Predictions lock permanently at kickoff. This is by design — your record is a permanent proof of your football intelligence.' },
+    },
+  ],
+},
+];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         {/* Structured Data */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-        />
+        {Array.isArray(structuredData) ? structuredData.map((schema, i) => (
+          <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+        )) : (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        )}
 
         {/* PostHog Analytics */}
         <script
@@ -130,7 +162,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-title" content="Flipseer" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#1A7A4A" />
-        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+        <meta name="msapplication-TileImage" content="/icons/icon-192x192.png" />
         <meta name="msapplication-tap-highlight" content="no" />
 
         {/* Preconnect */}
@@ -150,7 +182,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontFamily: 'Arial, sans-serif',
         }}>
           <div style={{ marginBottom: '16px' }}>
-            <span style={{ color: '#2E9E5E', fontWeight: 'bold', fontSize: '16px' }}>-- FLIPSEER</span>
+            <span style={{ color: '#2E9E5E', fontWeight: 'bold', fontSize: '16px' }}>&#x26BD; FLIPSEER</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <a href="/about" style={footerLink}>About</a>
@@ -161,7 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/disclaimer" style={footerLink}>Disclaimer</a>
           </div>
           <p style={{ color: '#4B5563', fontSize: '12px', margin: 0 }}>
-            -- 2026 Flipseer -- Pure football reputation -- No betting -- No gambling -- Ever.
+            &#xA9; 2026 Flipseer &nbsp;&#xB7;&nbsp; Pure football reputation &nbsp;&#xB7;&nbsp; No betting &nbsp;&#xB7;&nbsp; No gambling &nbsp;&#xB7;&nbsp; Ever.
           </p>
         </footer>
       </body>
