@@ -28,7 +28,7 @@ export default function NationPageClient({ country, slug, profiles, nationRank, 
 
       {/* HERO */}
       <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '60px 20px 40px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ fontSize: '80px', marginBottom: '16px' }}>{country.flag}</div>
+        <div style={{ fontSize: '80px', marginBottom: '16px' }} dangerouslySetInnerHTML={{ __html: country.flag }} />
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 6vw, 48px)', marginBottom: '8px', lineHeight: '1.2' }}>
           {country.name} Football Predictions
         </h1>
@@ -53,7 +53,7 @@ export default function NationPageClient({ country, slug, profiles, nationRank, 
         {/* CTAs */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/auth" style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 0 30px rgba(46,158,94,0.3)' }}>
-            {country.flag} Represent {country.name} Free →
+            <span dangerouslySetInnerHTML={{ __html: country.flag }} /> Represent {country.name} Free &#x2192;
           </a>
           <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
             style={{ backgroundColor: '#25D366', color: 'white', padding: '14px 24px', borderRadius: '10px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold' }}>
@@ -76,7 +76,7 @@ export default function NationPageClient({ country, slug, profiles, nationRank, 
 
           {profiles.length === 0 ? (
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>{country.flag}</div>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }} dangerouslySetInnerHTML={{ __html: country.flag }} />
               <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>
                 No {country.adjective} forecasters yet.
               </p>
@@ -169,7 +169,7 @@ export default function NationPageClient({ country, slug, profiles, nationRank, 
 
         {/* FINAL CTA */}
         <div style={{ textAlign: 'center', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '32px 24px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>{country.flag}</div>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }} dangerouslySetInnerHTML={{ __html: country.flag }} />
           <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '8px' }}>
             {country.name} needs more forecasters
           </h3>
