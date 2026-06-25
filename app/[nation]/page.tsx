@@ -3,31 +3,31 @@ import { createClient } from '@supabase/supabase-js';
 import NationPageClient from './NationPageClient';
 
 const COUNTRY_DATA: { [key: string]: { name: string; code: string; flag: string; adjective: string; rivals: string[] } } = {
-  'india': { name: 'India', code: 'IN', flag: '🇮🇳', adjective: 'Indian', rivals: ['Indonesia', 'Brazil', 'Argentina'] },
-  'indonesia': { name: 'Indonesia', code: 'ID', flag: '🇮🇩', adjective: 'Indonesian', rivals: ['India', 'Nigeria', 'Brazil'] },
-  'nigeria': { name: 'Nigeria', code: 'NG', flag: '🇳🇬', adjective: 'Nigerian', rivals: ['Ghana', 'Brazil', 'England'] },
-  'brazil': { name: 'Brazil', code: 'BR', flag: '🇧🇷', adjective: 'Brazilian', rivals: ['Argentina', 'France', 'Germany'] },
-  'argentina': { name: 'Argentina', code: 'AR', flag: '🇦🇷', adjective: 'Argentinian', rivals: ['Brazil', 'France', 'England'] },
-  'england': { name: 'England', code: 'GB', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', adjective: 'English', rivals: ['France', 'Germany', 'Argentina'] },
-  'france': { name: 'France', code: 'FR', flag: '🇫🇷', adjective: 'French', rivals: ['England', 'Germany', 'Spain'] },
-  'germany': { name: 'Germany', code: 'DE', flag: '🇩🇪', adjective: 'German', rivals: ['France', 'England', 'Spain'] },
-  'spain': { name: 'Spain', code: 'ES', flag: '🇪🇸', adjective: 'Spanish', rivals: ['Portugal', 'France', 'Germany'] },
-  'portugal': { name: 'Portugal', code: 'PT', flag: '🇵🇹', adjective: 'Portuguese', rivals: ['Spain', 'France', 'Brazil'] },
-  'mexico': { name: 'Mexico', code: 'MX', flag: '🇲🇽', adjective: 'Mexican', rivals: ['USA', 'Argentina', 'Brazil'] },
-  'usa': { name: 'USA', code: 'US', flag: '🇺🇸', adjective: 'American', rivals: ['Mexico', 'England', 'Brazil'] },
-  'ghana': { name: 'Ghana', code: 'GH', flag: '🇬🇭', adjective: 'Ghanaian', rivals: ['Nigeria', 'Senegal', 'Morocco'] },
-  'morocco': { name: 'Morocco', code: 'MA', flag: '🇲🇦', adjective: 'Moroccan', rivals: ['Senegal', 'Nigeria', 'France'] },
-  'japan': { name: 'Japan', code: 'JP', flag: '🇯🇵', adjective: 'Japanese', rivals: ['South Korea', 'Australia', 'Brazil'] },
-  'south-korea': { name: 'South Korea', code: 'KR', flag: '🇰🇷', adjective: 'Korean', rivals: ['Japan', 'Australia', 'Germany'] },
-  'australia': { name: 'Australia', code: 'AU', flag: '🇦🇺', adjective: 'Australian', rivals: ['Japan', 'South Korea', 'England'] },
-  'pakistan': { name: 'Pakistan', code: 'PK', flag: '🇵🇰', adjective: 'Pakistani', rivals: ['India', 'Saudi Arabia', 'Iran'] },
-  'bangladesh': { name: 'Bangladesh', code: 'BD', flag: '🇧🇩', adjective: 'Bangladeshi', rivals: ['India', 'Indonesia', 'Nigeria'] },
-  'egypt': { name: 'Egypt', code: 'EG', flag: '🇪🇬', adjective: 'Egyptian', rivals: ['Morocco', 'Nigeria', 'Senegal'] },
-  'senegal': { name: 'Senegal', code: 'SN', flag: '🇸🇳', adjective: 'Senegalese', rivals: ['Nigeria', 'Ghana', 'Morocco'] },
-  'south-africa': { name: 'South Africa', code: 'ZA', flag: '🇿🇦', adjective: 'South African', rivals: ['Nigeria', 'Ghana', 'Morocco'] },
-  'saudi-arabia': { name: 'Saudi Arabia', code: 'SA', flag: '🇸🇦', adjective: 'Saudi', rivals: ['Egypt', 'Iran', 'UAE'] },
-  'turkey': { name: 'Turkey', code: 'TR', flag: '🇹🇷', adjective: 'Turkish', rivals: ['Germany', 'France', 'Croatia'] },
-  'norway': { name: 'Norway', code: 'NO', flag: '🇳🇴', adjective: 'Norwegian', rivals: ['Sweden', 'Denmark', 'England'] },
+  'india': { name: 'India', code: 'IN', flag: '&#x1F1EE;&#x1F1F3;', adjective: 'Indian', rivals: ['Indonesia', 'Brazil', 'Argentina'] },
+  'indonesia': { name: 'Indonesia', code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', adjective: 'Indonesian', rivals: ['India', 'Nigeria', 'Brazil'] },
+  'nigeria': { name: 'Nigeria', code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', adjective: 'Nigerian', rivals: ['Ghana', 'Brazil', 'England'] },
+  'brazil': { name: 'Brazil', code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', adjective: 'Brazilian', rivals: ['Argentina', 'France', 'Germany'] },
+  'argentina': { name: 'Argentina', code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', adjective: 'Argentinian', rivals: ['Brazil', 'France', 'England'] },
+  'england': { name: 'England', code: 'GB', flag: '&#x1F3F4;', adjective: 'English', rivals: ['France', 'Germany', 'Argentina'] },
+  'france': { name: 'France', code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', adjective: 'French', rivals: ['England', 'Germany', 'Spain'] },
+  'germany': { name: 'Germany', code: 'DE', flag: '&#x1F1E9;&#x1F1EA;', adjective: 'German', rivals: ['France', 'England', 'Spain'] },
+  'spain': { name: 'Spain', code: 'ES', flag: '&#x1F1EA;&#x1F1F8;', adjective: 'Spanish', rivals: ['Portugal', 'France', 'Germany'] },
+  'portugal': { name: 'Portugal', code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', adjective: 'Portuguese', rivals: ['Spain', 'France', 'Brazil'] },
+  'mexico': { name: 'Mexico', code: 'MX', flag: '&#x1F1F2;&#x1F1FD;', adjective: 'Mexican', rivals: ['USA', 'Argentina', 'Brazil'] },
+  'usa': { name: 'USA', code: 'US', flag: '&#x1F1FA;&#x1F1F8;', adjective: 'American', rivals: ['Mexico', 'England', 'Brazil'] },
+  'ghana': { name: 'Ghana', code: 'GH', flag: '&#x1F1EC;&#x1F1ED;', adjective: 'Ghanaian', rivals: ['Nigeria', 'Senegal', 'Morocco'] },
+  'morocco': { name: 'Morocco', code: 'MA', flag: '&#x1F1F2;&#x1F1E6;', adjective: 'Moroccan', rivals: ['Senegal', 'Nigeria', 'France'] },
+  'japan': { name: 'Japan', code: 'JP', flag: '&#x1F1EF;&#x1F1F5;', adjective: 'Japanese', rivals: ['South Korea', 'Australia', 'Brazil'] },
+  'south-korea': { name: 'South Korea', code: 'KR', flag: '&#x1F1F0;&#x1F1F7;', adjective: 'Korean', rivals: ['Japan', 'Australia', 'Germany'] },
+  'australia': { name: 'Australia', code: 'AU', flag: '&#x1F1E6;&#x1F1FA;', adjective: 'Australian', rivals: ['Japan', 'South Korea', 'England'] },
+  'pakistan': { name: 'Pakistan', code: 'PK', flag: '&#x1F1F5;&#x1F1F0;', adjective: 'Pakistani', rivals: ['India', 'Saudi Arabia', 'Iran'] },
+  'bangladesh': { name: 'Bangladesh', code: 'BD', flag: '&#x1F1E7;&#x1F1E9;', adjective: 'Bangladeshi', rivals: ['India', 'Indonesia', 'Nigeria'] },
+  'egypt': { name: 'Egypt', code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', adjective: 'Egyptian', rivals: ['Morocco', 'Nigeria', 'Senegal'] },
+  'senegal': { name: 'Senegal', code: 'SN', flag: '&#x1F1F8;&#x1F1F3;', adjective: 'Senegalese', rivals: ['Nigeria', 'Ghana', 'Morocco'] },
+  'south-africa': { name: 'South Africa', code: 'ZA', flag: '&#x1F1FF;&#x1F1E6;', adjective: 'South African', rivals: ['Nigeria', 'Ghana', 'Morocco'] },
+  'saudi-arabia': { name: 'Saudi Arabia', code: 'SA', flag: '&#x1F1F8;&#x1F1E6;', adjective: 'Saudi', rivals: ['Egypt', 'Iran', 'UAE'] },
+  'turkey': { name: 'Turkey', code: 'TR', flag: '&#x1F1F9;&#x1F1F7;', adjective: 'Turkish', rivals: ['Germany', 'France', 'Croatia'] },
+  'norway': { name: 'Norway', code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', adjective: 'Norwegian', rivals: ['Sweden', 'Denmark', 'England'] },
 };
 
 type Props = { params: { nation: string } };
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: `${country.adjective} football fans predicting World Cup 2026 matches on Flipseer. See ${country.name}'s global ranking, top forecasters, and recent predictions. Free. No betting.`,
     keywords: `${country.name} football predictions, ${country.name} World Cup 2026, ${country.adjective} football predictor, ${country.name} nation battle, football prediction ${country.name}`,
     openGraph: {
-      title: `${country.flag} ${country.name} — World Cup 2026 Nation Battle | Flipseer`,
+      title: `${country.flag} ${country.name} -- World Cup 2026 Nation Battle | Flipseer`,
       description: `${country.name} forecasters competing globally. Predict matches. Earn points for ${country.name}. Build your permanent football record.`,
       url: `https://flipseer.com/${slug}`,
       images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
@@ -62,9 +62,9 @@ export default async function NationPage({ params }: Props) {
     return (
       <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Arial, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌍</div>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F30D;</div>
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Nation not found</h1>
-          <a href="/nations" style={{ color: '#2E9E5E' }}>View all nations →</a>
+          <a href="/nations" style={{ color: '#2E9E5E' }}>View all nations -></a>
         </div>
       </main>
     );
