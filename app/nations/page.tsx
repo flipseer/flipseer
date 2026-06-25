@@ -326,7 +326,14 @@ export default function NationsPage() {
                     <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: nation.flag }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                        {nation.name}
+                        {nation.code !== 'OTHER' ? (
+                          <a href={`/${nation.name.toLowerCase().replace(/\s+/g, '-')}`}
+                            style={{ color: 'white', textDecoration: 'none' }}
+                            onMouseOver={e => (e.currentTarget.style.color = '#2E9E5E')}
+                            onMouseOut={e => (e.currentTarget.style.color = 'white')}>
+                            {nation.name}
+                          </a>
+                        ) : <span>{nation.name}</span>}
                         {isUser && <span style={{ fontSize: '10px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.2)', padding: '1px 8px', borderRadius: '999px', fontWeight: 'bold' }}>YOU</span>}
                         {nation.code === 'OTHER' && <span style={{ fontSize: '10px', color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', padding: '1px 8px', borderRadius: '999px' }}>Set country →</span>}
                       </div>
