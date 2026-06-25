@@ -49,7 +49,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
       {/* MATCH HERO */}
       <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '48px 20px 32px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
         <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>
-          WORLD CUP 2026 {match?.league ? '&#xB7; ' + match.league : ''}
+          WORLD CUP 2026 {match?.league ? '· ' + match.league : ''}
         </p>
 
         {/* Teams */}
@@ -101,7 +101,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </a>
           <button onClick={() => { navigator.clipboard.writeText('flipseer.com/matches/' + slug); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
             style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', padding: '12px 20px', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>
-            {copied ? '&#x2705; Copied' : '&#x1F517; Copy Link'}
+            {copied ? 'Copied!' : 'Copy Link'}
           </button>
         </div>
       </div>
@@ -167,7 +167,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
                         @{p.profiles?.username}
                       </a>
                       <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
-                        {outcome}{hasScore ? ` &#xB7; ${p.predicted_home_score}-${p.predicted_away_score}` : ''} &#xB7; {p.confidence_pct}% confidence
+                        {outcome}{hasScore ? ` · ${p.predicted_home_score}-${p.predicted_away_score}` : ''} · {p.confidence_pct}% confidence
                       </div>
                     </div>
                     <span style={{ fontSize: '10px', color: '#4B5563', backgroundColor: '#1A3A1A', padding: '2px 8px', borderRadius: '999px' }}>&#x1F512; Locked</span>
@@ -203,7 +203,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
             Predict Free &#x2192;
           </a>
-          <p style={{ color: '#4B5563', fontSize: '11px', marginTop: '10px' }}>Free forever &#xB7; No card &#xB7; No betting</p>
+          <p style={{ color: '#4B5563', fontSize: '11px', marginTop: '10px' }}>Free forever · No card · No betting</p>
         </div>
 
       </div>
