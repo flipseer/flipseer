@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
@@ -43,11 +44,21 @@ export default function GroupsPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const searchParams = useSearchParams();
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg); setToastType(type);
     setTimeout(() => setToast(''), 3500);
   };
+
+  useEffect(() => {
+    // Auto-fill join code from URL (?join=FLIP-XXXX or /join/FLIP-XXXX)
+    const joinCode = searchParams.get('join');
+    if (joinCode) {
+      setInviteCode(joinCode.toUpperCase());
+      setShowJoin(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const init = async () => {
@@ -141,9 +152,10 @@ export default function GroupsPage() {
   };
 
   const shareGroup = (group: any) => {
-    const text = `\u26BD Join my Flipseer group "${group.name}"!\n\nCompete on World Cup 2026 predictions.\nUse invite code: ${group.invite_code}\n\nJoin free \u2192 flipseer.com/groups\n\n#WorldCup2026 #Flipseer`;
+    const joinUrl = `https://flipseer.com/join/${group.invite_code}`;
+    const text = `\u26BD Join my Flipseer league "${group.name}"!\n\nPredict World Cup 2026 matches. Compete privately AND earn points globally.\n\nOne click to join \u2192 ${joinUrl}\n\n#WorldCup2026 #Flipseer`;
     if (navigator.share) {
-      navigator.share({ title: 'Join ' + group.name + ' on Flipseer', text, url: 'https://flipseer.com/groups' });
+      navigator.share({ title: 'Join ' + group.name + ' on Flipseer', text, url: joinUrl });
     } else {
       window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
     }
@@ -186,10 +198,13 @@ export default function GroupsPage() {
           <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>PRIVATE GROUPS · WORLD CUP 2026</span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 6vw, 48px)', letterSpacing: '-1px', marginBottom: '10px', lineHeight: '1.1' }}>
-          BEAT YOUR<br /><span style={{ color: '#2E9E5E' }}>FRIENDS.</span>
+          YOUR OWN<br /><span style={{ color: '#2E9E5E' }}>FOOTBALL LEAGUE.</span>
         </h1>
-        <p style={{ color: '#4B5563', fontSize: '14px', maxWidth: '420px', margin: '0 auto 28px', lineHeight: '1.6' }}>
-          Compete in private groups while your predictions still count globally. Create a group, share the code, dominate.
+        <p style={{ color: '#4B5563', fontSize: '14px', maxWidth: '460px', margin: '0 auto 8px', lineHeight: '1.6' }}>
+          Create a private league with friends. Every prediction still counts globally, in your nation, and in your permanent record.
+        </p>
+        <p style={{ color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', marginBottom: '28px' }}>
+          One prediction. Four systems. No extra steps.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => { setShowCreate(true); setShowJoin(false); }}
@@ -385,22 +400,62 @@ export default function GroupsPage() {
 
         {/* ── EMPTY STATE ── */}
         {myGroups.length === 0 && !showCreate && !showJoin && (
-          <div style={{ textAlign: 'center', padding: '48px 24px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '16px', marginBottom: '24px' }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>👥</div>
-            <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '8px' }}>No groups yet</h3>
-            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '24px', lineHeight: '1.6' }}>
-              Create a private group and challenge your friends.<br />
-              Your predictions count here AND globally.
-            </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => setShowCreate(true)}
-                style={{ backgroundColor: '#1A7A4A', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-                + Create a Group
-              </button>
-              <button onClick={() => setShowJoin(true)}
-                style={{ backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 24px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer' }}>
-                Join with Code
-              </button>
+          <div style={{ marginBottom: '24px' }}>
+
+            {/* Why create a group */}
+            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '16px', padding: '24px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px' }}>WHY CREATE A LEAGUE?</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+                {[
+                  { icon: '⚽', text: 'Compete privately with friends, family, or your WhatsApp gang' },
+                  { icon: '📊', text: 'Compare accuracy — see who actually knows football' },
+                  { icon: '🌍', text: 'Every prediction still counts in the global leaderboard' },
+                  { icon: '🏆', text: 'Your nation earns points from every call you make' },
+                  { icon: '🔒', text: 'Your permanent record grows across all competitions' },
+                ].map(({ icon, text }) => (
+                  <div key={text} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>{icon}</span>
+                    <span style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '1.5' }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ backgroundColor: '#050E05', border: '1px solid #2E9E5E', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px' }}>
+                <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>
+                  One prediction powers four systems — group, nation, global leaderboard, and permanent reputation.
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button onClick={() => setShowCreate(true)}
+                  style={{ flex: 1, backgroundColor: '#1A7A4A', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', minWidth: '140px' }}>
+                  + Create Your League
+                </button>
+                <button onClick={() => setShowJoin(true)}
+                  style={{ flex: 1, backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', minWidth: '140px' }}>
+                  Join with Code
+                </button>
+              </div>
+            </div>
+
+            {/* League templates */}
+            <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>POPULAR LEAGUE IDEAS</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px' }}>
+              {[
+                { icon: '🏆', name: 'Friends League', desc: 'Your inner circle' },
+                { icon: '⚽', name: 'Family League', desc: 'Keep it in the family' },
+                { icon: '🇮🇳', name: 'India Fans', desc: 'Represent the nation' },
+                { icon: '🏢', name: 'Office League', desc: 'Beat your colleagues' },
+                { icon: '🍻', name: 'Matchday Gang', desc: 'Watch party crew' },
+                { icon: '📱', name: 'WhatsApp Group', desc: 'Your chat, ranked' },
+              ].map(({ icon, name, desc }) => (
+                <button key={name} onClick={() => { setNewGroupName(name); setShowCreate(true); }}
+                  style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s' }}
+                  onMouseOver={e => (e.currentTarget.style.borderColor = '#2E9E5E')}
+                  onMouseOut={e => (e.currentTarget.style.borderColor = '#1A3A1A')}>
+                  <div style={{ fontSize: '24px', marginBottom: '6px' }}>{icon}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', marginBottom: '2px' }}>{name}</div>
+                  <div style={{ fontSize: '11px', color: '#4B5563' }}>{desc}</div>
+                </button>
+              ))}
             </div>
           </div>
         )}
