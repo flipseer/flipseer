@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
@@ -44,7 +43,7 @@ export default function GroupsPage() {
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
-  const searchParams = useSearchParams();
+
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg); setToastType(type);
@@ -52,15 +51,14 @@ export default function GroupsPage() {
   };
 
   useEffect(() => {
-    // Auto-fill join code from URL (?join=FLIP-XXXX or /join/FLIP-XXXX)
-    const joinCode = searchParams.get('join');
+    // Auto-fill join code from URL without useSearchParams
+    const params = new URLSearchParams(window.location.search);
+    const joinCode = params.get('join');
     if (joinCode) {
       setInviteCode(joinCode.toUpperCase());
       setShowJoin(true);
     }
-  }, [searchParams]);
 
-  useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = '/auth'; return; }
