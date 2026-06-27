@@ -76,8 +76,13 @@ export async function POST(req: NextRequest) {
 
           <!-- CTA -->
           <a href="https://flipseer.com/predict?utm_source=welcome_email&utm_medium=email&utm_campaign=signup"
-            style="display:block;background:#1A7A4A;color:white;padding:18px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:17px;margin-bottom:20px;box-shadow:0 0 20px rgba(46,158,94,0.3)">
+            style="display:block;background:#1A7A4A;color:white;padding:18px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:17px;margin-bottom:12px;box-shadow:0 0 20px rgba(46,158,94,0.3)">
             ⚽ Make Your First Prediction →
+          </a>
+
+          <a href="https://flipseer.com/groups?utm_source=welcome_email&utm_medium=email&utm_campaign=groups"
+            style="display:block;background:rgba(245,158,11,0.08);color:#F59E0B;padding:14px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:15px;margin-bottom:20px;border:1px solid rgba(245,158,11,0.3)">
+            🏆 Challenge Your Friends →
           </a>
 
           <!-- COMING NEXT -->
