@@ -58,6 +58,12 @@ export default function GroupsPage() {
       setInviteCode(joinCode.toUpperCase());
       setShowJoin(true);
     }
+    // New user welcome — auto-open create form
+    const isWelcome = params.get('welcome') === '1';
+    if (isWelcome) {
+      setShowCreate(true);
+      showToast('Welcome! Create your first league and challenge your friends →');
+    }
 
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
