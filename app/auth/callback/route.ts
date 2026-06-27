@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/profile'  // FIX: was /predict
+  const next = searchParams.get('next') ?? '/profile'
 
   if (!code) {
     return NextResponse.redirect(`${origin}/auth?error=no_code`)
@@ -40,7 +40,9 @@ export async function GET(request: NextRequest) {
     .eq('id', data.user.id)
     .single()
 
-  if (!profile) {
+  const isNewUser = !profile;
+
+  if (isNewUser) {
     // Build username
     const googleName = data.user.user_metadata?.full_name || ''
     const emailPrefix = data.user.email?.split('@')[0] || 'user'
@@ -88,19 +90,20 @@ export async function GET(request: NextRequest) {
     ])
 
     // Welcome email — fire and forget
-    // Note: Google OAuth users don't have country set yet
-    // They can set it on /profile → Settings tab
     fetch(`${origin}/api/welcome`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: data.user.email,
         username,
-        country: null, // Google users set country on profile page
+        country: null,
       }),
     }).catch(e => console.error('Welcome email failed silently:', e))
+
+    // New users → groups page to create first league + challenge friends
+    return NextResponse.redirect(`${origin}/groups?welcome=1`)
   }
 
-  // Redirect to profile (new users) or profile (returning users)
+  // Returning users → wherever they were going
   return NextResponse.redirect(`${origin}${next}`)
 }
