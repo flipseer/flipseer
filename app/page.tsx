@@ -534,7 +534,7 @@ function PlayerSpotlight() {
           <button key={i} onClick={() => { setFade(false); setTimeout(() => { setCurrent(i); setFade(true); }, 400); }} style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }} />
         ))}
       </div>
-      <p style={{ textAlign: 'center', fontSize: '10px', color: '#4B5563', marginTop: '8px' }}>Auto-rotating every 12s - {current + 1}/{PLAYERS.length}</p>
+
     </section>
   );
 }
@@ -708,7 +708,6 @@ export default function Home() {
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
-      <WelcomeConfetti />
       <ClaimModal />
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -884,21 +883,24 @@ export default function Home() {
 
 
 
-        {/* CTA — primary only, clean */}
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+        {/* CTA */}
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/auth?utm_source=homepage&utm_medium=hero&utm_campaign=wc2026"
             style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(46,158,94,0.4)', letterSpacing: '0.3px' }}>
             Predict Free &#x2192;
           </a>
-          <a href="/nations"
-            style={{ backgroundColor: 'transparent', color: '#9CA3AF', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid #1A3A1A' }}>
-            Nation Battle
+          <a href="/groups?utm_source=homepage&utm_medium=hero&utm_campaign=groups"
+            style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
+            &#x1F3C6; Challenge Friends
           </a>
         </div>
 
-        {/* Minimal trust line */}
-        <p style={{ fontSize: '13px', color: '#4B5563', letterSpacing: '0.5px' }}>
-          Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
+        {/* Trust + groups hook */}
+        <p style={{ fontSize: '13px', color: '#4B5563', letterSpacing: '0.5px', marginBottom: '6px' }}>
+          Free forever &nbsp;&#xB7;&nbsp; No betting &nbsp;&#xB7;&nbsp; No card required
+        </p>
+        <p style={{ fontSize: '13px', color: '#6B7280' }}>
+          Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> and challenge your WhatsApp group.
         </p>
 
         {/* FOMO — only if data exists, compact */}
@@ -1073,7 +1075,6 @@ export default function Home() {
 
           {/* Final CTA */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '12px', lineHeight: '1.2' }}>
               {heroNation
                 ? <>{heroNation}&apos;s #1 football mind<br /><span style={{ color: '#2E9E5E' }}>could be you.</span></>
