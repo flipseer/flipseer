@@ -317,7 +317,7 @@ function MatchCard({
                   {' '}&middot; {pred.confidence}% confidence
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                 <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
                   {shared ? 'Shared!' : 'Share'}
                 </button>
@@ -326,6 +326,12 @@ function MatchCard({
                   WhatsApp
                 </a>
               </div>
+              {/* Challenge friends CTA */}
+              <a href="/groups" style={{ display: 'block', padding: '8px', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '6px', textAlign: 'center', textDecoration: 'none' }}>
+                <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>
+                  Ἴ6 Think your friends can beat this call? Challenge them →
+                </span>
+              </a>
             </div>
           ) : (
             <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>&#x1F512; Predictions closed</span>
