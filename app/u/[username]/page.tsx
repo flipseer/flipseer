@@ -51,7 +51,7 @@ export default async function JournalPage({ params }: Props) {
     .limit(200);
 
   // Fetch match data
-  const matchIds = [...new Set((rawPreds || []).map((p: any) => p.match_id).filter(Boolean))];
+  const matchIds = Array.from(new Set((rawPreds || []).map((p: any) => p.match_id).filter(Boolean)));
   let matchMap: Record<string, any> = {};
   if (matchIds.length > 0) {
     const { data: matchData } = await supabase
