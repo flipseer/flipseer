@@ -7,56 +7,59 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const COUNTRY_FLAGS: { [key: string]: string } = {
-  'India': '🇮🇳', 'Brazil': '🇧🇷', 'Argentina': '🇦🇷', 'France': '🇫🇷',
-  'Germany': '🇩🇪', 'England': '🇬🇧', 'Spain': '🇪🇸', 'Portugal': '🇵🇹',
-  'Netherlands': '🇳🇱', 'Italy': '🇮🇹', 'Mexico': '🇲🇽', 'USA': '🇺🇸',
-  'Nigeria': '🇳🇬', 'Senegal': '🇸🇳', 'Morocco': '🇲🇦', 'Japan': '🇯🇵',
-  'South Korea': '🇰🇷', 'Australia': '🇦🇺', 'Canada': '🇨🇦', 'Colombia': '🇨🇴',
-  'IN': '🇮🇳', 'BR': '🇧🇷', 'AR': '🇦🇷', 'FR': '🇫🇷', 'DE': '🇩🇪', 'GB': '🇬🇧',
-  'ES': '🇪🇸', 'PT': '🇵🇹', 'NL': '🇳🇱', 'IT': '🇮🇹', 'MX': '🇲🇽', 'US': '🇺🇸',
-  'NG': '🇳🇬', 'SN': '🇸🇳', 'MA': '🇲🇦', 'JP': '🇯🇵', 'KR': '🇰🇷', 'AU': '🇦🇺',
-  'CA': '🇨🇦', 'CO': '🇨🇴', 'ID': '🇮🇩', 'ZA': '🇿🇦', 'TR': '🇹🇷', 'SA': '🇸🇦',
-  'Other': '🌍',
+const FLAG: Record<string, string> = {
+  'IN':'🇮🇳','ID':'🇮🇩','NG':'🇳🇬','BR':'🇧🇷','AR':'🇦🇷',
+  'GB':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','FR':'🇫🇷','DE':'🇩🇪','ES':'🇪🇸','PT':'🇵🇹',
+  'MX':'🇲🇽','US':'🇺🇸','GH':'🇬🇭','MA':'🇲🇦','JP':'🇯🇵',
+  'KR':'🇰🇷','AU':'🇦🇺','PK':'🇵🇰','BD':'🇧🇩','SA':'🇸🇦',
+  'TR':'🇹🇷','EG':'🇪🇬','ZA':'🇿🇦','NO':'🇳🇴','SN':'🇸🇳',
 };
 
-// Derive correctness from points_earned + prediction_processed
-// (predictions table has no `is_correct` column)
-function getOutcomeState(pred: any): 'correct' | 'wrong' | 'pending' {
+function outcomeState(pred: any): 'correct' | 'wrong' | 'pending' {
   if (!pred.prediction_processed) return 'pending';
   return pred.points_earned > 0 ? 'correct' : 'wrong';
 }
 
-function getBadges(predictions: any[], accuracy: number) {
-  const badges = [];
-  if (predictions.length >= 5) badges.push({ icon: '🎯', label: 'Committed Forecaster' });
-  if (predictions.length >= 10) badges.push({ icon: '📖', label: 'Veteran' });
-  if (accuracy >= 70) badges.push({ icon: '🧠', label: 'Sharp Mind' });
-  if (accuracy >= 85) badges.push({ icon: '🔮', label: 'Oracle' });
-  const upsets = predictions.filter((p: any) => p.upset_bonus > 0);
-  if (upsets.length >= 1) badges.push({ icon: '😱', label: 'Upset Hunter' });
-  if (upsets.length >= 3) badges.push({ icon: '🦁', label: 'Upset King' });
-  const highConf = predictions.filter((p: any) => p.confidence_pct >= 80 && p.points_earned > 0);
-  if (highConf.length >= 3) badges.push({ icon: '🔥', label: 'Bold & Right' });
-  const exactScore = predictions.filter((p: any) => p.points_earned >= 30);
-  if (exactScore.length >= 1) badges.push({ icon: '⚡', label: 'Sniper' });
-  return badges;
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-function getRepDimensions(predictions: any[], accuracy: number) {
-  const boldness = predictions.filter((p: any) => p.confidence_pct >= 75).length;
-  const boldnessScore = Math.min(100, Math.round((boldness / Math.max(predictions.length, 1)) * 100 * 1.5));
-  const upsetHunts = predictions.filter((p: any) => p.upset_bonus > 0).length;
-  const upsetScore = Math.min(100, upsetHunts * 25);
-  const consistency = predictions.length >= 5
-    ? Math.min(100, Math.round(accuracy * 0.9 + predictions.length * 2))
-    : 0;
-  return [
-    { label: 'Accuracy', score: Math.round(accuracy), color: '#2E9E5E' },
-    { label: 'Boldness', score: boldnessScore, color: '#3B82F6' },
-    { label: 'Upset Hunter', score: upsetScore, color: '#F59E0B' },
-    { label: 'Consistency', score: consistency, color: '#8B5CF6' },
-  ];
+function formatDateKey(dateStr: string): string {
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
+  return d.toISOString().split('T')[0];
+}
+
+function groupByDate(predictions: any[]): Record<string, any[]> {
+  const groups: Record<string, any[]> = {};
+  predictions.forEach(pred => {
+    const key = formatDateKey(pred.matches?.kickoff || pred.created_at);
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(pred);
+  });
+  return groups;
+}
+
+function pickLabel(pred: any): string {
+  const m = pred.matches;
+  if (pred.predicted_outcome === 'home') return (m?.home_team || 'Home') + ' Win';
+  if (pred.predicted_outcome === 'away') return (m?.away_team || 'Away') + ' Win';
+  return 'Draw';
+}
+
+function scoreDisplay(pred: any): string {
+  if (pred.predicted_home_score !== null && pred.predicted_away_score !== null) {
+    return `${pred.predicted_home_score}–${pred.predicted_away_score}`;
+  }
+  return '';
+}
+
+function actualScore(pred: any): string {
+  const m = pred.matches;
+  if (m?.home_score !== null && m?.away_score !== null && m?.status === 'completed') {
+    return `${m.home_score}–${m.away_score}`;
+  }
+  return '';
 }
 
 export default function ForecastJournal({ params }: { params: { username: string } }) {
@@ -64,326 +67,413 @@ export default function ForecastJournal({ params }: { params: { username: string
   const [predictions, setPredictions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [filter, setFilter] = useState<'all' | 'correct' | 'wrong' | 'pending'>('all');
+  const [copied, setCopied] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
-    const fetchJournal = async () => {
+    const fetch_ = async () => {
       setLoading(true);
 
       const { data: profileData, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('username', params.username)
-        .single();
+        .from('profiles').select('*')
+        .eq('username', params.username).single();
 
-      if (error || !profileData) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
+      if (error || !profileData) { setNotFound(true); setLoading(false); return; }
       setProfile(profileData);
 
-      // FIX: removed `is_correct` (column doesn't exist) AND removed the
-      // embedded `matches (...)` relationship -- predictions.match_id has
-      // no foreign key to matches.id, so PostgREST cannot resolve that
-      // embed and the whole query errored, returning null/empty for every
-      // user. Fetch predictions and matches separately and merge client-side
-      // (same pattern as results/page.tsx). Correctness is derived from
-      // prediction_processed + points_earned.
-      const { data: predData, error: predError } = await supabase
+      // Check if owner
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id === profileData.id) setIsOwner(true);
+
+      // Fetch predictions with match data
+      const { data: preds } = await supabase
         .from('predictions')
-        .select(`
-          id,
-          match_id,
-          predicted_outcome,
-          predicted_home_score,
-          predicted_away_score,
-          confidence_pct,
-          points_earned,
-          prediction_processed,
-          upset_bonus,
-          created_at
-        `)
+        .select('*, matches(id, home_team, away_team, kickoff, status, home_score, away_score, competition)')
         .eq('user_id', profileData.id)
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(200);
 
-      if (predError) {
-        console.error('Failed to load predictions:', predError);
-        setPredictions([]);
-        setLoading(false);
-        return;
-      }
-
-      const preds = predData || [];
-      const matchIds = Array.from(new Set(preds.map((p: any) => p.match_id)));
-
-      let matchMap: { [key: number]: any } = {};
-      if (matchIds.length > 0) {
-        const { data: matchData, error: matchErr } = await supabase
-          .from('matches')
-          .select('id, home_team, away_team, home_score, away_score, kickoff, status, is_upset')
-          .in('id', matchIds);
-
-        if (matchErr) {
-          console.error('Failed to load matches:', matchErr);
-        }
-        (matchData || []).forEach((m: any) => { matchMap[m.id] = m; });
-      }
-
-      const merged = preds.map((p: any) => ({
-        ...p,
-        matches: matchMap[p.match_id] || null,
-      }));
-
-      setPredictions(merged);
+      setPredictions(preds || []);
       setLoading(false);
     };
-
-    fetchJournal();
+    fetch_();
   }, [params.username]);
 
-  const handleShare = async () => {
-    const url = `https://flipseer.com/u/${params.username}`;
-    const text = `⚽ My World Cup 2026 Forecast Journal\n${profile?.rank_icon} ${profile?.rank} · ${profile?.total_points} pts · ${profile?.accuracy_pct}% accuracy\nMy permanent football record → ${url}`;
-    if (navigator.share) {
-      await navigator.share({ title: 'My Flipseer Journal', text, url });
-    } else {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
-
-  const accuracy = profile?.accuracy_pct || 0;
-  const totalPoints = profile?.total_points || 0;
-  const badges = getBadges(predictions, accuracy);
-  const dimensions = getRepDimensions(predictions, accuracy);
-
-  const filtered = predictions.filter((p: any) => {
-    const state = getOutcomeState(p);
-    if (filter === 'correct') return state === 'correct';
-    if (filter === 'wrong') return state === 'wrong';
-    if (filter === 'pending') return state === 'pending';
-    return true;
-  });
-
-  const correctCount = predictions.filter((p: any) => getOutcomeState(p) === 'correct').length;
-  const wrongCount = predictions.filter((p: any) => getOutcomeState(p) === 'wrong').length;
-  const pendingCount = predictions.filter((p: any) => getOutcomeState(p) === 'pending').length;
-
-  const flag = COUNTRY_FLAGS[profile?.country || ''] || '🌍';
-  const joinedDate = profile
-    ? new Date(profile.created_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
-    : '';
-
   if (loading) return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', color: '#6B7280' }}>
-        <div style={{ fontSize: '40px', marginBottom: '16px' }}>⚽</div>
-        <p>Loading forecast journal...</p>
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
+        <p style={{ color: '#2E9E5E', fontSize: 16 }}>Loading forecast journal...</p>
       </div>
     </main>
   );
 
   if (notFound) return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', color: '#6B7280' }}>
-        <div style={{ fontSize: '40px', marginBottom: '16px' }}>🔍</div>
-        <h2 style={{ color: 'white', marginBottom: '8px' }}>Forecaster not found</h2>
-        <p style={{ marginBottom: '24px' }}>@{params.username} hasn't joined Flipseer yet.</p>
-        <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '12px 24px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
-          Create Your Record →
-        </a>
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif', color: 'white' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+        <h1 style={{ fontSize: 24, marginBottom: 8 }}>Forecaster not found</h1>
+        <a href="/leaderboard" style={{ color: '#2E9E5E' }}>View all forecasters →</a>
       </div>
     </main>
   );
 
-  return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
+  const filtered = predictions.filter(p => filter === 'all' || outcomeState(p) === filter);
+  const grouped = groupByDate(filtered);
+  const dateKeys = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
 
-        {/* ── REPUTATION HEADER ── */}
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '32px', marginBottom: '24px' }}>
+  const correctCount = predictions.filter(p => outcomeState(p) === 'correct').length;
+  const wrongCount = predictions.filter(p => outcomeState(p) === 'wrong').length;
+  const pendingCount = predictions.filter(p => outcomeState(p) === 'pending').length;
+  const processedCount = correctCount + wrongCount;
+  const accuracy = processedCount > 0 ? Math.round((correctCount / processedCount) * 100) : 0;
+  const exactScores = predictions.filter(p => p.exact_bonus > 0).length;
+
+  const share = () => {
+    const url = `https://flipseer.com/u/${params.username}`;
+    if (navigator.share) {
+      navigator.share({ title: `@${params.username}'s Forecast Journal`, url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    }
+  };
+
+  return (
+    <main style={{
+      backgroundColor: '#0D1F0F', minHeight: '100vh',
+      fontFamily: "-apple-system,'Segoe UI',Arial,sans-serif",
+      color: 'white', paddingBottom: 80,
+    }}>
+      <style>{`
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .pred-card:hover{border-color:#2E9E5E!important}
+        .pred-card{transition:border-color 0.15s}
+        .filter-btn:hover{background:rgba(46,158,94,0.1)!important}
+      `}</style>
+
+      {/* ── PROFILE HEADER ── */}
+      <div style={{
+        background: 'linear-gradient(180deg,#071408 0%,#0D1F0F 100%)',
+        padding: 'clamp(40px,8vw,64px) 20px clamp(32px,6vw,48px)',
+        borderBottom: '1px solid #1A3A1A',
+      }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
           {/* Top row */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: '#1A7A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>
-                  {params.username[0].toUpperCase()}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {/* Avatar */}
+              <div style={{
+                width: 64, height: 64, borderRadius: '50%',
+                backgroundColor: '#1A7A4A', border: '2px solid #2E9E5E',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 24, fontWeight: 800, flexShrink: 0,
+              }}>
+                {params.username[0].toUpperCase()}
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <h1 style={{ fontSize: 'clamp(20px,4vw,28px)', fontWeight: 800, letterSpacing: '-0.5px' }}>
+                    @{params.username}
+                  </h1>
+                  {profile?.country && (
+                    <span style={{ fontSize: 22 }}>{FLAG[profile.country] || '🌍'}</span>
+                  )}
                 </div>
-                <div>
-                  <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0 }}>@{params.username}</h1>
-                  <p style={{ color: '#6B7280', fontSize: '13px', margin: '4px 0 0' }}>
-                    {flag} {profile?.country || 'Global'} · Joined {joinedDate}
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: 11, color: '#2E9E5E', fontWeight: 700,
+                    backgroundColor: 'rgba(46,158,94,0.1)', padding: '2px 10px',
+                    borderRadius: 999, letterSpacing: '1px',
+                  }}>
+                    {profile?.rank_icon} {profile?.rank}
+                  </span>
+                  {profile?.rank && (
+                    <span style={{ fontSize: 12, color: '#4B5563' }}>
+                      Global #{profile.rank}
+                    </span>
+                  )}
                 </div>
               </div>
-              {profile?.favorite_club && (
-                <div style={{ display: 'inline-block', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '20px', padding: '4px 12px', fontSize: '12px', color: '#9CA3AF' }}>
-                  ❤️ {profile.favorite_club}
-                </div>
-              )}
             </div>
 
-            {/* Share buttons */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button
-                onClick={handleShare}
-                style={{ backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
-                {copied ? '✅ Copied!' : '📤 Share'}
-              </button>
-              <a
-                href={`https://wa.me/?text=${encodeURIComponent(`⚽ My World Cup 2026 Forecast Journal\n${profile?.rank_icon} ${profile?.rank} · ${totalPoints} pts · ${accuracy}% accuracy\nhttps://flipseer.com/u/${params.username}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ backgroundColor: '#25D366', color: 'white', borderRadius: '8px', padding: '10px 16px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-                📱 WhatsApp
-              </a>
-            </div>
+            {/* Share button */}
+            <button onClick={share} style={{
+              backgroundColor: copied ? '#1A7A4A' : 'transparent',
+              color: copied ? 'white' : '#6B7280',
+              border: '1px solid #1A3A1A',
+              padding: '8px 16px', borderRadius: 8,
+              fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}>
+              {copied ? '✓ Copied' : '↗ Share'}
+            </button>
           </div>
 
-          {/* Stats row — using DB values */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          {/* Stats row */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: 10 }}>
             {[
-              { value: totalPoints.toLocaleString(), label: 'Total Points', color: '#2E9E5E' },
-              { value: `${accuracy}%`, label: 'Accuracy', color: '#3B82F6' },
-              { value: predictions.length, label: 'Predictions', color: '#8B5CF6' },
-              { value: profile?.streak || 0, label: 'Streak 🔥', color: '#F59E0B' },
-            ].map((stat, i) => (
-              <div key={i} style={{ backgroundColor: '#0D1F0F', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', color: stat.color }}>{stat.value}</div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{stat.label}</div>
+              { v: profile?.total_points || 0, l: 'Total Points', c: '#F59E0B' },
+              { v: `${accuracy}%`, l: 'Accuracy', c: '#2E9E5E' },
+              { v: predictions.length, l: 'Predictions', c: '#9CA3AF' },
+              { v: correctCount, l: 'Correct', c: '#2E9E5E' },
+              { v: exactScores, l: 'Exact Scores', c: '#F59E0B' },
+              { v: profile?.best_streak || 0, l: 'Best Streak', c: '#8B5CF6' },
+            ].map(({ v, l, c }) => (
+              <div key={l} style={{
+                backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
+                borderRadius: 10, padding: '14px 12px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 800, color: c, letterSpacing: '-0.5px', marginBottom: 3 }}>
+                  {v}
+                </div>
+                <div style={{ fontSize: 10, color: '#6B7280', letterSpacing: '0.5px' }}>{l}</div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* ── BADGES ── */}
-        {badges.length > 0 && (
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '16px', color: '#9CA3AF', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>🏅 Badges</h2>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {badges.map((badge, i) => (
-                <div key={i} style={{ backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', borderRadius: '20px', padding: '8px 16px', fontSize: '13px', fontWeight: 'bold' }}>
-                  {badge.icon} {badge.label}
-                </div>
-              ))}
-            </div>
+          {/* Permanence statement */}
+          <div style={{
+            marginTop: 16, padding: '12px 16px',
+            backgroundColor: 'rgba(46,158,94,0.06)', border: '1px solid #1A3A1A',
+            borderRadius: 8, fontSize: 13, color: '#4B5563', lineHeight: 1.6,
+          }}>
+            📖 This is <strong style={{ color: '#9CA3AF' }}>@{params.username}</strong>'s permanent football forecasting record.
+            Every prediction is locked before kickoff. No edits. No deletions. Forever.
           </div>
+        </div>
+      </div>
+
+      {/* ── FILTER TABS ── */}
+      <div style={{ borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px', display: 'flex', gap: 4, overflowX: 'auto' }}>
+          {([
+            { key: 'all', label: `All (${predictions.length})` },
+            { key: 'correct', label: `✓ Correct (${correctCount})` },
+            { key: 'wrong', label: `✗ Wrong (${wrongCount})` },
+            { key: 'pending', label: `⏳ Pending (${pendingCount})` },
+          ] as const).map(({ key, label }) => (
+            <button key={key} onClick={() => setFilter(key)} className="filter-btn" style={{
+              padding: '14px 16px', background: 'transparent', border: 'none',
+              borderBottom: filter === key ? '2px solid #2E9E5E' : '2px solid transparent',
+              color: filter === key ? '#2E9E5E' : '#6B7280',
+              fontSize: 13, fontWeight: filter === key ? 700 : 500,
+              cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+            }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── TIMELINE ── */}
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 0' }}>
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 16 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>📖</div>
+            <p style={{ color: '#6B7280', fontSize: 16, marginBottom: 20 }}>
+              {filter === 'all' ? 'No predictions yet.' : `No ${filter} predictions.`}
+            </p>
+            {isOwner && (
+              <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 28px', borderRadius: 10, textDecoration: 'none', fontWeight: 700 }}>
+                Make your first prediction →
+              </a>
+            )}
+          </div>
+        ) : (
+          dateKeys.map(dateKey => {
+            const dayPredictions = grouped[dateKey];
+            const dayDate = new Date(dateKey + 'T12:00:00Z');
+            const dayLabel = dayDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const dayCorrect = dayPredictions.filter(p => outcomeState(p) === 'correct').length;
+            const dayWrong = dayPredictions.filter(p => outcomeState(p) === 'wrong').length;
+            const dayPts = dayPredictions.reduce((s, p) => s + (p.points_earned || 0), 0);
+
+            return (
+              <div key={dateKey} style={{ marginBottom: 32 }}>
+
+                {/* Date header */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  marginBottom: 12, paddingBottom: 10, borderBottom: '1px solid #1A3A1A',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 'clamp(14px,3vw,17px)', fontWeight: 700, color: 'white' }}>
+                      {dayLabel}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#4B5563', marginTop: 2 }}>
+                      {dayPredictions.length} prediction{dayPredictions.length !== 1 ? 's' : ''}
+                      {dayCorrect > 0 && <span style={{ color: '#2E9E5E' }}> · {dayCorrect} correct</span>}
+                      {dayWrong > 0 && <span style={{ color: '#EF4444' }}> · {dayWrong} wrong</span>}
+                    </div>
+                  </div>
+                  {dayPts > 0 && (
+                    <div style={{
+                      fontSize: 16, fontWeight: 800, color: '#F59E0B',
+                      backgroundColor: 'rgba(245,158,11,0.1)', padding: '4px 12px',
+                      borderRadius: 8, letterSpacing: '-0.3px',
+                    }}>
+                      +{dayPts} pts
+                    </div>
+                  )}
+                </div>
+
+                {/* Predictions for this day */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {dayPredictions.map((pred, i) => {
+                    const state = outcomeState(pred);
+                    const match = pred.matches;
+                    const matchName = match ? `${match.home_team} vs ${match.away_team}` : 'Unknown Match';
+                    const pick = pickLabel(pred);
+                    const predicted = scoreDisplay(pred);
+                    const actual = actualScore(pred);
+                    const isExact = pred.exact_bonus > 0;
+                    const isUpset = pred.upset_bonus > 0;
+                    const competition = match?.competition || 'World Cup 2026';
+                    const slug = match
+                      ? `${match.home_team.toLowerCase().replace(/\s+/g,'-')}-vs-${match.away_team.toLowerCase().replace(/\s+/g,'-')}`
+                      : '';
+
+                    const borderColor = state === 'correct' ? '#1A7A4A' : state === 'wrong' ? 'rgba(239,68,68,0.3)' : '#1A3A1A';
+                    const stateColor = state === 'correct' ? '#2E9E5E' : state === 'wrong' ? '#EF4444' : '#6B7280';
+                    const stateIcon = state === 'correct' ? '✓' : state === 'wrong' ? '✗' : '⏳';
+                    const stateLabel = state === 'correct' ? 'Correct' : state === 'wrong' ? 'Wrong' : 'Pending';
+
+                    return (
+                      <div key={i} className="pred-card" style={{
+                        backgroundColor: '#0D2B14',
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: 12,
+                        padding: '16px 18px',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        {/* Left accent */}
+                        <div style={{
+                          position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
+                          backgroundColor: stateColor, borderRadius: '12px 0 0 12px',
+                        }}/>
+
+                        <div style={{ paddingLeft: 10 }}>
+                          {/* Match name + competition */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
+                            <div>
+                              {slug ? (
+                                <a href={`/matches/${slug}`} style={{
+                                  fontSize: 'clamp(14px,3vw,16px)', fontWeight: 700,
+                                  color: 'white', textDecoration: 'none',
+                                }}>
+                                  {matchName}
+                                </a>
+                              ) : (
+                                <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>{matchName}</span>
+                              )}
+                              <span style={{
+                                fontSize: 10, color: '#4B5563', marginLeft: 8,
+                                backgroundColor: '#050E05', padding: '2px 7px', borderRadius: 4,
+                                letterSpacing: '0.5px',
+                              }}>
+                                {competition}
+                              </span>
+                            </div>
+
+                            {/* State badge */}
+                            <div style={{
+                              display: 'flex', alignItems: 'center', gap: 5,
+                              fontSize: 12, fontWeight: 700, color: stateColor,
+                              backgroundColor: `${stateColor}15`,
+                              padding: '3px 10px', borderRadius: 999,
+                            }}>
+                              <span>{stateIcon}</span>
+                              <span>{stateLabel}</span>
+                            </div>
+                          </div>
+
+                          {/* Prediction details */}
+                          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 8 }}>
+                            <div>
+                              <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>PREDICTION</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: '#9CA3AF' }}>
+                                {state === 'pending' ? '🔒 Locked' : pick}
+                                {predicted && state !== 'pending' && (
+                                  <span style={{ color: '#4B5563', fontWeight: 400, marginLeft: 4 }}>· {predicted}</span>
+                                )}
+                              </div>
+                            </div>
+                            {state !== 'pending' && (
+                              <div>
+                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>CONFIDENCE</div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: pred.confidence_pct >= 75 ? '#F59E0B' : '#9CA3AF' }}>
+                                  {pred.confidence_pct}%
+                                </div>
+                              </div>
+                            )}
+                            {actual && (
+                              <div>
+                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>RESULT</div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{actual}</div>
+                              </div>
+                            )}
+                            {state !== 'pending' && (
+                              <div>
+                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>POINTS</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: pred.points_earned > 0 ? '#2E9E5E' : '#4B5563' }}>
+                                  {pred.points_earned > 0 ? `+${pred.points_earned}` : '0'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Bonus badges */}
+                          {(isExact || isUpset) && (
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              {isExact && (
+                                <span style={{ fontSize: 11, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.1)', padding: '2px 8px', borderRadius: 999, fontWeight: 700 }}>
+                                  🎯 Exact Score +{pred.exact_bonus}pts
+                                </span>
+                              )}
+                              {isUpset && (
+                                <span style={{ fontSize: 11, color: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.1)', padding: '2px 8px', borderRadius: 999, fontWeight: 700 }}>
+                                  😱 Upset Caller +{pred.upset_bonus}pts
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })
         )}
 
-        {/* ── REPUTATION DIMENSIONS ── */}
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '16px', color: '#9CA3AF', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>⚡ Reputation Dimensions</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {dimensions.map((dim, i) => (
-              <div key={i}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '14px', color: '#D1FAE5' }}>{dim.label}</span>
-                  <span style={{ fontSize: '14px', fontWeight: 'bold', color: dim.color }}>{dim.score}</span>
-                </div>
-                <div style={{ backgroundColor: '#0D1F0F', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
-                  <div style={{ width: `${dim.score}%`, height: '100%', backgroundColor: dim.color, borderRadius: '4px' }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── FORECAST JOURNAL ── */}
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-            <h2 style={{ fontSize: '16px', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>📖 Forecast Journal</h2>
-
-            {/* Filter tabs */}
-            <div style={{ display: 'flex', gap: '6px' }}>
-              {(['all', 'correct', 'wrong', 'pending'] as const).map(f => (
-                <button key={f} onClick={() => setFilter(f)}
-                  style={{ padding: '4px 10px', borderRadius: '999px', border: '1px solid', borderColor: filter === f ? '#2E9E5E' : '#1A7A4A', backgroundColor: filter === f ? '#1A7A4A' : 'transparent', color: filter === f ? 'white' : '#9CA3AF', fontSize: '11px', cursor: 'pointer', fontWeight: filter === f ? 'bold' : 'normal' }}>
-                  {f === 'all' ? `All (${predictions.length})` :
-                   f === 'correct' ? `✅ ${correctCount}` :
-                   f === 'wrong' ? `❌ ${wrongCount}` :
-                   `⏳ ${pendingCount}`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {filtered.length === 0 ? (
-            <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px' }}>No predictions in this category.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {/* Header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: '8px', padding: '8px 12px', fontSize: '11px', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                <span>Match</span>
-                <span>Pick</span>
-                <span>Confidence</span>
-                <span>Result</span>
-                <span>Points</span>
-              </div>
-
-              {filtered.map((pred: any, i: number) => {
-                const match = pred.matches;
-                const matchName = match
-                  ? `${match.home_team} vs ${match.away_team}`
-                  : 'Unknown Match';
-                const state = getOutcomeState(pred);
-                const pickLabel = pred.predicted_outcome === 'home'
-                  ? (match?.home_team || 'Home') + ' Win'
-                  : pred.predicted_outcome === 'away'
-                  ? (match?.away_team || 'Away') + ' Win'
-                  : 'Draw';
-
-                return (
-                  <div key={i} style={{
-                    display: 'grid',
-                    gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
-                    gap: '8px',
-                    padding: '12px',
-                    backgroundColor: '#0D1F0F',
-                    borderRadius: '10px',
-                    border: `1px solid ${state === 'correct' ? '#1A7A4A' : state === 'wrong' ? '#7F1D1D' : '#1A3A20'}`,
-                    alignItems: 'center',
-                    fontSize: '13px',
-                  }}>
-                    <span style={{ color: '#D1FAE5', fontWeight: 'bold' }}>{matchName}</span>
-                    <span style={{ color: state === 'pending' ? '#4B5563' : '#9CA3AF' }}>
-                      {state === 'pending' ? '🔒 Hidden' : pickLabel}
-                    </span>
-                    <span style={{ color: state === 'pending' ? '#4B5563' : '#2E9E5E' }}>
-                      {state === 'pending' ? '—' : pred.confidence_pct + '%'}
-                    </span>
-                    <span>
-                      {state === 'pending' ? (
-                        <span style={{ color: '#6B7280' }}>⏳ Pending</span>
-                      ) : state === 'correct' ? (
-                        <span style={{ color: '#2E9E5E' }}>✅ Correct</span>
-                      ) : (
-                        <span style={{ color: '#EF4444' }}>❌ Wrong</span>
-                      )}
-                    </span>
-                    <span style={{ color: state === 'correct' ? '#2E9E5E' : '#6B7280', fontWeight: 'bold' }}>
-                      {state !== 'pending' ? `+${pred.points_earned}` : '—'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
         {/* ── BOTTOM CTA ── */}
-        <div style={{ textAlign: 'center', padding: '24px', backgroundColor: '#0D2B14', borderRadius: '16px', border: '1px solid #1A7A4A' }}>
-          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>
-            This is @{params.username}'s permanent forecasting record on Flipseer.
+        <div style={{
+          marginTop: 48, padding: '32px 24px',
+          backgroundColor: '#0D2B14', border: '1px solid #1A7A4A',
+          borderRadius: 16, textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
+          <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.5px' }}>
+            This record is permanent.
+          </h3>
+          <p style={{ color: '#6B7280', fontSize: 14, lineHeight: 1.7, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
+            @{params.username}'s predictions are locked before kickoff and archived forever.
+            World Cup 2026 → EPL → Champions League. One record. One reputation.
           </p>
-          <a href="/auth" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '8px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold' }}>
-            Build Your Own Record →
+          <a href="/auth" style={{
+            display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white',
+            padding: '14px 32px', borderRadius: 10, textDecoration: 'none',
+            fontSize: 15, fontWeight: 700, letterSpacing: '0.3px',
+            boxShadow: '0 0 24px rgba(46,158,94,0.3)',
+          }}>
+            Build Your Own Football Record →
           </a>
+          <p style={{ fontSize: 11, color: '#4B5563', marginTop: 10 }}>Free forever · No betting · No card required</p>
         </div>
 
       </div>
