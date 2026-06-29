@@ -74,27 +74,22 @@ export default function ForecastJournal({ params }: { params: { username: string
   useEffect(() => {
     const fetch_ = async () => {
       setLoading(true);
+      try {
+        // Use API route to bypass RLS — public journal is intentionally public
+        const res = await fetch(`/api/journal?username=${encodeURIComponent(params.username)}`);
+        if (!res.ok) { setNotFound(true); setLoading(false); return; }
+        const data = await res.json();
+        if (!data.profile) { setNotFound(true); setLoading(false); return; }
 
-      const { data: profileData, error } = await supabase
-        .from('profiles').select('*')
-        .eq('username', params.username).single();
+        setProfile(data.profile);
+        setPredictions(data.predictions || []);
 
-      if (error || !profileData) { setNotFound(true); setLoading(false); return; }
-      setProfile(profileData);
-
-      // Check if owner
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id === profileData.id) setIsOwner(true);
-
-      // Fetch predictions with match data
-      const { data: preds } = await supabase
-        .from('predictions')
-        .select('*, matches(id, home_team, away_team, kickoff, status, home_score, away_score, competition)')
-        .eq('user_id', profileData.id)
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      setPredictions(preds || []);
+        // Check if owner
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.id === data.profile.id) setIsOwner(true);
+      } catch (e) {
+        setNotFound(true);
+      }
       setLoading(false);
     };
     fetch_();
