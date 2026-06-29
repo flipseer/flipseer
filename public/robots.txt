@@ -1,17 +1,32 @@
 User-agent: *
 Allow: /
-Allow: /world-cup-2026
-Allow: /world-cup-2026/
-Allow: /epl
-Allow: /how-to-play
-Allow: /leaderboard
-Allow: /auth
 
-Disallow: /admin
-Disallow: /predict
-Disallow: /profile
-Disallow: /groups
+# Public pages — allow everything by default
+
+# Block auth-required pages
 Disallow: /api/
-Disallow: /u/
+Disallow: /admin/
+Disallow: /profile
+Disallow: /predict
+Disallow: /groups
+Disallow: /auth/callback
+Disallow: /auth/
+
+# Allow public SEO pages explicitly
+Allow: /india
+Allow: /indonesia
+Allow: /nigeria
+Allow: /ghana
+Allow: /brazil
+Allow: /argentina
+Allow: /england
+Allow: /france
+Allow: /germany
+Allow: /spain
+Allow: /matches/
+Allow: /leaderboard
+Allow: /nations
+Allow: /world-cup-2026
+Allow: /u/
 
 Sitemap: https://flipseer.com/sitemap.xml
