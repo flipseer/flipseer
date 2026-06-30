@@ -15,6 +15,12 @@ type Leader = {
   rank: string;
   rank_icon: string;
   country: string;
+  streak?: number;
+  best_streak?: number;
+  currentRank?: number;
+  movement?: 'rising' | 'falling' | 'same' | 'new';
+  movementAmount?: number;
+  exactScoreCount?: number;
 };
 
 const FLAG: { [key: string]: string } = {
