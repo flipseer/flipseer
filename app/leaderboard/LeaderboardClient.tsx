@@ -71,6 +71,7 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
   const [userEntry, setUserEntry] = useState<Leader | null>(null);
   const [totalForecasters, setTotalForecasters] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [highlights, setHighlights] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -95,14 +96,15 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
   const fetchLeaderboard = async () => {
     setLoading(true);
     try {
-      const url = activeCountry ? `/api/leaderboard?country=${activeCountry}` : `/api/leaderboard`;
+      const url = activeCountry ? `/api/leaderboard-alive?country=${activeCountry}` : `/api/leaderboard-alive`;
       const res = await fetch(url);
       const data = await res.json();
       if (data && !data.error) {
-        setLeaders(data);
-        setTotalForecasters(data.length);
+        setLeaders(data.leaders || []);
+        setHighlights(data.highlights || null);
+        setTotalForecasters((data.leaders || []).length);
         if (userEntry) {
-          const idx = data.findIndex((l: Leader) => l.id === userEntry.id);
+          const idx = (data.leaders || []).findIndex((l: Leader) => l.id === userEntry.id);
           setUserRank(idx >= 0 ? idx + 1 : null);
         }
       }
@@ -156,6 +158,33 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
                 <div style={{ fontSize: '11px', color: '#4B5563', marginTop: '2px', letterSpacing: '1px' }}>{label}</div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Today's highlights — makes the leaderboard feel alive */}
+        {!loading && highlights && (highlights.biggestClimber || highlights.longestStreak || highlights.exactScoreKing) && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px', flexWrap: 'wrap' }}>
+            {highlights.biggestClimber && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', borderRadius: 999, padding: '6px 14px' }}>
+                <span style={{ fontSize: 13 }}>🚀</span>
+                <span style={{ fontSize: 12, color: '#2E9E5E', fontWeight: 700 }}>@{highlights.biggestClimber.username}</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>+{highlights.biggestClimber.amount} today</span>
+              </div>
+            )}
+            {highlights.longestStreak && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 999, padding: '6px 14px' }}>
+                <span style={{ fontSize: 13 }}>🔥</span>
+                <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 700 }}>@{highlights.longestStreak.username}</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.longestStreak.streak} streak</span>
+              </div>
+            )}
+            {highlights.exactScoreKing && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 999, padding: '6px 14px' }}>
+                <span style={{ fontSize: 13 }}>🎯</span>
+                <span style={{ fontSize: 12, color: '#8B5CF6', fontWeight: 700 }}>@{highlights.exactScoreKing.username}</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.exactScoreKing.count} exact</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -266,6 +295,15 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
                         )}
                         {i === 0 && (
                           <span style={{ fontSize: '9px', color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold', letterSpacing: '1px' }}>LEADER</span>
+                        )}
+                        {leader.movement === 'rising' && (
+                          <span style={{ fontSize: '9px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.15)', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>🔥 +{leader.movementAmount}</span>
+                        )}
+                        {leader.movement === 'falling' && (
+                          <span style={{ fontSize: '9px', color: '#EF4444', backgroundColor: 'rgba(239,68,68,0.12)', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>↓ {leader.movementAmount}</span>
+                        )}
+                        {leader.movement === 'new' && (
+                          <span style={{ fontSize: '9px', color: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.15)', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>⭐ NEW</span>
                         )}
                       </div>
                       <div style={{ fontSize: '11px', color: '#4B5563' }}>
