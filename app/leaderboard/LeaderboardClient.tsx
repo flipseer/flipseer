@@ -173,22 +173,25 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
             {highlights.biggestClimber && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', borderRadius: 999, padding: '6px 14px' }}>
                 <span style={{ fontSize: 13 }}>🚀</span>
+                <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, letterSpacing: '0.3px' }}>BIGGEST CLIMBER</span>
                 <span style={{ fontSize: 12, color: '#2E9E5E', fontWeight: 700 }}>@{highlights.biggestClimber.username}</span>
-                <span style={{ fontSize: 11, color: '#6B7280' }}>+{highlights.biggestClimber.amount} today</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>+{highlights.biggestClimber.amount} ranks today</span>
               </div>
             )}
             {highlights.longestStreak && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 999, padding: '6px 14px' }}>
                 <span style={{ fontSize: 13 }}>🔥</span>
+                <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, letterSpacing: '0.3px' }}>LONGEST STREAK</span>
                 <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 700 }}>@{highlights.longestStreak.username}</span>
-                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.longestStreak.streak} streak</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.longestStreak.streak} correct in a row</span>
               </div>
             )}
             {highlights.exactScoreKing && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 999, padding: '6px 14px' }}>
                 <span style={{ fontSize: 13 }}>🎯</span>
+                <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 600, letterSpacing: '0.3px' }}>EXACT SCORE KING</span>
                 <span style={{ fontSize: 12, color: '#8B5CF6', fontWeight: 700 }}>@{highlights.exactScoreKing.username}</span>
-                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.exactScoreKing.count} exact</span>
+                <span style={{ fontSize: 11, color: '#6B7280' }}>{highlights.exactScoreKing.count} exact scores</span>
               </div>
             )}
           </div>
