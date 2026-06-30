@@ -367,6 +367,8 @@ export default function Predict() {
   const [loading, setLoading] = useState<{ [key: number]: boolean }>({});
   const [community, setCommunity] = useState<{ [key: number]: CommunityStats }>({});
   const [dailyUsed, setDailyUsed] = useState(0);
+  const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
+  const [showAllMatches, setShowAllMatches] = useState(false);
   const DAILY_LIMIT = 8;
 
   useEffect(() => {
@@ -389,6 +391,7 @@ export default function Predict() {
 
       if (profileRes.data?.username) setUsername(profileRes.data.username);
       if (profileRes.data?.country) setCountry(profileRes.data.country);
+      setLifetimePredictionCount(profileRes.data?.prediction_count ?? 0);
       setMatches(matchRes.data || []);
       setMatchesLoading(false);
 
@@ -617,20 +620,54 @@ export default function Predict() {
             <p style={{ fontSize: '12px', color: '#4B5563' }}>Check back soon — new matches are added automatically.</p>
           </div>
         ) : (
-          matches.map((match) => (
-            <MatchCard
-              key={match.id} match={match}
-              pred={predictions[match.id]}
-              isSaved={saved[match.id] ?? false}
-              isLoading={loading[match.id] ?? false}
-              comm={community[match.id]}
-              username={username} country={country}
-              onPredict={handlePredict}
-              onConfidence={handleConfidence}
-              onScore={handleScore}
-              onSave={handleSave}
-            />
-          ))
+          (() => {
+            const isBrandNewUser = lifetimePredictionCount === 0 && username !== 'forecaster';
+            const visibleMatches = (isBrandNewUser && !showAllMatches) ? matches.slice(0, 1) : matches;
+
+            return (
+              <>
+                {isBrandNewUser && !showAllMatches && (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    marginBottom: 10, padding: '10px 16px',
+                    backgroundColor: 'rgba(245,158,11,0.1)',
+                    border: '1px solid rgba(245,158,11,0.3)',
+                    borderRadius: 8,
+                  }}>
+                    <span style={{ fontSize: 18 }}>🎯</span>
+                    <span style={{ fontSize: 13, color: '#F59E0B', fontWeight: 700, letterSpacing: '0.3px' }}>
+                      YOUR FIRST CALL — one match, one click, your record begins
+                    </span>
+                  </div>
+                )}
+                {visibleMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    pred={predictions[match.id]}
+                    isSaved={saved[match.id] ?? false}
+                    isLoading={loading[match.id] ?? false}
+                    comm={community[match.id]}
+                    username={username} country={country}
+                    onPredict={handlePredict}
+                    onConfidence={handleConfidence}
+                    onScore={handleScore}
+                    onSave={handleSave}
+                  />
+                ))}
+                {isBrandNewUser && !showAllMatches && matches.length > 1 && (
+                  <button onClick={() => setShowAllMatches(true)} style={{
+                    width: '100%', marginTop: 8, padding: '12px',
+                    backgroundColor: 'transparent', border: '1px dashed #1A3A1A',
+                    borderRadius: 10, color: '#6B7280', fontSize: 13,
+                    cursor: 'pointer', fontWeight: 600,
+                  }}>
+                    Show all {matches.length} matches →
+                  </button>
+                )}
+              </>
+            );
+          })()
         )}
       </section>
     </main>
