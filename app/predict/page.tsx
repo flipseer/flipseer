@@ -379,7 +379,7 @@ export default function Predict() {
       setMatchesLoading(true);
 
       const [profileRes, matchRes, predRes, commRes] = await Promise.all([
-        supabase.from('profiles').select('username, country').eq('id', session.user.id).single(),
+        supabase.from('profiles').select('username, country, prediction_count').eq('id', session.user.id).single(),
         supabase.from('matches')
           .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
           .in('status', ['upcoming', 'locked'])
