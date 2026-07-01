@@ -237,7 +237,7 @@ function UpcomingMatches() {
       const { data } = await supabase
         .from('matches')
         .select('id, home_team, away_team, kickoff, status, league')
-        .in('status', ['upcoming', 'live', 'locked'])
+        .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
         .limit(4);
       setMatches(data || []);
@@ -312,6 +312,8 @@ function UpcomingMatches() {
                     <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px' }}>LIVE</span>
                   ) : countdown ? (
                     <span style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#F59E0B', fontSize: '11px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px', border: '1px solid #F59E0B' }}>{countdown}</span>
+                  ) : kickoffPast || match.status === 'locked' ? (
+                    <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
                   ) : (
                     <span style={{ fontSize: '10px', color: '#6B7280' }}>Soon</span>
                   )}
