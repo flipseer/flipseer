@@ -384,7 +384,7 @@ export default function Predict() {
         supabase.from('profiles').select('username, country, prediction_count').eq('id', session.user.id).single(),
         supabase.from('matches')
           .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
-          .in('status', ['upcoming', 'locked'])
+          .in('status', ['upcoming'])
           .eq('competition', 'World Cup 2026')
           .order('kickoff', { ascending: true }),
         supabase.from('predictions').select('*').eq('user_id', session.user.id),
@@ -441,7 +441,7 @@ export default function Predict() {
     setMatchesLoading(true);
     const { data } = await supabase.from('matches')
       .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
-      .in('status', ['upcoming', 'locked'])
+      .in('status', ['upcoming'])
       .eq('competition', leagueKey)
       .order('kickoff', { ascending: true });
     setMatches(data || []);
