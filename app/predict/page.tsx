@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import NationShareCard from '@/components/NationShareCard';
 
 const supabase = createClient();
 
