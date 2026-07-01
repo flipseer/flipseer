@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import ReputationCard from '@/components/ReputationCard';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -72,6 +73,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
   const [filter, setFilter] = useState<'all' | 'correct' | 'wrong' | 'pending'>('all');
   const [copied, setCopied] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [showRepCard, setShowRepCard] = useState(false);
 
   useEffect(() => {
     // Check if current user owns this journal
@@ -152,7 +154,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                     {profile?.rank_icon} {profile?.rank}
                   </span>
                   {profile?.rank && (
-                    <span style={{ fontSize: 12, color: '#4B5563' }}>
+                    <span style={{ fontSize: 12, color: '#8895A3' }}>
                       Global #{profile.rank}
                     </span>
                   )}
@@ -160,17 +162,26 @@ export default function JournalClient({ username, profile, predictions }: Journa
               </div>
             </div>
 
-            {/* Share button */}
-            <button onClick={share} style={{
-              backgroundColor: copied ? '#1A7A4A' : 'transparent',
-              color: copied ? 'white' : '#6B7280',
-              border: '1px solid #1A3A1A',
-              padding: '8px 16px', borderRadius: 8,
-              fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              transition: 'all 0.15s',
-            }}>
-              {copied ? '✓ Copied' : '↗ Share'}
-            </button>
+            {/* Share buttons */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowRepCard(true)} style={{
+                backgroundColor: '#1A7A4A', color: 'white',
+                border: 'none', padding: '8px 14px', borderRadius: 8,
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              }}>
+                🏆 Rep Card
+              </button>
+              <button onClick={share} style={{
+                backgroundColor: copied ? '#1A7A4A' : 'transparent',
+                color: copied ? 'white' : '#6B7280',
+                border: '1px solid #1A3A1A',
+                padding: '8px 16px', borderRadius: 8,
+                fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}>
+                {copied ? '✓ Copied' : '↗ Share'}
+              </button>
+            </div>
           </div>
 
           {/* Stats row */}
@@ -199,7 +210,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
           <div style={{
             marginTop: 16, padding: '12px 16px',
             backgroundColor: 'rgba(46,158,94,0.06)', border: '1px solid #1A3A1A',
-            borderRadius: 8, fontSize: 13, color: '#4B5563', lineHeight: 1.6,
+            borderRadius: 8, fontSize: 13, color: '#8895A3', lineHeight: 1.6,
           }}>
             📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>'s permanent football forecasting record.
             Every prediction is locked before kickoff. No edits. No deletions. Forever.
@@ -265,7 +276,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                     <div style={{ fontSize: 'clamp(14px,3vw,17px)', fontWeight: 700, color: 'white' }}>
                       {dayLabel}
                     </div>
-                    <div style={{ fontSize: 12, color: '#4B5563', marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: '#8895A3', marginTop: 2 }}>
                       {dayPredictions.length} prediction{dayPredictions.length !== 1 ? 's' : ''}
                       {dayCorrect > 0 && <span style={{ color: '#2E9E5E' }}> · {dayCorrect} correct</span>}
                       {dayWrong > 0 && <span style={{ color: '#EF4444' }}> · {dayWrong} wrong</span>}
@@ -332,7 +343,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                                 <span style={{ fontSize: 16, fontWeight: 700, color: 'white' }}>{matchName}</span>
                               )}
                               <span style={{
-                                fontSize: 10, color: '#4B5563', marginLeft: 8,
+                                fontSize: 10, color: '#8895A3', marginLeft: 8,
                                 backgroundColor: '#050E05', padding: '2px 7px', borderRadius: 4,
                                 letterSpacing: '0.5px',
                               }}>
@@ -355,17 +366,17 @@ export default function JournalClient({ username, profile, predictions }: Journa
                           {/* Prediction details */}
                           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 8 }}>
                             <div>
-                              <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>PREDICTION</div>
+                              <div style={{ fontSize: 10, color: '#8895A3', letterSpacing: '1px', marginBottom: 2 }}>PREDICTION</div>
                               <div style={{ fontSize: 14, fontWeight: 700, color: '#9CA3AF' }}>
                                 {state === 'pending' ? '🔒 Locked' : pick}
                                 {predicted && state !== 'pending' && (
-                                  <span style={{ color: '#4B5563', fontWeight: 400, marginLeft: 4 }}>· {predicted}</span>
+                                  <span style={{ color: '#8895A3', fontWeight: 400, marginLeft: 4 }}>· {predicted}</span>
                                 )}
                               </div>
                             </div>
                             {state !== 'pending' && (
                               <div>
-                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>CONFIDENCE</div>
+                                <div style={{ fontSize: 10, color: '#8895A3', letterSpacing: '1px', marginBottom: 2 }}>CONFIDENCE</div>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: pred.confidence_pct >= 75 ? '#F59E0B' : '#9CA3AF' }}>
                                   {pred.confidence_pct}%
                                 </div>
@@ -373,14 +384,14 @@ export default function JournalClient({ username, profile, predictions }: Journa
                             )}
                             {actual && (
                               <div>
-                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>RESULT</div>
+                                <div style={{ fontSize: 10, color: '#8895A3', letterSpacing: '1px', marginBottom: 2 }}>RESULT</div>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>{actual}</div>
                               </div>
                             )}
                             {state !== 'pending' && (
                               <div>
-                                <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px', marginBottom: 2 }}>POINTS</div>
-                                <div style={{ fontSize: 14, fontWeight: 800, color: pred.points_earned > 0 ? '#2E9E5E' : '#4B5563' }}>
+                                <div style={{ fontSize: 10, color: '#8895A3', letterSpacing: '1px', marginBottom: 2 }}>POINTS</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: pred.points_earned > 0 ? '#2E9E5E' : '#8895A3' }}>
                                   {pred.points_earned > 0 ? `+${pred.points_earned}` : '0'}
                                 </div>
                               </div>
@@ -434,10 +445,16 @@ export default function JournalClient({ username, profile, predictions }: Journa
           }}>
             Build Your Own Football Record →
           </a>
-          <p style={{ fontSize: 11, color: '#4B5563', marginTop: 10 }}>Free forever · No betting · No card required</p>
+          <p style={{ fontSize: 11, color: '#8895A3', marginTop: 10 }}>Free forever · No betting · No card required</p>
         </div>
 
       </div>
+      {showRepCard && (
+        <ReputationCard
+          username={username}
+          onClose={() => setShowRepCard(false)}
+        />
+      )}
     </main>
   );
 }
