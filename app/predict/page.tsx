@@ -369,6 +369,7 @@ export default function Predict() {
   const [dailyUsed, setDailyUsed] = useState(0);
   const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
   const DAILY_LIMIT = 8;
 
   useEffect(() => {
@@ -500,6 +501,16 @@ export default function Predict() {
         const outcome = predictions[matchId].outcome as 'home' | 'draw' | 'away';
         return { ...prev, [matchId]: { ...old, [outcome]: old[outcome] + 1, total: old.total + 1 } };
       });
+      // Show nation share card after a short delay
+      const match = matches.find(m => m.id === matchId);
+      if (match && country && !isUpdate) {
+        setTimeout(() => {
+          setNationShare({
+            matchName: match.home_team + ' vs ' + match.away_team,
+            points: 10,
+          });
+        }, 800);
+      }
     } else {
       alert(data.error || 'Failed to save prediction. Please try again.');
     }
@@ -670,6 +681,14 @@ export default function Predict() {
           })()
         )}
       </section>
+      {nationShare && country && (
+        <NationShareCard
+          country={country}
+          pointsJustEarned={nationShare.points}
+          matchName={nationShare.matchName}
+          onClose={() => setNationShare(null)}
+        />
+      )}
     </main>
   );
 }
