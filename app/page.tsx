@@ -83,7 +83,7 @@ function LiveActivity() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1s infinite' }} />
           <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>LIVE ACTIVITY</span>
-          <span style={{ fontSize: '11px', color: '#4B5563', marginLeft: 'auto' }}>Updated live</span>
+          <span style={{ fontSize: '11px', color: '#8895A3', marginLeft: 'auto' }}>Updated live</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {activities.map((a, i) => (
@@ -96,7 +96,7 @@ function LiveActivity() {
                   : <>predicted <span style={{ color: 'white', fontWeight: 'bold' }}>{a.pick}</span> · <span style={{ color: '#2E9E5E' }}>{a.confidence}%</span></>
                 }
               </span>
-              <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: 'auto' }}>{a.timeAgo}</span>
+              <span style={{ fontSize: '10px', color: '#8895A3', marginLeft: 'auto' }}>{a.timeAgo}</span>
             </div>
           ))}
         </div>
@@ -157,7 +157,7 @@ function LiveScoreCard() {
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
             <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#EF4444', letterSpacing: '2px' }}>LIVE NOW</span>
           </div>
-          <span style={{ fontSize: '10px', color: '#4B5563' }}>Updated {lastUpdated}</span>
+          <span style={{ fontSize: '10px', color: '#8895A3' }}>Updated {lastUpdated}</span>
         </div>
 
         {liveMatches.map((match) => {
@@ -203,7 +203,7 @@ function LiveScoreCard() {
 
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '10px', color: '#4B5563', minWidth: '28px', fontWeight: 'bold' }}>{ev.time?.elapsed}&apos;</span>
+                        <span style={{ fontSize: '10px', color: '#8895A3', minWidth: '28px', fontWeight: 'bold' }}>{ev.time?.elapsed}&apos;</span>
                         <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: icon }} />
                         <span style={{ fontSize: '12px', color, fontWeight: isGoal ? 'bold' : 'normal' }}>{text}</span>
                       </div>
@@ -322,7 +322,7 @@ function UpcomingMatches() {
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
+                    <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
                     <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.league}</div>
@@ -394,7 +394,7 @@ function ClaimModal() {
       `}</style>
       <div className="claim-backdrop" onClick={() => setShow(false)}>
         <div className="claim-box" onClick={e => e.stopPropagation()}>
-          <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#4B5563', fontSize: '20px', cursor: 'pointer' }}>×</button>
+          <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#8895A3', fontSize: '20px', cursor: 'pointer' }}>×</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
             <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 'bold', letterSpacing: '2px' }}>WORLD CUP 2026 · LIVE NOW</span>
@@ -409,7 +409,7 @@ function ClaimModal() {
             <div style={{ fontSize: '12px', color: '#9CA3AF' }}>
               <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>{topNation.points} pts</span> · <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>{forecasters} forecasters</span> competing globally
             </div>
-            <div style={{ fontSize: '11px', color: '#4B5563', fontStyle: 'italic', marginTop: '8px', borderTop: '1px solid #1A3A1A', paddingTop: '8px' }}>
+            <div style={{ fontSize: '11px', color: '#8895A3', fontStyle: 'italic', marginTop: '8px', borderTop: '1px solid #1A3A1A', paddingTop: '8px' }}>
               Every match without a prediction is a call your nation can never reclaim. 🔒
             </div>
           </div>
@@ -419,7 +419,7 @@ function ClaimModal() {
           <button onClick={() => setShow(false)} style={{ width: '100%', padding: '9px', backgroundColor: 'transparent', color: '#6B7280', border: 'none', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>
             Maybe Later
           </button>
-          <p style={{ fontSize: '10px', color: '#4B5563', textAlign: 'center', marginTop: '8px' }}>Free forever · No betting · No card required</p>
+          <p style={{ fontSize: '10px', color: '#8895A3', textAlign: 'center', marginTop: '8px' }}>Free forever · No betting · No card required</p>
         </div>
       </div>
     </>
@@ -506,8 +506,8 @@ function PlayerSpotlight() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>&#x2B50; WORLD CUP 2026 STARS</span>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => { setFade(false); setTimeout(() => { setCurrent((current - 1 + PLAYERS.length) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'<'}</button>
-          <button onClick={() => { setFade(false); setTimeout(() => { setCurrent((current + 1) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'>'}</button>
+          <button aria-label="Previous player" onClick={() => { setFade(false); setTimeout(() => { setCurrent((current - 1 + PLAYERS.length) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'<'}</button>
+          <button aria-label="Next player" onClick={() => { setFade(false); setTimeout(() => { setCurrent((current + 1) % PLAYERS.length); setFade(true); }, 400); }} style={{ background: 'rgba(46,158,94,0.1)', border: '1px solid #1A7A4A', color: '#2E9E5E', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px' }}>{'>'}</button>
         </div>
       </div>
       <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden', opacity: fade ? 1 : 0, transition: 'opacity 0.4s ease' }}>
@@ -532,8 +532,8 @@ function PlayerSpotlight() {
         </a>
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '14px' }}>
-        {PLAYERS.map((_, i) => (
-          <button key={i} onClick={() => { setFade(false); setTimeout(() => { setCurrent(i); setFade(true); }, 400); }} style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }} />
+        {PLAYERS.map((p, i) => (
+          <button key={i} aria-label={`View ${p.name}`} onClick={() => { setFade(false); setTimeout(() => { setCurrent(i); setFade(true); }, 400); }} style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', cursor: 'pointer', backgroundColor: i === current ? '#2E9E5E' : '#1A3A1A' }} />
         ))}
       </div>
 
@@ -718,7 +718,7 @@ export default function Home() {
       `}</style>
 
       {/* ── SECTION 1: LIVE TICKER + BUZZ BAR ── */}
-      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '8px 0' }}>
+      <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '8px 0' }}>
         <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
           {[
             'World Cup 2026 is LIVE -- 104 matches -- whose nation will top the world?',
@@ -838,7 +838,7 @@ export default function Home() {
             <a key={i} href={'/auth?nation=' + n.code}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid #1A3A1A', backgroundColor: heroNation === n.name ? 'rgba(46,158,94,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
               <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
-              <span style={{ fontSize: '11px', color: heroNation === n.name ? '#2E9E5E' : '#4B5563', fontWeight: heroNation === n.name ? 'bold' : 'normal' }}>{n.name}</span>
+              <span style={{ fontSize: '11px', color: heroNation === n.name ? '#2E9E5E' : '#8895A3', fontWeight: heroNation === n.name ? 'bold' : 'normal' }}>{n.name}</span>
             </a>
           ))}
         </div>
@@ -898,7 +898,7 @@ export default function Home() {
         </div>
 
         {/* Trust + groups hook */}
-        <p style={{ fontSize: '13px', color: '#4B5563', letterSpacing: '0.5px', marginBottom: '6px' }}>
+        <p style={{ fontSize: '13px', color: '#8895A3', letterSpacing: '0.5px', marginBottom: '6px' }}>
           Free forever &nbsp;&#xB7;&nbsp; No betting &nbsp;&#xB7;&nbsp; No card required
         </p>
         <p style={{ fontSize: '13px', color: '#6B7280' }}>
@@ -1034,7 +1034,7 @@ export default function Home() {
             style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 0 30px rgba(46,158,94,0.3)' }}>
             &#x26BD; Start Your Record Now &#x2192;
           </a>
-          <p style={{ fontSize: '11px', color: '#4B5563', marginTop: '10px' }}>Free forever. No card. No betting.</p>
+          <p style={{ fontSize: '11px', color: '#8895A3', marginTop: '10px' }}>Free forever. No card. No betting.</p>
         </div>
       </section>
 
@@ -1090,7 +1090,7 @@ export default function Home() {
             <a href="/auth?utm_source=homepage&utm_medium=final&utm_campaign=wc2026" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
               ⚽ Predict Your First Match Free →
             </a>
-            <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
+            <p style={{ color: '#8895A3', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
           </div>
         </div>
       </section>
