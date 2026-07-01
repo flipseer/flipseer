@@ -131,7 +131,7 @@ export default function ReputationCard({ username, onClose }: Props) {
                           {data.nationName.toUpperCase()}
                         </div>
                       )}
-                      <div style={{ fontSize: 18, fontWeight: 800, color: 'white', letterSpacing: '-0.3px' }}>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: 'white', letterSpacing: '-0.3px' }}>
                         @{data.username}
                       </div>
                     </div>
@@ -154,15 +154,15 @@ export default function ReputationCard({ username, onClose }: Props) {
                   borderTop: '1px solid #1A3A1A',
                   borderBottom: '1px solid #1A3A1A',
                 }}>
-                  <div style={{ fontSize: 11, color: '#6B7280', letterSpacing: '2px', marginBottom: 4 }}>GLOBAL RANK</div>
+                  <div style={{ fontSize: 13, color: '#8895A3', letterSpacing: '2px', marginBottom: 6 }}>GLOBAL RANK</div>
                   <div style={{
-                    fontSize: 'clamp(48px,12vw,72px)', fontWeight: 900,
+                    fontSize: 'clamp(64px,18vw,96px)', fontWeight: 900,
                     color: '#F59E0B', lineHeight: 0.9, letterSpacing: '-3px',
                   }}>
                     #{data.globalRank}
                   </div>
                   {data.nationRank && data.nationName && (
-                    <div style={{ fontSize: 12, color: '#4B5563', marginTop: 6 }}>
+                    <div style={{ fontSize: 14, color: '#8895A3', marginTop: 8 }}>
                       #{data.nationRank} in {data.nationName}
                     </div>
                   )}
@@ -179,8 +179,8 @@ export default function ReputationCard({ username, onClose }: Props) {
                       backgroundColor: '#050E05', border: '1px solid #1A3A1A',
                       borderRadius: 10, padding: '10px 8px', textAlign: 'center',
                     }}>
-                      <div style={{ fontSize: 'clamp(18px,4vw,22px)', fontWeight: 800, color: c, letterSpacing: '-0.5px' }}>{v}</div>
-                      <div style={{ fontSize: 9, color: '#6B7280', marginTop: 2, letterSpacing: '0.5px' }}>{l.toUpperCase()}</div>
+                      <div style={{ fontSize: 'clamp(22px,6vw,28px)', fontWeight: 800, color: c, letterSpacing: '-0.5px' }}>{v}</div>
+                      <div style={{ fontSize: 11, color: '#8895A3', marginTop: 3, letterSpacing: '0.5px' }}>{l.toUpperCase()}</div>
                     </div>
                   ))}
                 </div>
@@ -198,8 +198,8 @@ export default function ReputationCard({ username, onClose }: Props) {
                     }}>
                       <span style={{ fontSize: 18 }}>{icon}</span>
                       <div>
-                        <div style={{ fontSize: 18, fontWeight: 800, color: c, letterSpacing: '-0.5px' }}>{v}</div>
-                        <div style={{ fontSize: 9, color: '#6B7280', letterSpacing: '0.5px' }}>{l.toUpperCase()}</div>
+                        <div style={{ fontSize: 22, fontWeight: 800, color: c, letterSpacing: '-0.5px' }}>{v}</div>
+                        <div style={{ fontSize: 11, color: '#8895A3', letterSpacing: '0.5px' }}>{l.toUpperCase()}</div>
                       </div>
                     </div>
                   ))}
@@ -211,8 +211,8 @@ export default function ReputationCard({ username, onClose }: Props) {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
                   <div>
-                    <div style={{ fontSize: 10, color: '#2E9E5E', fontWeight: 700, letterSpacing: '1px' }}>PERMANENT FOOTBALL REPUTATION</div>
-                    <div style={{ fontSize: 9, color: '#4B5563', marginTop: 2 }}>flipseer.com · World Cup 2026</div>
+                    <div style={{ fontSize: 12, color: '#2E9E5E', fontWeight: 700, letterSpacing: '1px' }}>PERMANENT FOOTBALL REPUTATION</div>
+                    <div style={{ fontSize: 11, color: '#8895A3', marginTop: 3 }}>flipseer.com · World Cup 2026</div>
                   </div>
                   <div style={{ fontSize: 20 }}>⚽</div>
                 </div>
