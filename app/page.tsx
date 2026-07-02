@@ -738,9 +738,9 @@ export default function Home() {
               COMING AUG 16
             </div>
 
-            {/* Flag + title */}
+            {/* Trophy + title */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <span style={{ fontSize: 20 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+              <span style={{ fontSize: 24, filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.6))' }}>🏆</span>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>
                   Premier League
@@ -1090,51 +1090,6 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* ── EPL TEASER STRIP ── */}
-      <section style={{ backgroundColor: '#0D2B14', borderTop: '1px solid #1A7A4A', borderBottom: '1px solid #1A7A4A', padding: '0' }}>
-        <a href="/epl" style={{ textDecoration: 'none', display: 'block' }}>
-          <div style={{
-            maxWidth: '800px', margin: '0 auto',
-            padding: '20px 24px',
-            display: 'flex', alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16, flexWrap: 'wrap',
-          }}>
-            {/* Left — flag + text */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ fontSize: 32, flexShrink: 0 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                  <span style={{
-                    fontSize: 10, color: '#8B5CF6', fontWeight: 700,
-                    letterSpacing: '2px', backgroundColor: 'rgba(139,92,246,0.15)',
-                    padding: '2px 8px', borderRadius: 999,
-                  }}>
-                    COMING AUGUST 16
-                  </span>
-                </div>
-                <div style={{ fontSize: 'clamp(14px,3vw,18px)', fontWeight: 800, color: 'white', letterSpacing: '-0.3px' }}>
-                  Premier League is next.
-                </div>
-                <div style={{ fontSize: 13, color: '#8895A3', marginTop: 2 }}>
-                  380 matches · Your reputation carries forward · Free forever
-                </div>
-              </div>
-            </div>
-
-            {/* Right — CTA */}
-            <div style={{
-              backgroundColor: '#8B5CF6', color: 'white',
-              padding: '10px 20px', borderRadius: 8,
-              fontSize: 13, fontWeight: 700, flexShrink: 0,
-              boxShadow: '0 0 20px rgba(139,92,246,0.3)',
-            }}>
-              Join the Waitlist →
-            </div>
-          </div>
-        </a>
-      </section>
 
       {/* ── SECTION 6: HOW IT WORKS + FINAL CTA ── */}
       <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
