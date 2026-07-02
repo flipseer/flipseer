@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import { Metadata } from 'next';
 
 const supabase = createClient();
 
@@ -25,6 +26,8 @@ export default function EPLPage() {
   const [waitlistCount, setWaitlistCount] = useState(0);
   const [daysUntilEPL, setDaysUntilEPL] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [userUsername, setUserUsername] = useState('');
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -38,6 +41,36 @@ export default function EPLPage() {
     // Tick every second for live countdown
     const tickInterval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(tickInterval);
+
+    // Fetch logged-in user rank
+    const fetchUserRank = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('username, total_points')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!profile) return;
+        setUserUsername(profile.username);
+
+        // Get global rank
+        const { data: allProfiles } = await supabase
+          .from('profiles')
+          .select('total_points')
+          .gt('total_points', 0)
+          .order('total_points', { ascending: false });
+
+        const rank = (allProfiles || []).findIndex(
+          (p: any) => p.total_points <= profile.total_points
+        ) + 1;
+        if (rank > 0) setUserRank(rank);
+      } catch {}
+    };
+    fetchUserRank();
 
     // Fetch waitlist count
     const fetchCount = async () => {
@@ -151,9 +184,19 @@ export default function EPLPage() {
           color: '#9CA3AF', lineHeight: 1.7,
           maxWidth: 540, margin: '0 auto 32px',
         }}>
-          Your World Cup record doesn't stop at the final whistle.
-          EPL 2026/27 predictions begin August 16.
-          One permanent record. Every competition. Forever.
+          {userRank && userUsername ? (
+            <>
+              Your World Cup <span style={{ color: '#F59E0B', fontWeight: 700 }}>#{userRank} global ranking</span> carries forward.
+              EPL 2026/27 predictions begin August 16.
+              One permanent record. Every competition. Forever.
+            </>
+          ) : (
+            <>
+              Your World Cup record doesn't stop at the final whistle.
+              EPL 2026/27 predictions begin August 16.
+              One permanent record. Every competition. Forever.
+            </>
+          )}
         </p>
 
         {/* Animated countdown */}
