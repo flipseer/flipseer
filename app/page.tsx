@@ -710,6 +710,64 @@ export default function Home() {
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
+
+      {/* ── EPL FLOATING CORNER CARD (top-right) ── */}
+      {mounted && (
+        <a href="/epl" style={{ textDecoration: 'none' }}>
+          <div style={{
+            position: 'fixed', top: 70, right: 16, zIndex: 400,
+            backgroundColor: '#0D2B14',
+            border: '1px solid #8B5CF6',
+            borderRadius: 12,
+            padding: '12px 14px',
+            maxWidth: 160,
+            boxShadow: '0 0 24px rgba(139,92,246,0.25)',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+          }}
+          onMouseOver={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 32px rgba(139,92,246,0.5)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+          onMouseOut={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 24px rgba(139,92,246,0.25)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+          >
+            {/* Top badge */}
+            <div style={{
+              fontSize: 9, color: '#8B5CF6', fontWeight: 700,
+              letterSpacing: '1.5px', marginBottom: 6,
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }}/>
+              COMING AUG 16
+            </div>
+
+            {/* Flag + title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: 20 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>
+                  Premier League
+                </div>
+                <div style={{ fontSize: 10, color: '#8895A3' }}>is next.</div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ fontSize: 10, color: '#8895A3', lineHeight: 1.6, marginBottom: 8, borderTop: '1px solid #1A3A1A', paddingTop: 6 }}>
+              380 matches<br/>
+              Your reputation carries forward<br/>
+              Free forever
+            </div>
+
+            {/* CTA */}
+            <div style={{
+              backgroundColor: '#8B5CF6', color: 'white',
+              borderRadius: 6, padding: '6px 10px',
+              fontSize: 10, fontWeight: 700, textAlign: 'center',
+              letterSpacing: '0.3px',
+            }}>
+              Join the Waitlist →
+            </div>
+          </div>
+        </a>
+      )}
       <ClaimModal />
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -990,15 +1048,9 @@ export default function Home() {
           {/* Timeline */}
           <div style={{ position: 'relative', maxWidth: '600px', margin: '0 auto 40px' }}>
 
-            {/* Connecting line */}
-            <div style={{ position: 'absolute', top: '32px', left: '10%', right: '10%', height: '2px', background: 'linear-gradient(90deg, #2E9E5E, #8B5CF6, #F59E0B, #EF4444)', zIndex: 0 }} />
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', position: 'relative', zIndex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', position: 'relative', zIndex: 1 }}>
               {[
                 { icon: '&#x1F3C6;', label: 'World Cup 2026', date: 'LIVE NOW', color: '#2E9E5E', active: true },
-                { icon: '&#x1F3F4;', label: 'EPL 2026/27', date: 'Aug 16', color: '#8B5CF6', active: false },
-                { icon: '&#x2B50;', label: 'Champions League', date: 'Sep 2026', color: '#F59E0B', active: false },
-                { icon: '&#x1F1EA;&#x1F1F8;', label: 'La Liga', date: 'Oct 2026', color: '#EF4444', active: false },
               ].map(({ icon, label, date, color, active }) => (
                 <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                   {/* Circle */}
