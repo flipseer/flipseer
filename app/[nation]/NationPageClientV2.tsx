@@ -39,9 +39,19 @@ export default function NationPageClientV2({
 }: Props) {
   const [liveActivity, setLiveActivity] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [todayDelta, setTodayDelta] = useState<number | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    // Fetch today's delta for this nation
+    fetch('/api/nation-deltas')
+      .then(r => r.json())
+      .then(data => {
+        const entry = (data.deltas || []).find((d: any) => d.code === country.code);
+        if (entry) setTodayDelta(entry.todayDelta);
+      })
+      .catch(() => {});
+
     // Fetch live activity for this nation
     const fetchActivity = async () => {
       try {
@@ -161,7 +171,19 @@ export default function NationPageClientV2({
               <div style={{ fontSize: 13, color: trendColor, fontWeight: 700 }}>
                 {rankTrend} {nationRank <= 3 ? 'Top 3' : nationRank <= 6 ? 'Top 6' : 'Rising'}
               </div>
-              <div style={{ fontSize: 12, color: '#4B5563' }}>{nationPoints.toLocaleString()} pts total</div>
+              <div style={{ fontSize: 12, color: '#8895A3' }}>{nationPoints.toLocaleString()} pts total</div>
+              {todayDelta !== null && todayDelta > 0 && (
+                <div style={{
+                  fontSize: 12, color: '#2E9E5E', fontWeight: 700, marginTop: 4,
+                  backgroundColor: 'rgba(46,158,94,0.1)',
+                  padding: '2px 8px', borderRadius: 999, display: 'inline-block',
+                }}>
+                  +{todayDelta} today ↑
+                </div>
+              )}
+              {todayDelta === 0 && (
+                <div style={{ fontSize: 11, color: '#4B5563', marginTop: 4 }}>No new points today</div>
+              )}
             </div>
           </div>
         )}
@@ -204,7 +226,7 @@ export default function NationPageClientV2({
               { label: 'Total Predictions', value: nationPredictions.toLocaleString(), color: '#9CA3AF', icon: '🎯' },
               { label: 'Avg Accuracy', value: avgAccuracy > 0 ? `${avgAccuracy}%` : '—', color: '#2E9E5E', icon: '📊' },
               { label: 'Total Points', value: nationPoints.toLocaleString(), color: '#F59E0B', icon: '⚡' },
-              { label: 'Trend', value: rankTrend + (nationRank <= 3 ? ' Top 3' : nationRank <= 6 ? ' Top 6' : ' Rising'), color: trendColor, icon: '📈' },
+              { label: 'Today', value: todayDelta !== null ? (todayDelta > 0 ? '+' + todayDelta + ' pts' : todayDelta === 0 ? '—' : todayDelta + ' pts') : '—', color: todayDelta && todayDelta > 0 ? '#2E9E5E' : '#6B7280', icon: '📈' },
             ].map(({ label, value, color, icon }) => (
               <div key={label} className="stat-card" style={{
                 backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
@@ -258,7 +280,7 @@ export default function NationPageClientV2({
                         <span style={{ fontSize: 12, color: '#2E9E5E', fontWeight: 700 }}> · +{p.points_earned} pts</span>
                       )}
                     </div>
-                    <span style={{ fontSize: 11, color: '#4B5563', flexShrink: 0 }}>{ago}</span>
+                    <span style={{ fontSize: 11, color: '#8895A3', flexShrink: 0 }}>{ago}</span>
                   </div>
                 );
               })}
@@ -304,7 +326,7 @@ export default function NationPageClientV2({
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 2 }}>
                       @{p.username}
                     </div>
-                    <div style={{ fontSize: 11, color: '#4B5563' }}>
+                    <div style={{ fontSize: 11, color: '#8895A3' }}>
                       {p.prediction_count} predictions · {p.accuracy_pct}% accuracy
                     </div>
                   </div>
@@ -312,7 +334,7 @@ export default function NationPageClientV2({
                     <div style={{ fontSize: 18, fontWeight: 800, color: '#2E9E5E', letterSpacing: '-0.5px' }}>
                       {p.total_points}
                     </div>
-                    <div style={{ fontSize: 10, color: '#4B5563', letterSpacing: '1px' }}>PTS</div>
+                    <div style={{ fontSize: 10, color: '#8895A3', letterSpacing: '1px' }}>PTS</div>
                   </div>
                 </a>
               ))}
@@ -377,7 +399,7 @@ export default function NationPageClientV2({
                       )}
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: '#4B5563' }}>
+                  <div style={{ fontSize: 12, color: '#8895A3' }}>
                     {rival.points.toLocaleString()} pts · View →
                   </div>
                 </a>
@@ -414,14 +436,14 @@ export default function NationPageClientV2({
           </div>
 
           {/* Other nation pages */}
-          <p style={{ fontSize: 11, color: '#4B5563', letterSpacing: '2px', marginBottom: 12 }}>OTHER NATIONS</p>
+          <p style={{ fontSize: 11, color: '#8895A3', letterSpacing: '2px', marginBottom: 12 }}>OTHER NATIONS</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {RELATED_NATIONS.filter(n => n.slug !== slug).map(n => (
               <a key={n.slug} href={`/${n.slug}`} className="nation-link" style={{
                 display: 'inline-flex', alignItems: 'center', gap: 5,
                 backgroundColor: '#050E05', border: '1px solid #0D1F0F',
                 borderRadius: 999, padding: '5px 12px',
-                textDecoration: 'none', fontSize: 12, color: '#4B5563',
+                textDecoration: 'none', fontSize: 12, color: '#8895A3',
               }}>
                 {n.flag} {n.name}
               </a>
