@@ -58,12 +58,12 @@ export default async function JournalPage({ params }: Props) {
       .from('matches')
       .select('id, home_team, away_team, kickoff, status, home_score, away_score, competition')
       .in('id', matchIds);
-    (matchData || []).forEach((m: any) => { matchMap[m.id] = m; });
+    (matchData || []).forEach((m: any) => { matchMap[String(m.id)] = m; });
   }
 
   const predictions = (rawPreds || []).map((p: any) => ({
     ...p,
-    matches: matchMap[p.match_id] || null,
+    matches: matchMap[String(p.match_id)] || null,
   }));
 
   return (
