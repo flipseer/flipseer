@@ -188,8 +188,6 @@ export default function JournalClient({ username, profile, predictions }: Journa
           {/* Reputation Progress Bar */}
           <ReputationProgressBar
             totalPoints={profile?.total_points || 0}
-            rank={profile?.rank || 'Rookie'}
-            rankIcon={profile?.rank_icon || '🥉'}
             username={username}
           />
 
