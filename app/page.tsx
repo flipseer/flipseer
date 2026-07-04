@@ -918,19 +918,13 @@ export default function Home() {
           </span>
         </div>
 
-        {/* Hero headline — large, bold, minimal */}
-        <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '28px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
+        {/* Hero headline */}
+        <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           {heroNation && nationRank > 0 ? (
             <>
               <span style={{ fontSize: 'clamp(32px, 6vw, 56px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '-0.5px' }}>{heroNation.toUpperCase()} IS RANKED</span>
               <span style={{ fontSize: 'clamp(80px, 18vw, 140px)', color: '#F59E0B', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
               <span style={{ fontSize: 'clamp(28px, 5vw, 48px)', color: '#2E9E5E', display: 'block', marginTop: '12px' }}>CAN YOU HELP THEM REACH #1?</span>
-            </>
-          ) : heroNation ? (
-            <>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>WHO WILL BE</span>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', color: '#2E9E5E', display: 'block', letterSpacing: '-2px' }}>{heroNation.toUpperCase()}&apos;S</span>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>#1 FOOTBALL MIND?</span>
             </>
           ) : (
             <>
@@ -940,6 +934,12 @@ export default function Home() {
             </>
           )}
         </h1>
+
+        {/* One-line value prop — answers "What is Flipseer?" in 5 seconds */}
+        <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 28px', fontFamily: 'Georgia, serif' }}>
+          Predict matches before kick-off. Build a permanent Football Reputation.{' '}
+          <span style={{ color: '#2E9E5E' }}>Represent your country.</span>
+        </p>
 
 
 
@@ -983,6 +983,54 @@ export default function Home() {
             )}
           </div>
         )}
+      </section>
+
+      {/* ── THREE STEP — answers "Why register now?" */}
+      <section style={{ padding: '0 20px 48px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, position: 'relative' }}>
+            {/* Connecting arrows on desktop */}
+            {[
+              { num: '1', icon: '🎯', title: 'Predict', desc: 'Choose a match before kick-off. Set your confidence.' },
+              { num: '2', icon: '🔒', title: 'Prove', desc: 'Your call locks forever. No edits. No excuses.' },
+              { num: '3', icon: '👑', title: 'Build', desc: 'Earn reputation that grows across every competition.' },
+            ].map(({ num, icon, title, desc }) => (
+              <div key={num} style={{
+                backgroundColor: '#0D2B14', border: '1px solid #1A7A4A',
+                borderRadius: 12, padding: '20px 16px', textAlign: 'center',
+                position: 'relative',
+              }}>
+                <div style={{ fontSize: 9, color: '#2E9E5E', fontWeight: 700, letterSpacing: '2px', marginBottom: 8 }}>STEP {num}</div>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: 'white', marginBottom: 6 }}>{title}</div>
+                <div style={{ fontSize: 12, color: '#8895A3', lineHeight: 1.6 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── THREE STEP — Predict → Prove → Build ── */}
+      <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+            {[
+              { num: '1', icon: '🎯', title: 'Predict', desc: 'Choose a match before kick-off. Set your confidence level.' },
+              { num: '2', icon: '🔒', title: 'Prove', desc: 'Your call locks forever. No edits. No excuses. Pure record.' },
+              { num: '3', icon: '🔁', title: 'Repeat', desc: 'Every match builds your permanent Football Reputation. Forever.' },
+            ].map(({ num, icon, title, desc }) => (
+              <div key={num} style={{
+                backgroundColor: '#0D2B14', border: '1px solid #1A7A4A',
+                borderRadius: 12, padding: '18px 14px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 9, color: '#2E9E5E', fontWeight: 700, letterSpacing: '2px', marginBottom: 6 }}>STEP {num}</div>
+                <div style={{ fontSize: 26, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'white', marginBottom: 6 }}>{title}</div>
+                <div style={{ fontSize: 11, color: '#8895A3', lineHeight: 1.6 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── SECTION 4: UPCOMING MATCHES ── */}
@@ -1125,6 +1173,49 @@ export default function Home() {
                 <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 'bold' }}>{text}</div>
               </div>
             ))}
+          </div>
+
+          {/* Sample reputation profile — answers "What am I building?" */}
+          <div style={{
+            maxWidth: 360, margin: '0 auto 48px',
+            backgroundColor: '#0D2B14', border: '1px solid #1A7A4A',
+            borderRadius: 16, padding: '24px 20px',
+          }}>
+            <div style={{ fontSize: 11, color: '#2E9E5E', fontWeight: 700, letterSpacing: '2px', marginBottom: 16, textAlign: 'center' }}>
+              YOUR FOOTBALL REPUTATION
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#1A7A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, flexShrink: 0 }}>Y</div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>@yourname</div>
+                <div style={{ fontSize: 12, color: '#F59E0B', fontWeight: 700 }}>🔥 Expert · Global #12</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginBottom: 16 }}>
+              {[
+                { v: '68%', l: 'Accuracy', c: '#2E9E5E' },
+                { v: '47', l: 'Predictions', c: '#9CA3AF' },
+                { v: '342', l: 'Points', c: '#F59E0B' },
+              ].map(({ v, l, c }) => (
+                <div key={l} style={{ textAlign: 'center', backgroundColor: '#050E05', borderRadius: 8, padding: '10px 6px', border: '1px solid #1A3A1A' }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
+                  <div style={{ fontSize: 9, color: '#6B7280', marginTop: 2, letterSpacing: '0.5px' }}>{l.toUpperCase()}</div>
+                </div>
+              ))}
+            </div>
+            {/* Mini progress bar */}
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700 }}>🔥 Expert</span>
+                <span style={{ fontSize: 10, color: '#8895A3' }}>158 pts to Elite ⭐</span>
+              </div>
+              <div style={{ height: 6, backgroundColor: '#1A3A1A', borderRadius: 999 }}>
+                <div style={{ height: '100%', width: '68%', backgroundColor: '#F59E0B', borderRadius: 999, boxShadow: '0 0 8px rgba(245,158,11,0.5)' }}/>
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: '#4B5563', textAlign: 'center' }}>
+              This could be your profile after 47 predictions.
+            </div>
           </div>
 
           {/* Final CTA */}
