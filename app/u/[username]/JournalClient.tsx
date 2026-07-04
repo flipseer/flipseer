@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import ReputationCard from '@/components/ReputationCard';
+import ReputationProgressBar from '@/components/ReputationProgressBar';
+import ReputationProgressBar from '@/components/ReputationProgressBar';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -184,6 +186,14 @@ export default function JournalClient({ username, profile, predictions }: Journa
             </div>
           </div>
 
+          {/* Reputation Progress Bar */}
+          <ReputationProgressBar
+            totalPoints={profile?.total_points || 0}
+            rank={profile?.rank || 'Rookie'}
+            rankIcon={profile?.rank_icon || '🥉'}
+            username={username}
+          />
+
           {/* Stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(100px,1fr))', gap: 10 }}>
             {[
@@ -215,6 +225,12 @@ export default function JournalClient({ username, profile, predictions }: Journa
             📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>'s permanent football forecasting record.
             Every prediction is locked before kickoff. No edits. No deletions. Forever.
           </div>
+
+          {/* Reputation Progress Bar */}
+          <ReputationProgressBar
+            totalPoints={profile?.total_points || 0}
+            username={username}
+          />
         </div>
       </div>
 
