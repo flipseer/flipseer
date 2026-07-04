@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Navbar from '@/components/Navbar';
-
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 export const viewport: Viewport = {
   themeColor: '#1A7A4A',
@@ -77,7 +77,6 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#1A7A4A" />
         <meta name="msapplication-tap-highlight" content="no" />
-
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://api-football.com" />
@@ -85,6 +84,7 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
         <Navbar />
         {children}
+        <ServiceWorkerRegistration />
         <PWAInstallPrompt />
       </body>
     </html>
