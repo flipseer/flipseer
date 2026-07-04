@@ -62,12 +62,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           m.home_team && 
           m.away_team && 
           m.home_team !== 'World Cup Team' &&
-          m.away_team !== 'World Cup Team' &&
-          !m.home_team.includes('&') &&
-          !m.away_team.includes('&')
+          m.away_team !== 'World Cup Team'
         )
         .map((m) => {
-          const slug = `${m.home_team.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`
+          // Strip ALL special chars — & ' . etc — only keep a-z 0-9 and hyphens
+          const cleanTeam = (name: string) => name
+            .toLowerCase()
+            .replace(/&/g, 'and')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+          const slug = `${cleanTeam(m.home_team)}-vs-${cleanTeam(m.away_team)}`
           return {
             url: `${baseUrl}/matches/${slug}`,
             lastModified: new Date(m.kickoff),
