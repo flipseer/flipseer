@@ -1,9 +1,11 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
+// Use service role key — sitemap runs server-side at build time
+// anon key may have RLS restrictions that return empty data
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 const NATION_SLUGS = [
@@ -24,7 +26,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
     { url: `${baseUrl}/nations`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/leaderboard`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
-    { url: `${baseUrl}/groups`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
     { url: `${baseUrl}/epl`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${baseUrl}/world-cup-2026`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/how-to-play`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
@@ -42,45 +43,61 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  // Match SEO pages — /matches/home-vs-away
+  // Match SEO pages
   let matchSeoPages: MetadataRoute.Sitemap = []
   try {
-    const { data: matches } = await supabase
+    const { data: matches, error } = await supabase
       .from('matches')
       .select('home_team, away_team, kickoff, status')
       .eq('competition', 'World Cup 2026')
+      .not('home_team', 'is', null)
+      .not('away_team', 'is', null)
       .order('kickoff', { ascending: true })
 
-    matchSeoPages = (matches ?? []).map((m) => {
-      const slug = `${m.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-')}`
-      return {
-        url: `${baseUrl}/matches/${slug}`,
-        lastModified: new Date(m.kickoff),
-        changeFrequency: m.status === 'completed' ? 'monthly' as const : 'daily' as const,
-        priority: m.status === 'upcoming' ? 0.9 : 0.7,
-      }
-    })
+    if (error) {
+      console.error('Sitemap match fetch error:', error.message)
+    } else {
+      matchSeoPages = (matches ?? [])
+        .filter(m => m.home_team && m.away_team) // extra safety
+        .map((m) => {
+          const slug = `${m.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-')}`
+          return {
+            url: `${baseUrl}/matches/${slug}`,
+            lastModified: new Date(m.kickoff),
+            changeFrequency: m.status === 'completed' ? 'monthly' as const : 'daily' as const,
+            priority: m.status === 'upcoming' ? 0.9 : 0.7,
+          }
+        })
+    }
   } catch (e) {
-    console.error('Sitemap match fetch error:', e)
+    console.error('Sitemap match fetch exception:', e)
   }
 
-  // Public profile pages
+  // Public profile pages — only active users with predictions
   let profilePages: MetadataRoute.Sitemap = []
   try {
-    const { data: profiles } = await supabase
+    const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, prediction_count')
       .not('username', 'is', null)
       .gt('prediction_count', 0)
+      .order('prediction_count', { ascending: false })
+      .limit(500) // cap at 500 to keep sitemap manageable
 
-    profilePages = (profiles ?? []).map((p) => ({
-      url: `${baseUrl}/u/${p.username}`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.6,
-    }))
+    if (error) {
+      console.error('Sitemap profile fetch error:', error.message)
+    } else {
+      profilePages = (profiles ?? [])
+        .filter(p => p.username && p.username.length > 0)
+        .map((p) => ({
+          url: `${baseUrl}/u/${p.username}`,
+          lastModified: now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        }))
+    }
   } catch (e) {
-    console.error('Sitemap profile fetch error:', e)
+    console.error('Sitemap profile fetch exception:', e)
   }
 
   return [
