@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import ReputationCard from '@/components/ReputationCard';
 import ReputationProgressBar from '@/components/ReputationProgressBar';
-import ReputationProgressBar from '@/components/ReputationProgressBar';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
