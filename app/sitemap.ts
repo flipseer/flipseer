@@ -58,9 +58,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       console.error('Sitemap match fetch error:', error.message)
     } else {
       matchSeoPages = (matches ?? [])
-        .filter(m => m.home_team && m.away_team) // extra safety
+        .filter(m => 
+          m.home_team && 
+          m.away_team && 
+          m.home_team !== 'World Cup Team' &&
+          m.away_team !== 'World Cup Team' &&
+          !m.home_team.includes('&') &&
+          !m.away_team.includes('&')
+        )
         .map((m) => {
-          const slug = `${m.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-')}`
+          const slug = `${m.home_team.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}-vs-${m.away_team.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`
           return {
             url: `${baseUrl}/matches/${slug}`,
             lastModified: new Date(m.kickoff),
