@@ -125,6 +125,26 @@ export async function GET(req: NextRequest) {
 
         log.push('SETTLED: ' + match.home_team + ' ' + homeScore + '-' + awayScore + ' ' + match.away_team)
 
+        // Auto-detect upset: winner picked by <40% of predictors
+        const winner = homeScore > awayScore ? 'home' : awayScore > homeScore ? 'away' : 'draw'
+        const { data: preds } = await supabase
+          .from('predictions')
+          .select('predicted_outcome')
+          .eq('match_id', match.id)
+
+        if (preds && preds.length >= 2) {
+          const winnerPicks = preds.filter((p: any) => p.predicted_outcome === winner).length
+          const winnerPct = winnerPicks / preds.length
+          if (winnerPct < 0.4) {
+            await supabase.from('matches').update({ is_upset: true, winner }).eq('id', match.id)
+            log.push('UPSET DETECTED: ' + match.home_team + ' vs ' + match.away_team + ' (' + Math.round(winnerPct * 100) + '% picked winner)')
+          } else {
+            await supabase.from('matches').update({ winner }).eq('id', match.id)
+          }
+        } else {
+          await supabase.from('matches').update({ winner }).eq('id', match.id)
+        }
+
         const { error: pe } = await supabase.rpc('process_match_results', { p_match_id: match.id })
         if (pe) log.push('PROCESS ERROR: ' + pe.message)
         else log.push('POINTS AWARDED: match ' + match.id)
