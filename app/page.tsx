@@ -39,30 +39,37 @@ function LiveActivity() {
 
   const fetchActivity = async () => {
     try {
+      // Fetch with deduplication — one prediction per user
       const { data } = await supabase
         .from('predictions')
-        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, profiles(username, country)')
+        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id, profiles(username, country)')
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(50);
+
       if (data) {
-        const items = data
-          .filter((p: any) => p.profiles?.username)
-          .slice(0, 5)
-          .map((p: any) => {
-            const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
-            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : Math.floor(diffMin / 60) + 'h ago';
-            const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
-            const country = p.profiles?.country || '';
-            return {
-              username: p.profiles.username,
-              flag: COUNTRY_FLAGS[country] || '&#x1F30D;',
-              pick,
-              confidence: p.confidence_pct,
-              points: p.points_earned,
-              processed: p.prediction_processed,
-              timeAgo,
-            };
-          });
+        // Deduplicate — keep only most recent prediction per user
+        const seen = new Set<string>();
+        const unique = data.filter((p: any) => {
+          if (!p.profiles?.username || seen.has(p.user_id)) return false;
+          seen.add(p.user_id);
+          return true;
+        }).slice(0, 5);
+
+        const items = unique.map((p: any) => {
+          const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+          const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+          const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
+          const country = p.profiles?.country || '';
+          return {
+            username: p.profiles.username,
+            flag: COUNTRY_FLAGS[country] || '&#x1F30D;',
+            pick,
+            confidence: p.confidence_pct,
+            points: p.points_earned,
+            processed: p.prediction_processed,
+            timeAgo,
+          };
+        });
         setActivities(items);
       }
     } catch (e) {}
