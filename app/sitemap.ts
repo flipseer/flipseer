@@ -1,130 +1,122 @@
-import type { Metadata, Viewport } from 'next';
-import './globals.css';
-import Navbar from '@/components/Navbar';
-import FlipseerChat from '@/components/FlipseerChat';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import { MetadataRoute } from 'next'
+import { createClient } from '@supabase/supabase-js'
 
-export const viewport: Viewport = {
-  themeColor: '#1A7A4A',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
+// Use service role key — sitemap runs server-side at build time
+// anon key may have RLS restrictions that return empty data
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-export const metadata: Metadata = {
-  title: 'Flipseer — Football Reputation Platform',
-  description: 'Predict World Cup 2026 matches. Represent your nation. Build your permanent football reputation. Free. No betting. No gambling.',
-  keywords: 'football prediction, World Cup 2026, football reputation, nation battle, EPL predictions',
-  authors: [{ name: 'Flipseer' }],
-  creator: 'Flipseer',
-  publisher: 'Flipseer',
-  metadataBase: new URL('https://flipseer.com'),
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Flipseer',
-    startupImage: [
-      {
-        url: '/icons/icon-512x512.png',
-        media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
-      },
-    ],
-  },
-  openGraph: {
-    title: 'Flipseer — Football Reputation Platform',
-    description: 'Predict World Cup 2026 matches. Represent your nation. Build your permanent football reputation.',
-    url: 'https://flipseer.com',
-    siteName: 'Flipseer',
-    images: [{ url: '/api/og/home', width: 1200, height: 630 }],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Flipseer — Football Reputation Platform',
-    description: 'Predict World Cup 2026. Represent your nation. Build your permanent football reputation.',
-    images: ['/api/og/home'],
-  },
-  icons: {
-    icon: [
-      { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-    ],
-    shortcut: '/icons/icon-96x96.png',
-  },
-};
+const NATION_SLUGS = [
+  'india', 'indonesia', 'nigeria', 'brazil', 'argentina',
+  'england', 'france', 'germany', 'spain', 'portugal',
+  'mexico', 'usa', 'ghana', 'morocco', 'japan',
+  'south-korea', 'australia', 'pakistan', 'bangladesh',
+  'egypt', 'senegal', 'south-africa', 'saudi-arabia',
+  'turkey', 'norway',
+]
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <head>
-        {/* PWA Meta Tags */}
-        <meta name="application-name" content="Flipseer" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Flipseer" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#1A7A4A" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        {/* Preconnect for performance */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://api-football.com" />
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://flipseer.com'
+  const now = new Date()
 
-        {/* ── GOOGLE ANALYTICS 4 ── */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-KG9XX5BWZY" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-KG9XX5BWZY');
-            `,
-          }}
-        />
+  // Static pages
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/nations`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/leaderboard`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${baseUrl}/epl`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/world-cup-2026`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/how-to-play`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+  ]
 
-        {/* ── META PIXEL ── */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-              n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-              n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-              t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-              (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '1791829218318412');
-              fbq('track', 'PageView');
-            `,
-          }}
-        />
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: 'none' }}
-            src="https://www.facebook.com/tr?id=1791829218318412&ev=PageView&noscript=1"
-          />
-        </noscript>
-      </head>
-      <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
-        <Navbar />
-        {children}
-        <FlipseerChat />
-        <ServiceWorkerRegistration />
-        <PWAInstallPrompt />
-      </body>
-    </html>
-  );
+  // Nation SEO pages
+  const nationPages: MetadataRoute.Sitemap = NATION_SLUGS.map(slug => ({
+    url: `${baseUrl}/${slug}`,
+    lastModified: now,
+    changeFrequency: 'daily' as const,
+    priority: 0.8,
+  }))
+
+  // Match SEO pages
+  let matchSeoPages: MetadataRoute.Sitemap = []
+  try {
+    const { data: matches, error } = await supabase
+      .from('matches')
+      .select('home_team, away_team, kickoff, status')
+      .eq('competition', 'World Cup 2026')
+      .not('home_team', 'is', null)
+      .not('away_team', 'is', null)
+      .order('kickoff', { ascending: true })
+
+    if (error) {
+      console.error('Sitemap match fetch error:', error.message)
+    } else {
+      matchSeoPages = (matches ?? [])
+        .filter(m => 
+          m.home_team && 
+          m.away_team && 
+          m.home_team !== 'World Cup Team' &&
+          m.away_team !== 'World Cup Team'
+        )
+        .map((m) => {
+          // Strip ALL special chars — & ' . etc — only keep a-z 0-9 and hyphens
+          const cleanTeam = (name: string) => name
+            .toLowerCase()
+            .replace(/&/g, 'and')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+          const slug = `${cleanTeam(m.home_team)}-vs-${cleanTeam(m.away_team)}`
+          return {
+            url: `${baseUrl}/matches/${slug}`,
+            lastModified: new Date(m.kickoff),
+            changeFrequency: m.status === 'completed' ? 'monthly' as const : 'daily' as const,
+            priority: m.status === 'upcoming' ? 0.9 : 0.7,
+          }
+        })
+    }
+  } catch (e) {
+    console.error('Sitemap match fetch exception:', e)
+  }
+
+  // Public profile pages — only active users with predictions
+  let profilePages: MetadataRoute.Sitemap = []
+  try {
+    const { data: profiles, error } = await supabase
+      .from('profiles')
+      .select('username, prediction_count')
+      .not('username', 'is', null)
+      .gt('prediction_count', 0)
+      .order('prediction_count', { ascending: false })
+      .limit(500) // cap at 500 to keep sitemap manageable
+
+    if (error) {
+      console.error('Sitemap profile fetch error:', error.message)
+    } else {
+      profilePages = (profiles ?? [])
+        .filter(p => p.username && p.username.length > 0)
+        .map((p) => ({
+          url: `${baseUrl}/u/${p.username}`,
+          lastModified: now,
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        }))
+    }
+  } catch (e) {
+    console.error('Sitemap profile fetch exception:', e)
+  }
+
+  return [
+    ...staticPages,
+    ...nationPages,
+    ...matchSeoPages,
+    ...profilePages,
+  ]
 }
