@@ -44,7 +44,7 @@ function LiveActivity() {
         .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, profiles(username, country)')
         .order('created_at', { ascending: false })
         .limit(6);
-      if (data && data.length > 0) {
+      if (data) {
         const items = data
           .filter((p: any) => p.profiles?.username)
           .slice(0, 5)
@@ -75,15 +75,15 @@ function LiveActivity() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!mounted || activities.length === 0) return null;
+  if (!mounted) return null;
 
   return (
     <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>LIVE ACTIVITY</span>
-          <span style={{ fontSize: '11px', color: '#8895A3', marginLeft: 'auto' }}>Updated live</span>
+          <span style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>RECENT ACTIVITY</span>
+          <span style={{ fontSize: '11px', color: '#8895A3', marginLeft: 'auto' }}>Latest predictions</span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {activities.map((a, i) => (
