@@ -1173,6 +1173,50 @@ export default function Home() {
 
 
 
+      {/* ── FOOTER ── */}
+      <footer style={{
+        backgroundColor: '#050E05',
+        borderTop: '1px solid #1A3A1A',
+        padding: '32px 20px',
+        textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          {/* Logo */}
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#2E9E5E', marginBottom: 16, letterSpacing: '-0.5px' }}>
+            ⚽ FLIPSEER
+          </div>
+
+          {/* Footer links */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
+            {[
+              { href: '/how-to-play', label: 'How to Play' },
+              { href: '/about', label: 'About' },
+              { href: '/faq', label: 'FAQ' },
+              { href: '/privacy', label: 'Privacy Policy' },
+              { href: '/terms', label: 'Terms of Service' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                color: '#6B7280', fontSize: 13,
+                textDecoration: 'none', fontWeight: 500,
+              }}
+              onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#2E9E5E'; }}
+              onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+
+          {/* Tagline */}
+          <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>
+            Free forever · No betting · No gambling · Pure football intelligence
+          </p>
+          <p style={{ color: '#2E4A2E', fontSize: 11 }}>
+            © 2026 Flipseer · Global Football Reputation Network
+          </p>
+        </div>
+      </footer>
+
     </main>
   );
 }
