@@ -41,7 +41,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: `${country.name} Football Reputation | World Cup 2026 | Flipseer`,
     description: `${country.name} forecasters building their football reputation on Flipseer. See ${country.name}'s global ranking, top predictors, accuracy stats and recent activity. Free. No betting.`,
     keywords: `${country.name} football predictions, ${country.name} World Cup 2026, ${country.adjective} football predictor, ${country.name} nation battle, football prediction ${country.name}, ${country.name} football reputation`,
-    alternates: { canonical: `https://flipseer.com/${slug}` },
+    alternates: {
+      canonical: `https://flipseer.com/${slug}`,
+      languages: {
+        'en': `https://flipseer.com/${slug}`,
+        'en-IN': slug === 'india' ? `https://flipseer.com/india` : undefined,
+        'en-NG': slug === 'nigeria' ? `https://flipseer.com/nigeria` : undefined,
+        'en-ID': slug === 'indonesia' ? `https://flipseer.com/indonesia` : undefined,
+        'en-GH': slug === 'ghana' ? `https://flipseer.com/ghana` : undefined,
+        'en-BR': slug === 'brazil' ? `https://flipseer.com/brazil` : undefined,
+        'en-AR': slug === 'argentina' ? `https://flipseer.com/argentina` : undefined,
+        'en-GB': slug === 'england' ? `https://flipseer.com/england` : undefined,
+        'x-default': `https://flipseer.com/${slug}`,
+      },
+    },
     openGraph: {
       title: `${country.flag} ${country.name} — World Cup 2026 Football Reputation | Flipseer`,
       description: `${country.name} forecasters competing globally. Every correct prediction earns points for ${country.name}. Build your permanent football reputation.`,
