@@ -1197,6 +1197,8 @@ export default function Home() {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
             {[
               { href: '/how-to-play', label: 'How to Play' },
+              { href: '/how-to-predict-football', label: 'Prediction Guide' },
+              { href: '/football-reputation', label: 'Football Reputation' },
               { href: '/about', label: 'About' },
               { href: '/faq', label: 'FAQ' },
               { href: '/privacy', label: 'Privacy Policy' },
