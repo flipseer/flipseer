@@ -29,6 +29,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/epl`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
     { url: `${baseUrl}/world-cup-2026`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/how-to-play`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/how-to-predict-football`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/football-reputation`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
