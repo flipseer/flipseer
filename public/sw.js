@@ -60,3 +60,29 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
+// ── PUSH NOTIFICATION HANDLER ──
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
+  const data = JSON.parse(event.data.text());
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || '/icons/icon-192x192.png',
+      badge: data.badge || '/icons/icon-96x96.png',
+      tag: data.tag || 'flipseer',
+      requireInteraction: false,
+      data: { url: data.url || 'https://flipseer.com/predict' },
+    })
+  );
+});
+
+// ── NOTIFICATION CLICK HANDLER ──
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data?.url || 'https://flipseer.com/predict')
+  );
+});
