@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import FlipseerChat from '@/components/FlipseerChat';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 
 export const viewport: Viewport = {
   themeColor: '#1A7A4A',
@@ -124,6 +125,7 @@ export default function RootLayout({
         <FlipseerChat />
         <ServiceWorkerRegistration />
         <PWAInstallPrompt />
+        <PushNotificationPrompt />
       </body>
     </html>
   );
