@@ -7,13 +7,18 @@ import webpush from 'web-push'
 
 export const dynamic = 'force-dynamic'
 
-webpush.setVapidDetails(
-  'mailto:founder@flipseer.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
-
 export async function POST(request: NextRequest) {
+  // Initialize inside handler so missing env vars don't crash at build time
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return NextResponse.json({ error: 'VAPID keys not configured' }, { status: 500 })
+  }
+
+  webpush.setVapidDetails(
+    'mailto:founder@flipseer.com',
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  )
+
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
