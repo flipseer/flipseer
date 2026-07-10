@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/nations`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/leaderboard`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${baseUrl}/epl`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/epl/matchweek-1`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/world-cup-2026`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/how-to-play`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/how-to-predict-football`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -95,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('profiles')
       .select('username, prediction_count')
       .not('username', 'is', null)
-      .gt('prediction_count', 0)
+      .gt('prediction_count', 2)
       .order('prediction_count', { ascending: false })
       .limit(500) // cap at 500 to keep sitemap manageable
 
