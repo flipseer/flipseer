@@ -17,6 +17,10 @@
       "schedule": "0 6 * * 1"
     },
     {
+      "path": "/api/admin/sync-epl-fixtures",
+      "schedule": "0 7 * * 1"
+    },
+    {
       "path": "/api/admin/snapshot-leaderboard",
       "schedule": "0 0 * * *"
     },
