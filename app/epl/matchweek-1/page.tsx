@@ -33,7 +33,8 @@ const FIXTURES = [
     date: 'Sunday, 23 August 2026',
     matches: [
       { home: 'Brighton', away: 'Aston Villa', time: 'Afternoon', slug: 'brighton-vs-aston-villa', interest: 'medium' },
-      { home: 'Manchester City', away: 'Bournemouth', time: 'Afternoon', slug: 'manchester-city-vs-bournemouth', interest: 'high' },
+      { home: 'Manchester City', away: 'Bournemouth', time: '14:00 BST', slug: 'manchester-city-vs-bournemouth', interest: 'high' },
+      { home: 'Newcastle United', away: 'Liverpool', time: '16:30 BST', slug: 'newcastle-united-vs-liverpool', interest: 'high' },
     ]
   },
   {
