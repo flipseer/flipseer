@@ -1,171 +1,230 @@
-import type { Metadata } from 'next'
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'How to Play | Flipseer — Football Prediction Guide',
-  description: 'Learn how to predict football matches, earn points, and build your permanent reputation on Flipseer. Free. No betting.',
+  title: 'How Flipseer Works | Football Prediction Scoring Guide',
+  description: 'Learn how Flipseer football prediction scoring works. Earn points for correct outcomes, exact scores, upsets and confidence. Build your permanent football reputation. Free.',
+  keywords: 'how football prediction scoring works, FIFA World Cup prediction rules, EPL prediction leaderboard, best football prediction platform free, football prediction reputation system',
   alternates: { canonical: 'https://flipseer.com/how-to-play' },
-}
+  openGraph: {
+    title: 'How Flipseer Works | Football Prediction Scoring',
+    description: 'How football prediction scoring works on Flipseer. Earn up to 108 points per match. Build permanent football reputation. Free.',
+    url: 'https://flipseer.com/how-to-play',
+  },
+};
 
-const STEPS = [
-  { number: '01', title: 'Sign Up Free', description: 'Create your free Flipseer account. Set your country to compete on national leaderboards.', icon: '&#x1F464;' },
-  { number: '02', title: 'Pick Your Matches', description: 'Go to the Predict page. Choose matches from World Cup 2026. Pick Home Win, Draw, or Away Win.', icon: '&#x26BD;' },
-  { number: '03', title: 'Set Your Confidence', description: 'Slide your confidence from 1% to 100%. Higher confidence = more points if correct, fewer if wrong.', icon: '&#x1F3AF;' },
-  { number: '04', title: 'Predict the Exact Score', description: 'Predict the exact final scoreline for a massive bonus. e.g. Brazil 2-1 Morocco. Worth up to 55 pts!', icon: '&#x1F522;' },
-  { number: '05', title: 'Lock In Before Kick-off', description: 'Predictions lock at kick-off. Once locked, your call is permanent. No edits. Your word stands forever.', icon: '&#x1F512;' },
-  { number: '06', title: 'Earn Points and Climb', description: 'After each match, points are calculated and added to your record. Climb global and national leaderboards.', icon: '&#x1F3C6;' },
-]
-
-const SCORING = [
-  { label: 'Correct outcome (Win/Draw/Loss)', points: '10 pts base', highlight: false },
-  { label: 'Correct goal difference', points: '+18 pts', highlight: false },
-  { label: 'Exact score (replaces goal diff)', points: '+55 pts', highlight: true },
-  { label: 'Upset bonus (underdog wins)', points: '+12 pts', highlight: false },
-  { label: 'Confidence 80%+', points: 'x1.4 multiplier', highlight: false },
-  { label: 'Confidence 60-79%', points: 'x1.2 multiplier', highlight: false },
-  { label: 'Confidence 40-59%', points: 'x1.0 multiplier', highlight: false },
-  { label: 'Confidence below 40%', points: 'x0.8 multiplier', highlight: false },
-  { label: 'Maximum points per match', points: '108 pts', highlight: true },
-]
-
-const BADGES = [
-  { icon: '&#x1F947;', badge: 'Founding Forecaster', how: 'Joined Flipseer before the World Cup 2026 launch — forever on record', rarity: 'Legendary' },
-  { icon: '&#x1F3AF;', badge: 'Score Master', how: 'Predict the exact final score correctly', rarity: 'Rare' },
-  { icon: '&#x1F631;', badge: 'Upset King', how: 'Correctly predict an underdog victory', rarity: 'Rare' },
-  { icon: '&#x26A1;', badge: 'Match Hero', how: 'Earn the highest points in a single match', rarity: 'Epic' },
-  { icon: '&#x1F981;', badge: 'Bold Caller', how: 'Predict an upset with 80%+ confidence', rarity: 'Epic' },
-  { icon: '&#x1F525;', badge: 'Hot Streak x5', how: 'Get 5 correct predictions in a row', rarity: 'Uncommon' },
-  { icon: '&#x26A1;', badge: 'Hot Streak x7', how: 'Get 7 correct predictions in a row', rarity: 'Rare' },
-  { icon: '&#x1F451;', badge: 'Hot Streak x10', how: 'Get 10 correct predictions in a row', rarity: 'Legendary' },
-]
-
-const RARITY_COLORS: { [key: string]: string } = {
-  'Uncommon': '#2E9E5E',
-  'Rare': '#3B82F6',
-  'Epic': '#8B5CF6',
-  'Legendary': '#F59E0B',
-}
-
-export default function HowToPlay() {
+export default function HowToPlayPage() {
   return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
+    <main style={{
+      backgroundColor: '#0D1F0F', minHeight: '100vh',
+      fontFamily: "-apple-system,'Segoe UI',Arial,sans-serif",
+      color: 'white', paddingBottom: 80,
+    }}>
 
-      {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '60px 20px 40px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>GUIDE</p>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '40px', marginBottom: '12px' }}>How to Play</h1>
-          <p style={{ color: '#6B7280', fontSize: '15px', lineHeight: '1.7' }}>
-            Your complete guide to predicting football matches and building your permanent reputation on Flipseer.
+      {/* Hero */}
+      <section style={{
+        background: 'linear-gradient(180deg,#071408 0%,#0D1F0F 100%)',
+        padding: 'clamp(48px,10vw,80px) 20px clamp(40px,8vw,64px)',
+        borderBottom: '1px solid #1A3A1A', textAlign: 'center',
+      }}>
+        <h1 style={{
+          fontSize: 'clamp(28px,6vw,48px)',
+          fontWeight: 900, letterSpacing: '-1px',
+          lineHeight: 1.1, marginBottom: 16,
+        }}>
+          How Flipseer Works
+        </h1>
+        <p style={{
+          fontSize: 'clamp(14px,2.5vw,17px)',
+          color: '#9CA3AF', lineHeight: 1.7,
+          maxWidth: 520, margin: '0 auto 24px',
+        }}>
+          Predict football matches before kickoff. Earn reputation points.
+          Build your permanent Football Reputation. Free forever. No betting.
+        </p>
+        <a href="/predict" style={{
+          display: 'inline-block', backgroundColor: '#2E9E5E', color: 'white',
+          padding: '13px 28px', borderRadius: 10, textDecoration: 'none',
+          fontSize: 14, fontWeight: 700,
+        }}>
+          Start Predicting Free →
+        </a>
+      </section>
+
+      {/* Featured snippet sections — each answers one search query */}
+      <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+
+          {/* Snippet 1 */}
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+            How does football prediction scoring work on Flipseer?
+          </h2>
+          <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.7, marginBottom: 12 }}>
+            Flipseer awards points based on prediction accuracy and confidence. Correct outcome earns 10 points, exact score earns 55 bonus points, upset bonus adds 12 points, and confidence multipliers range from 0.8× to 1.4×. Maximum 108 points per match.
           </p>
-        </div>
-      </section>
-
-      {/* STEPS */}
-      <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '24px', textAlign: 'center' }}>6 STEPS</p>
-          {STEPS.map((step) => (
-            <div key={step.number} style={{ display: 'flex', gap: '16px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', marginBottom: '12px' }}>
-              <div style={{ fontSize: '32px', minWidth: '40px' }} dangerouslySetInnerHTML={{ __html: step.icon }} />
-              <div>
-                <div style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', marginBottom: '4px' }}>STEP {step.number}</div>
-                <h3 style={{ fontSize: '17px', marginBottom: '6px', color: 'white' }}>{step.title}</h3>
-                <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>{step.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* DAILY LIMIT */}
-      <section style={{ padding: '32px 20px', backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #F59E0B', borderRadius: '12px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-            <div style={{ fontSize: '28px' }}>&#x26A0;</div>
-            <div>
-              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#F59E0B', marginBottom: '6px' }}>Daily Prediction Limit</div>
-              <p style={{ color: '#9CA3AF', fontSize: '13px', lineHeight: '1.7', margin: 0 }}>
-                You can make up to <strong style={{ color: 'white' }}>8 new predictions per day</strong>. Updates to existing predictions do not count toward the limit. Resets at midnight UTC every day.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SCORING */}
-      <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>SCORING SYSTEM</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '8px' }}>How Points Work</h2>
-          <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '28px' }}>Maximum 108 points per match. Skill + boldness = rewards.</p>
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' }}>
-            {SCORING.map((row, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: i < SCORING.length - 1 ? '1px solid #1A3A20' : 'none', backgroundColor: row.highlight ? 'rgba(46,158,94,0.08)' : 'transparent' }}>
-                <span style={{ color: row.highlight ? '#D1FAE5' : '#9CA3AF', fontSize: '14px' }}>{row.label}</span>
-                <span style={{ color: row.highlight ? '#2E9E5E' : '#6B7280', fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap', marginLeft: '16px' }}>{row.points}</span>
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 10, overflow: 'hidden', marginBottom: 32 }}>
+            {[
+              { label: 'Correct outcome', pts: '+10 pts' },
+              { label: 'Goal difference bonus', pts: '+18 pts' },
+              { label: 'Exact score bonus', pts: '+55 pts' },
+              { label: 'Upset bonus', pts: '+12 pts' },
+              { label: 'Confidence 80%+', pts: '×1.4' },
+              { label: 'Confidence 60-79%', pts: '×1.2' },
+              { label: 'Confidence 40-59%', pts: '×1.0' },
+              { label: 'Confidence below 40%', pts: '×0.8' },
+              { label: 'Maximum per match', pts: '108 pts' },
+            ].map(({ label, pts }, i) => (
+              <div key={label} style={{
+                display: 'flex', justifyContent: 'space-between',
+                padding: '10px 16px',
+                borderTop: i === 0 ? 'none' : '1px solid #1A3A1A',
+                backgroundColor: i === 8 ? 'rgba(46,158,94,0.08)' : 'transparent',
+              }}>
+                <span style={{ fontSize: 13, color: '#9CA3AF' }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B' }}>{pts}</span>
               </div>
             ))}
           </div>
 
-          {/* Example */}
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px' }}>
-            <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>EXAMPLE &#x2014; MAXIMUM SCORE</p>
-            <div style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '2.2' }}>
-              <div>You predict: <strong style={{ color: 'white' }}>South Africa win</strong> (upset) &#x2713;</div>
-              <div>Exact score: <strong style={{ color: 'white' }}>4-2</strong> &#x2713;</div>
-              <div>Confidence: <strong style={{ color: 'white' }}>85%</strong></div>
-              <div style={{ borderTop: '1px solid #1A3A1A', marginTop: '8px', paddingTop: '8px', color: '#D1FAE5' }}>
-                10 + 55 (exact) + 12 (upset) = 77 &#xD7; 1.4 = 107.8 &#x2192; <strong style={{ color: '#2E9E5E', fontSize: '18px' }}>108 pts!</strong>
+          {/* Snippet 2 */}
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+            What is the best football prediction platform for free?
+          </h2>
+          <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.7, marginBottom: 12 }}>
+            Flipseer is the only free football prediction platform that builds a permanent reputation record. Unlike betting sites or fantasy apps, Flipseer tracks your prediction accuracy across every competition forever — World Cup, EPL, Champions League — with no ads, no prizes, and no gambling.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10, marginBottom: 32 }}>
+            {[
+              { icon: '🆓', title: 'Free forever', desc: 'No subscription, no premium tier' },
+              { icon: '🚫', title: 'No betting', desc: 'Zero gambling. Pure football knowledge' },
+              { icon: '📖', title: 'Permanent record', desc: 'Your predictions locked forever' },
+              { icon: '🌍', title: 'Nation Battle', desc: 'Compete globally for your country' },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 10, padding: '14px' }}>
+                <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'white', marginBottom: 4 }}>{title}</div>
+                <div style={{ fontSize: 12, color: '#8895A3' }}>{desc}</div>
               </div>
-            </div>
+            ))}
           </div>
+
+          {/* Snippet 3 */}
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+            How does the EPL prediction leaderboard work?
+          </h2>
+          <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.7, marginBottom: 12 }}>
+            The EPL prediction leaderboard on Flipseer ranks forecasters by total points earned across all Premier League matches. Points accumulate from World Cup 2026 and continue into EPL 2026/27 — one permanent reputation across every competition. Nation Battle shows which country has the most accurate collective forecasters.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
+            {[
+              { href: '/leaderboard', label: '🏆 Global Leaderboard' },
+              { href: '/nations', label: '🌍 Nation Battle' },
+              { href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                display: 'inline-block', backgroundColor: '#0D2B14',
+                border: '1px solid #1A7A4A', borderRadius: 8, padding: '8px 16px',
+                textDecoration: 'none', fontSize: 13, color: '#2E9E5E', fontWeight: 600,
+              }}>{label}</a>
+            ))}
+          </div>
+
+          {/* Snippet 4 */}
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+            What is Football Reputation?
+          </h2>
+          <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.7, marginBottom: 12 }}>
+            Football Reputation is your permanent public record of prediction accuracy on Flipseer. Like a chess Elo rating, it reflects your football intelligence over time — every correct prediction, exact score, and upset called correctly builds your reputation permanently across World Cup, EPL, and Champions League.
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 32 }}>
+            {[
+              { href: '/football-reputation', label: '⭐ What is Football Reputation?' },
+              { href: '/how-to-predict-football', label: '🧠 Prediction Guide' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                display: 'inline-block', backgroundColor: '#0D2B14',
+                border: '1px solid #1A7A4A', borderRadius: 8, padding: '8px 16px',
+                textDecoration: 'none', fontSize: 13, color: '#2E9E5E', fontWeight: 600,
+              }}>{label}</a>
+            ))}
+          </div>
+
+          {/* Snippet 5 */}
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+            FIFA World Cup 2026 prediction rules
+          </h2>
+          <p style={{ fontSize: 14, color: '#9CA3AF', lineHeight: 1.7, marginBottom: 12 }}>
+            On Flipseer, FIFA World Cup 2026 predictions must be submitted before kickoff. Once the match starts, predictions lock permanently — no edits, no deletions. Predict the outcome (home/draw/away), optional exact score, and set your confidence level (1-100%). Points are awarded after the final whistle.
+          </p>
+          <a href="/world-cup-2026" style={{
+            display: 'inline-block', backgroundColor: '#0D2B14',
+            border: '1px solid #1A7A4A', borderRadius: 8, padding: '8px 16px',
+            textDecoration: 'none', fontSize: 13, color: '#2E9E5E', fontWeight: 600,
+            marginBottom: 32,
+          }}>🏆 World Cup 2026 Hub →</a>
+
         </div>
       </section>
 
-      {/* BADGES */}
-      <section style={{ padding: '48px 20px', backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>BADGES</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '8px' }}>How to Earn Badges</h2>
-          <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '28px' }}>
-            Badges are permanent. They appear on your public profile forever.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {BADGES.map(({ icon, badge, how, rarity }) => (
-              <div key={badge} style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 20px' }}>
-                <div style={{ fontSize: '28px', minWidth: '36px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', marginBottom: '3px' }}>{badge}</div>
-                  <div style={{ fontSize: '12px', color: '#6B7280' }}>{how}</div>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', color: RARITY_COLORS[rarity], padding: '3px 10px', borderRadius: '999px', border: `1px solid ${RARITY_COLORS[rarity]}`, whiteSpace: 'nowrap' }}>
-                  {rarity}
-                </div>
+      {/* Rank system */}
+      <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 16 }}>
+            Football Reputation Ranks
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 10 }}>
+            {[
+              { icon: '🥉', rank: 'Rookie', pts: '0–49 pts', color: '#9CA3AF' },
+              { icon: '🎯', rank: 'Predictor', pts: '50–199 pts', color: '#2E9E5E' },
+              { icon: '🔥', rank: 'Expert', pts: '200–499 pts', color: '#F59E0B' },
+              { icon: '⭐', rank: 'Elite', pts: '500–999 pts', color: '#8B5CF6' },
+              { icon: '👑', rank: 'Legend', pts: '1000+ pts', color: '#EF4444' },
+            ].map(({ icon, rank, pts, color }) => (
+              <div key={rank} style={{
+                backgroundColor: '#0D2B14', border: `1px solid ${color}30`,
+                borderRadius: 12, padding: '16px 12px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color, marginBottom: 4 }}>{rank}</div>
+                <div style={{ fontSize: 11, color: '#6B7280' }}>{pts}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px' }}>Ready to build your record?</h2>
-          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '28px' }}>
-            June 11. Mexico vs South Africa. First match. Your legacy starts now.
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '8px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold' }}>
-              Start Predicting &#x2192;
-            </a>
-            <a href="/auth" style={{ backgroundColor: 'transparent', color: '#2E9E5E', padding: '14px 32px', borderRadius: '8px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', border: '1px solid #2E9E5E' }}>
-              Join Free
-            </a>
+      {/* Internal links */}
+      <section style={{ padding: '40px 20px' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+          <a href="/predict" style={{
+            display: 'inline-block', backgroundColor: '#2E9E5E', color: 'white',
+            padding: '14px 32px', borderRadius: 10, textDecoration: 'none',
+            fontSize: 15, fontWeight: 700, marginBottom: 20,
+            boxShadow: '0 0 24px rgba(46,158,94,0.3)',
+          }}>
+            Start Predicting Free →
+          </a>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+            {[
+              { href: '/world-cup-2026', label: '🏆 World Cup 2026' },
+              { href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27' },
+              { href: '/leaderboard', label: '📊 Leaderboard' },
+              { href: '/nations', label: '🌍 Nation Battle' },
+              { href: '/how-to-predict-football', label: '🧠 Prediction Guide' },
+              { href: '/football-reputation', label: '⭐ Football Reputation' },
+              { href: '/india', label: '🇮🇳 India' },
+              { href: '/nigeria', label: '🇳🇬 Nigeria' },
+              { href: '/indonesia', label: '🇮🇩 Indonesia' },
+              { href: '/england', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                display: 'inline-block', backgroundColor: '#0D2B14',
+                border: '1px solid #1A3A1A', borderRadius: 8, padding: '7px 14px',
+                textDecoration: 'none', fontSize: 12, color: '#8895A3',
+              }}>{label}</a>
+            ))}
           </div>
-          <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '14px' }}>Free. No betting. Pure football.</p>
         </div>
       </section>
-
     </main>
-  )
+  );
 }
