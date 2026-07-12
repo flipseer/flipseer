@@ -1065,62 +1065,105 @@ export default function Home() {
       </section>
 
 
-      {/* ── COMING NEXT TIMELINE ── */}
-      <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>YOUR RECORD NEVER STOPS</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>
+      {/* ── COMPETITIONS HUB ── */}
+      <section style={{ backgroundColor: '#050E05', padding: '56px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '8px', textAlign: 'center' }}>ONE RECORD. EVERY COMPETITION.</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(22px,4vw,30px)', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold' }}>
             Sign up once. Predict forever.
           </h2>
-          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px' }}>
-            World Cup is just the beginning. One permanent record across every competition. Forever.
+          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '32px', textAlign: 'center' }}>
+            Your reputation grows across every competition. Never resets.
           </p>
 
-          {/* Timeline */}
-          <div style={{ position: 'relative', maxWidth: '600px', margin: '0 auto 40px' }}>
+          {/* Competition cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: '10px', marginBottom: '28px' }}>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', position: 'relative', zIndex: 1 }}>
-              {[
-                { icon: '&#x1F3C6;', label: 'World Cup 2026', date: 'LIVE NOW', color: '#2E9E5E', active: true },
-              ].map(({ icon, label, date, color, active }) => (
-                <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  {/* Circle */}
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', border: '3px solid ' + color, backgroundColor: active ? color + '30' : '#0D2B14', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', boxShadow: active ? '0 0 20px ' + color + '60' : 'none' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                  {/* Date badge */}
-                  <div style={{ backgroundColor: active ? color : '#1A3A1A', color: active ? 'white' : '#6B7280', fontSize: '10px', fontWeight: 'bold', padding: '3px 10px', borderRadius: '999px', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                    {date}
-                  </div>
-                  {/* Label */}
-                  <div style={{ fontSize: '11px', color: active ? color : '#6B7280', fontWeight: active ? 'bold' : 'normal', textAlign: 'center', lineHeight: '1.3' }}>
-                    {label}
-                  </div>
+            {/* World Cup — LIVE */}
+            <a href="/world-cup-2026" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '2px solid #2E9E5E',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative', overflow: 'hidden',
+                boxShadow: '0 0 20px rgba(46,158,94,0.15)',
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }}/>
+                  <span style={{ fontSize: 8, color: '#EF4444', fontWeight: 700 }}>LIVE</span>
                 </div>
-              ))}
-            </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🏆</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>World Cup 2026</div>
+                <div style={{ fontSize: 10, color: '#2E9E5E', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>LIVE NOW</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Final: Jul 19<br/>96 matches done</div>
+              </div>
+            </a>
+
+            {/* EPL */}
+            <a href="/epl" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(139,92,246,0.4)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative',
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#8B5CF6', fontWeight: 700, backgroundColor: 'rgba(139,92,246,0.15)', padding: '2px 6px', borderRadius: 999 }}>AUG 21</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Premier League</div>
+                <div style={{ fontSize: 10, color: '#8B5CF6', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>2026/27</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>380 matches<br/>Starts Aug 21</div>
+              </div>
+            </a>
+
+            {/* Champions League */}
+            <a href="/predict" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.3)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative',
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700, backgroundColor: 'rgba(245,158,11,0.1)', padding: '2px 6px', borderRadius: 999 }}>SEP</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>⭐</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Champions League</div>
+                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>2026/27</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Europe's best<br/>Starts Sep 2026</div>
+              </div>
+            </a>
+
+            {/* ISL */}
+            <a href="/india" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(239,68,68,0.2)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative', opacity: 0.85,
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>NOV</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🇮🇳</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Indian Super League</div>
+                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>2026/27</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>India's top league<br/>Starts Nov 2026</div>
+              </div>
+            </a>
+
           </div>
 
-          {/* Points carry over message */}
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px 24px', maxWidth: '500px', margin: '0 auto 32px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ fontSize: '32px', flexShrink: 0 }}>&#x1F4CA;</div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>
-                Your points carry over automatically
-              </div>
-              <div style={{ fontSize: '12px', color: '#9CA3AF', lineHeight: '1.6' }}>
-                World Cup points + EPL points + UCL points = your permanent total.<br />
-                <span style={{ color: '#2E9E5E' }}>One profile. Every competition. Forever.</span>
-              </div>
-            </div>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '12px', color: '#4B5563', marginBottom: 16, lineHeight: 1.6 }}>
+              World Cup + EPL + UCL + ISL = your permanent Football Reputation.<br/>
+              <span style={{ color: '#2E9E5E' }}>One profile. Every competition. Forever.</span>
+            </p>
+            <a href="/auth?utm_source=homepage&utm_medium=competitions"
+              style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '13px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold', boxShadow: '0 0 24px rgba(46,158,94,0.25)' }}>
+              ⚽ Start Your Record Now →
+            </a>
+            <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px' }}>Free forever. No card. No betting.</p>
           </div>
-
-          <a href="/auth?utm_source=homepage&utm_medium=timeline&utm_campaign=coming_next"
-            style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 0 30px rgba(46,158,94,0.3)' }}>
-            &#x26BD; Start Your Record Now &#x2192;
-          </a>
-          <p style={{ fontSize: '11px', color: '#8895A3', marginTop: '10px' }}>Free forever. No card. No betting.</p>
         </div>
       </section>
-
 
       {/* ── SECTION 6: HOW IT WORKS + FINAL CTA ── */}
       <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
