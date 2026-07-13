@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'How to Predict Football Accurately | Football Intelligence Guide | Flipseer',
+  title: 'How to Predict Football Accurately | Flipseer',
   description: 'Learn how to predict football matches accurately. Tips on reading form, home advantage, confidence calibration and building a permanent football reputation. Free guide.',
   keywords: 'how to predict football, football prediction tips, predict football accurately, football betting free, football intelligence, World Cup predictions tips',
   alternates: { canonical: 'https://flipseer.com/how-to-predict-football' },
