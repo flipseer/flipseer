@@ -1149,11 +1149,62 @@ export default function Home() {
               </div>
             </a>
 
+            {/* NPFL Nigeria */}
+            <a href="/nigeria" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(0,128,0,0.25)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative', opacity: 0.8,
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🇳🇬</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Nigeria Premier League</div>
+                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>NPFL</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Nigeria's top league<br/>Coming Jan 2027</div>
+              </div>
+            </a>
+
+            {/* Ghana Premier League */}
+            <a href="/ghana" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(255,215,0,0.2)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative', opacity: 0.8,
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🇬🇭</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Ghana Premier League</div>
+                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>GPL</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Ghana's top league<br/>Coming Jan 2027</div>
+              </div>
+            </a>
+
+            {/* Liga 1 Indonesia */}
+            <a href="/indonesia" style={{ textDecoration: 'none' }}>
+              <div style={{
+                backgroundColor: '#0D2B14', border: '1px solid rgba(206,17,38,0.2)',
+                borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
+                position: 'relative', opacity: 0.8,
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                  <span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span>
+                </div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🇮🇩</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Indonesia Liga 1</div>
+                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>Liga 1</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Indonesia's top league<br/>Coming Jan 2027</div>
+              </div>
+            </a>
+
           </div>
 
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '12px', color: '#4B5563', marginBottom: 16, lineHeight: 1.6 }}>
-              World Cup + EPL + UCL + ISL = your permanent Football Reputation.<br/>
+              World Cup + EPL + UCL + ISL + NPFL + GPL + Liga 1 = your permanent Football Reputation.<br/>
               <span style={{ color: '#2E9E5E' }}>One profile. Every competition. Forever.</span>
             </p>
             <a href="/auth?utm_source=homepage&utm_medium=competitions"
