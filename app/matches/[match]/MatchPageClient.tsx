@@ -33,7 +33,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const isLive = match?.status === 'live';
   const isUpcoming = match?.status === 'upcoming' || match?.status === 'locked';
 
-  const shareText = `&#x26BD; ${home} vs ${away} -- World Cup 2026\n\n${communityStats.total > 0 ? `${homePct}% predict ${home} win &#xB7; ${drawPct}% Draw &#xB7; ${awayPct}% ${away} win\n\n` : ''}What's your prediction? &#x2192; flipseer.com/matches/${slug}\n\nFree. No betting. Pure football. #WorldCup2026 #Flipseer`;
+  const shareText = `⚽ ${home} vs ${away} — World Cup 2026\n\n${communityStats.total > 0 ? `${homePct}% predict ${home} win · ${drawPct}% Draw · ${awayPct}% ${away} win\n\n` : ''}What's your prediction? → flipseer.com/matches/${slug}\n\nFree. No betting. Pure football. #WorldCup2026 #Flipseer`;
 
   const formatKickoff = (kickoff: string) => {
     if (!kickoff) return '';
@@ -54,7 +54,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
 
         {/* Teams */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '120px' }}>{home}</h1>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '120px' }}>{home}</h2>
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             {isCompleted ? (
               <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '8px 20px' }}>
@@ -77,7 +77,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
               <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '8px' }}>{formatKickoff(match.kickoff)}</div>
             )}
           </div>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '120px' }}>{away}</h1>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '120px' }}>{away}</h2>
         </div>
 
         {/* Status badge */}
@@ -92,7 +92,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {isUpcoming && (
             <a href="/predict" style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
-              &#x26BD; Predict This Match &#x2192;
+              &#x26BD; Predict This Match →
             </a>
           )}
           <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
@@ -101,7 +101,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </a>
           <button onClick={() => { navigator.clipboard.writeText('flipseer.com/matches/' + slug); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
             style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', padding: '12px 20px', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>
-            {copied ? 'Copied!' : 'Copy Link'}
+            {copied ? '✅ Copied' : '🔗 Copy Link'}
           </button>
         </div>
       </div>
@@ -141,9 +141,9 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         {communityStats.total === 0 && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F3AF;</div>
-            <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '16px' }}>No predictions yet -- be the first to call it!</p>
+            <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '16px' }}>No predictions yet — be the first to call it!</p>
             <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
-              Make Your Prediction &#x2192;
+              Make Your Prediction →
             </a>
           </div>
         )}
@@ -152,7 +152,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         {predictions.length > 0 && (
           <div style={{ marginBottom: '24px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '4px' }}>&#x1F3AF; Forecasters Who Called It</h2>
-            <p style={{ color: '#6B7280', fontSize: '12px', marginBottom: '16px' }}>Predictions locked before kickoff -- permanent record</p>
+            <p style={{ color: '#6B7280', fontSize: '12px', marginBottom: '16px' }}>Predictions locked before kickoff — permanent record</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {predictions.slice(0, 5).map((p: any, i: number) => {
                 const outcome = p.predicted_outcome === 'home' ? home + ' Win'
@@ -181,10 +181,10 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         {/* SEO CONTENT */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '12px', color: '#2E9E5E' }}>
-            {home} vs {away} -- World Cup 2026
+            {home} vs {away} — World Cup 2026
           </h2>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.8', marginBottom: '10px' }}>
-            Football fans worldwide are predicting {home} vs {away} on Flipseer before kickoff. Predictions lock permanently -- no editing after the whistle.
+            Football fans worldwide are predicting {home} vs {away} on Flipseer before kickoff. Predictions lock permanently — no editing after the whistle.
           </p>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.8' }}>
             Flipseer is a free football prediction platform. No betting. No gambling. Predict exact scores, set your confidence, and build your permanent football reputation across World Cup 2026, EPL, Champions League and more.
@@ -201,7 +201,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
             Predict. Lock before kickoff. Build your permanent football record.
           </p>
           <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
-            Predict Free &#x2192;
+            Predict Free →
           </a>
           <p style={{ color: '#4B5563', fontSize: '11px', marginTop: '10px' }}>Free forever · No card · No betting</p>
         </div>
