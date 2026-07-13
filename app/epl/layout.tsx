@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'EPL 2026/27 Predictions | Premier League Reputation | Flipseer',
+  title: 'EPL 2026/27 Predictions | Premier League | Flipseer',
   description: 'Predict Premier League 2026/27 matches on Flipseer. Your World Cup reputation carries forward. 380 matches. Earn the EPL Founding Forecaster badge. Free forever. No betting.',
   keywords: 'EPL predictions 2026, Premier League prediction game free, football reputation EPL, Premier League forecaster, EPL 2026 predict matches, football prediction platform',
   alternates: { canonical: 'https://flipseer.com/epl' },
