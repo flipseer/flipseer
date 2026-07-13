@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'What is Football Reputation? | Permanent Football Record | Flipseer',
+  title: 'Football Reputation | Permanent Football Record | Flipseer',
   description: 'Football Reputation is your permanent record of football prediction accuracy. Every correct call, exact score and upset earns reputation that grows forever. No betting.',
   keywords: 'football reputation, permanent football record, football prediction reputation, football intelligence score, football forecaster, build football reputation',
   alternates: { canonical: 'https://flipseer.com/football-reputation' },
