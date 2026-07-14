@@ -33,13 +33,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // www → non-www redirect (fixes Google Search Console redirect error)
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.flipseer.com' }],
-        destination: 'https://flipseer.com/:path*',
-        permanent: true,
-      },
       // Fix 404s for country pages linked from homepage TOP_NATIONS grid
       {
         source: '/world-cup-2026/:country',
