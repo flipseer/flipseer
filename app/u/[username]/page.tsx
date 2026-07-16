@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { redirect } from 'next/navigation';
 import JournalClient from './JournalClient';
 import { Metadata } from 'next';
 
@@ -22,6 +23,17 @@ export default async function JournalPage({ params }: Props) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+
+  // Redirect if username has wrong case
+  const { data: correctProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .ilike('username', params.username)
+    .single();
+
+  if (correctProfile && correctProfile.username !== params.username) {
+    redirect(`/u/${correctProfile.username}`);
+  }
 
   // Fetch profile
   const { data: profile } = await supabase
