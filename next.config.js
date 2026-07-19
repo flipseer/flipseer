@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require('@sentry/nextjs')
-
 const nextConfig = {
   async headers() {
     return [
@@ -34,15 +33,16 @@ const nextConfig = {
   async redirects() {
     return [
       // Fix 404s for country pages linked from homepage TOP_NATIONS grid
+      // Permanent (308): tells Google these URLs are gone for good,
+      // so it stops re-crawling and flagging them as redirect errors
       {
         source: '/world-cup-2026/:country',
         destination: '/nations',
-        permanent: false,
+        permanent: true,
       },
     ]
   },
 }
-
 module.exports = withSentryConfig(nextConfig, {
   org: 'flipseer',
   project: 'flipseer',
