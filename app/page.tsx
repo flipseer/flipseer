@@ -720,13 +720,14 @@ export default function Home() {
 
       {/* ── EPL FLOATING CORNER CARD (top-right) ── */}
       {mounted && (
-        <a href="/epl" style={{ textDecoration: 'none' }}>
+        <a href="/epl/matchweek-1" style={{ textDecoration: 'none' }}>
           <div style={{
             position: 'fixed', top: 70, right: 16, zIndex: 400,
             backgroundColor: '#0D2B14',
             border: '1px solid #8B5CF6',
             borderRadius: 12,
             padding: '12px 14px',
+            boxShadow: '0 0 20px rgba(139,92,246,0.25)',
             maxWidth: 160,
             boxShadow: '0 0 24px rgba(139,92,246,0.25)',
             cursor: 'pointer',
@@ -742,7 +743,7 @@ export default function Home() {
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
               <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }}/>
-              COMING AUG 16
+              COMING AUG 21
             </div>
 
             {/* Trophy + title */}
@@ -770,7 +771,7 @@ export default function Home() {
               fontSize: 10, fontWeight: 700, textAlign: 'center',
               letterSpacing: '0.3px',
             }}>
-              Join the Waitlist →
+              View Fixtures →
             </div>
           </div>
         </a>
@@ -834,7 +835,7 @@ export default function Home() {
       <div style={{ backgroundColor: '#1A7A4A', padding: '9px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-            ⚽ LIVE -- World Cup 2026 -- Predict matches. Represent your nation. Free forever.
+            🏆 Spain are World Champions 2026 -- EPL starts August 21 -- Build your permanent football reputation -- Free forever
           </span>
           <a href="/auth?utm_source=homepage&utm_medium=banner&utm_campaign=wc2026" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Join Free →
