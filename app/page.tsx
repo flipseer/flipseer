@@ -831,12 +831,12 @@ export default function Home() {
       )}
 
       {/* Live banner */}
-      <div style={{ backgroundColor: '#1A7A4A', padding: '9px 20px', textAlign: 'center' }}>
+      <div style={{ backgroundColor: '#4C1D95', padding: '9px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
             🏆 Spain are World Champions 2026 -- EPL starts August 21 -- Build your permanent football reputation -- Free forever
           </span>
-          <a href="/auth?utm_source=homepage&utm_medium=banner&utm_campaign=wc2026" style={{ backgroundColor: 'white', color: '#1A7A4A', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+          <a href="/auth?utm_source=homepage&utm_medium=banner&utm_campaign=wc2026" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Join Free →
           </a>
         </div>
@@ -1264,7 +1264,7 @@ export default function Home() {
               Predict. Represent your nation. Build your legacy.
             </p>
             <a href="/auth?utm_source=homepage&utm_medium=final&utm_campaign=wc2026" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(46,158,94,0.4)' }}>
-              ⚽ Predict Your First Match Free →
+              🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL Matches Free →
             </a>
             <p style={{ color: '#8895A3', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
           </div>
