@@ -404,7 +404,7 @@ function ClaimModal() {
           <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#8895A3', fontSize: '20px', cursor: 'pointer' }}>×</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 'bold', letterSpacing: '2px' }}>WORLD CUP 2026 · LIVE NOW</span>
+            <span style={{ fontSize: '10px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px' }}>WORLD CUP 2026 · COMPLETE · 🇪🇸 SPAIN CHAMPIONS</span>
           </div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '21px', color: 'white', marginBottom: '14px', lineHeight: '1.3' }}>
             <span dangerouslySetInnerHTML={{ __html: topNation.flag }} />{' '}
@@ -786,7 +786,7 @@ export default function Home() {
       <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '8px 0' }}>
         <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
           {[
-            'World Cup 2026 is LIVE -- 104 matches -- whose nation will top the world?',
+            'World Cup 2026 is OVER -- Spain are Champions -- EPL starts August 21',
             'India vs Indonesia vs Nigeria -- the Nation Battle is on',
             'Predict exact scores for up to 108 pts per match -- no betting ever',
             'Your predictions lock at kick-off -- permanent proof of your football intelligence',
@@ -794,7 +794,7 @@ export default function Home() {
             'Represent your nation -- every correct call earns points for your country',
             'Build your permanent football reputation -- free forever -- no card required',
             'The World Cup only comes every 4 years -- your record lasts forever',
-            'World Cup 2026 is LIVE -- 104 matches -- whose nation will top the world?',
+            'World Cup 2026 is OVER -- Spain are Champions -- EPL starts August 21',
             'India vs Indonesia vs Nigeria -- the Nation Battle is on',
             'Predict exact scores for up to 108 pts per match -- no betting ever',
             'Your predictions lock at kick-off -- permanent proof of your football intelligence',
@@ -921,7 +921,7 @@ export default function Home() {
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>
-            {mounted ? `WORLD CUP 2026 · LIVE · DAY ${days + 1}` : 'WORLD CUP 2026 · LIVE NOW'}
+            {mounted ? `WORLD CUP 2026 · COMPLETE' : 'WORLD CUP 2026 · COMPLETE'}
           </span>
         </div>
 
@@ -1082,31 +1082,30 @@ export default function Home() {
             {/* World Cup — LIVE */}
             <a href="/world-cup-2026" style={{ textDecoration: 'none' }}>
               <div style={{
-                backgroundColor: '#0D2B14', border: '2px solid #2E9E5E',
+                backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.4)',
                 borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
                 position: 'relative', overflow: 'hidden',
-                boxShadow: '0 0 20px rgba(46,158,94,0.15)',
               }}>
                 <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }}/>
-                  <span style={{ fontSize: 8, color: '#EF4444', fontWeight: 700 }}>LIVE</span>
+                  <span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700 }}>✓ DONE</span>
                 </div>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>🏆</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>World Cup 2026</div>
-                <div style={{ fontSize: 10, color: '#2E9E5E', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>LIVE NOW</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Final: Jul 19<br/>96 matches done</div>
+                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6, letterSpacing: '0.5px' }}>COMPLETE</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>🇪🇸 Spain Champions<br/>104 matches</div>
               </div>
             </a>
 
             {/* EPL */}
             <a href="/epl" style={{ textDecoration: 'none' }}>
               <div style={{
-                backgroundColor: '#0D2B14', border: '1px solid rgba(139,92,246,0.4)',
+                backgroundColor: '#0D2B14', border: '2px solid #8B5CF6',
                 borderRadius: '14px', padding: '18px 14px', textAlign: 'center',
                 position: 'relative',
+                boxShadow: '0 0 20px rgba(139,92,246,0.15)',
               }}>
                 <div style={{ position: 'absolute', top: 8, right: 8 }}>
-                  <span style={{ fontSize: 8, color: '#8B5CF6', fontWeight: 700, backgroundColor: 'rgba(139,92,246,0.15)', padding: '2px 6px', borderRadius: 999 }}>AUG 21</span>
+                  <span style={{ fontSize: 8, color: '#8B5CF6', fontWeight: 700, backgroundColor: 'rgba(139,92,246,0.15)', padding: '2px 6px', borderRadius: 999, animation: 'pulse 1.5s infinite' }}>NEXT UP</span>
                 </div>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Premier League</div>
