@@ -26,8 +26,11 @@ type CommunityStats = {
 const LEAGUES = [
   { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;', color: '#2E9E5E', active: true },
   { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;', color: '#8B5CF6', active: false },
-  { key: 'Champions League', label: 'UCL', icon: '&#x2B50;', color: '#F59E0B', active: false },
-  { key: 'La Liga', label: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;', color: '#EF4444', active: false },
+  { key: 'Champions League 2026/27', label: 'UCL', icon: '&#x2B50;', color: '#F59E0B', active: false },
+  { key: 'La Liga 2026/27', label: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;', color: '#EF4444', active: false },
+  { key: 'Indian Super League 2026/27', label: 'ISL', icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: false },
+  { key: 'NPFL 2026/27', label: 'NPFL', icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
+  { key: 'Liga 1 2026/27', label: 'Liga 1', icon: '&#x1F1EE;&#x1F1E9;', color: '#CE1126', active: false },
 ];
 
 function formatKickoffLocal(kickoffUtc: string): string {
@@ -97,9 +100,12 @@ function buildShareUrl({ match, pred, username, country }: {
 
 // ── COMING SOON PLACEHOLDER ──
 function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
-  const launch = league.key === 'EPL 2026/27' ? 'August 16, 2026'
-    : league.key === 'Champions League' ? 'September 2026'
-    : 'October 2026';
+  const launch = league.key === 'EPL 2026/27' ? 'August 21, 2026'
+    : league.key === 'Champions League 2026/27' ? 'September 2026'
+    : league.key === 'Indian Super League 2026/27' ? 'November 2026'
+    : league.key === 'NPFL 2026/27' ? 'January 2027'
+    : league.key === 'Liga 1 2026/27' ? 'February 2027'
+    : 'Coming soon';
 
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
@@ -114,7 +120,7 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
       </div>
       <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
         {league.key === 'EPL 2026/27'
-          ? 'Your World Cup reputation carries over. 380 Premier League matches. Every weekend. Your record continues forever.'
+          ? 'Your World Cup reputation carries over. 380 Premier League matches starting August 21. Every gameweek. Your record continues forever.'
           : 'Coming soon. Your prediction record continues across every competition — World Cup, EPL, UCL and beyond.'
         }
       </p>
@@ -371,7 +377,7 @@ export default function Predict() {
   const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
-  const DAILY_LIMIT = 8;
+  const DAILY_LIMIT = 16; // Raised to 16 for EPL season
 
   useEffect(() => {
     const init = async () => {
@@ -544,7 +550,7 @@ export default function Predict() {
                 padding: '10px 16px', borderRadius: '10px',
                 border: '2px solid ' + (activeLeague === league.key ? league.color : '#1A3A1A'),
                 backgroundColor: activeLeague === league.key ? league.color + '20' : '#0D2B14',
-                color: activeLeague === league.key ? league.color : '#4B5563',
+                color: activeLeague === league.key ? league.color : '#8895A3',
                 cursor: 'pointer', fontSize: '13px',
                 fontWeight: activeLeague === league.key ? 'bold' : 'normal',
                 transition: 'all 0.2s',
@@ -629,7 +635,7 @@ export default function Predict() {
           <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px', backgroundColor: '#0D2B14', borderRadius: '12px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F4C5;</div>
             <p style={{ marginBottom: '8px' }}>No upcoming {activeLeague} matches right now.</p>
-            <p style={{ fontSize: '12px', color: '#4B5563' }}>Check back soon — new matches are added automatically.</p>
+            <p style={{ fontSize: '12px', color: '#8895A3' }}>Check back soon — new matches are added automatically.</p>
           </div>
         ) : (
           (() => {
