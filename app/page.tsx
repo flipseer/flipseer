@@ -465,7 +465,7 @@ function WelcomeConfetti() {
         <div style={{ fontSize: '48px', marginBottom: '10px' }}>&#x26BD;</div>
         <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
         <div style={{ fontSize: '13px', color: '#2E9E5E', marginTop: '6px' }}>Build your permanent football legacy</div>
-        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>World Cup 2026 · LIVE NOW</div>
+        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>EPL 2026/27 · Starts Aug 21</div>
       </div>
       {PARTICLES.map((p) => (
         <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
@@ -921,7 +921,7 @@ export default function Home() {
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
           <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>
-            {mounted ? `WORLD CUP 2026 · COMPLETE' : 'WORLD CUP 2026 · COMPLETE'}
+            {mounted ? 'WORLD CUP 2026 · COMPLETE' : 'WORLD CUP 2026 · COMPLETE'}
           </span>
         </div>
 
@@ -1256,7 +1256,7 @@ export default function Home() {
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '12px', lineHeight: '1.2' }}>
               {heroNation
                 ? <>{heroNation}&apos;s #1 football mind<br /><span style={{ color: '#2E9E5E' }}>could be you.</span></>
-                : <>World Cup 2026 is live.<br /><span style={{ color: '#2E9E5E' }}>Is your record growing?</span></>
+                : <>World Cup 2026 is over. 🇪🇸 Spain are Champions.<br /><span style={{ color: '#8B5CF6' }}>EPL starts August 21.</span></>
               }
             </h2>
             <p style={{ color: '#6B7280', marginBottom: '28px', fontSize: '16px' }}>
