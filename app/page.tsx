@@ -727,9 +727,8 @@ export default function Home() {
             border: '1px solid #8B5CF6',
             borderRadius: 12,
             padding: '12px 14px',
-            boxShadow: '0 0 20px rgba(139,92,246,0.25)',
-            maxWidth: 160,
             boxShadow: '0 0 24px rgba(139,92,246,0.25)',
+            maxWidth: 160,
             cursor: 'pointer',
             transition: 'all 0.2s',
           }}
