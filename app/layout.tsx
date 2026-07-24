@@ -118,6 +118,18 @@ export default function RootLayout({
             src="https://www.facebook.com/tr?id=1791829218318412&ev=PageView&noscript=1"
           />
         </noscript>
+        {/* ── MICROSOFT CLARITY ── */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "xr7ib54f29");
+            `,
+          }}
+        />
       </head>
       <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
         <Navbar />
