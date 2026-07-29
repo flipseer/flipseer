@@ -7,6 +7,9 @@ const supabase = createClient();
 const MATCHWEEK1 = [
   { home: 'Arsenal', away: 'Coventry City', date: 'Fri 21 Aug', time: '20:00 BST', slug: 'arsenal-vs-coventry-city' },
   { home: 'Hull City', away: 'Manchester United', date: 'Sat 22 Aug', time: '12:30 BST', slug: 'hull-city-vs-manchester-united' },
+  { home: 'Everton', away: 'Crystal Palace', date: 'Sat 22 Aug', time: '15:00 BST', slug: 'everton-vs-crystal-palace' },
+  { home: 'Ipswich Town', away: 'Sunderland', date: 'Sat 22 Aug', time: '15:00 BST', slug: 'ipswich-town-vs-sunderland' },
+  { home: 'Nottingham Forest', away: 'Leeds United', date: 'Sat 22 Aug', time: '15:00 BST', slug: 'nottingham-forest-vs-leeds-united' },
   { home: 'Brentford', away: 'Tottenham Hotspur', date: 'Sat 22 Aug', time: '17:30 BST', slug: 'brentford-vs-tottenham-hotspur' },
   { home: 'Brighton', away: 'Aston Villa', date: 'Sun 23 Aug', time: '14:00 BST', slug: 'brighton-vs-aston-villa' },
   { home: 'Manchester City', away: 'Bournemouth', date: 'Sun 23 Aug', time: '14:00 BST', slug: 'manchester-city-vs-bournemouth' },
