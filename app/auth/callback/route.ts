@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/profile'
+  const next = searchParams.get('next') ?? '/predict'
 
   if (!code) {
     return NextResponse.redirect(`${origin}/auth?error=no_code`)
@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
   )
 
   const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
   if (error || !data.user) {
     console.error('OAuth error:', error)
     return NextResponse.redirect(`${origin}/auth?error=oauth_error`)
@@ -40,68 +41,53 @@ export async function GET(request: NextRequest) {
     .eq('id', data.user.id)
     .single()
 
-  const isNewUser = !profile;
+  const isNewUser = !profile
 
   if (isNewUser) {
-    // Build username
-    const googleName = data.user.user_metadata?.full_name || ''
+    // Build username — works for Google, X/Twitter, and email
+    const meta = data.user.user_metadata || {}
+
+    // Google: full_name | X/Twitter: name or user_name | Email: email prefix
+    const displayName = meta.full_name || meta.name || meta.user_name || ''
     const emailPrefix = data.user.email?.split('@')[0] || 'user'
-    const base = googleName
-      ? googleName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+
+    const base = displayName
+      ? displayName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
       : emailPrefix.toLowerCase().replace(/[^a-z0-9_]/g, '')
+
     const username = `${base.slice(0, 15)}_${Date.now().toString().slice(-4)}`
 
-    // Founding forecaster check (pre-launch only — always false now)
-    const isBeforeLaunch = new Date() < new Date('2026-06-11T19:00:00Z')
-    let foundingCount = 0
-    if (isBeforeLaunch) {
-      const { count } = await supabase
-        .from('user_badges')
-        .select('*', { count: 'exact', head: true })
-        .eq('badge_type', 'founding_forecaster')
-      foundingCount = count || 0
-    }
-    const awardFoundingBadge = isBeforeLaunch && foundingCount < 100
+    // Detect country from X profile location if available
+    // (X sometimes provides location but not reliably — skip for now)
 
-    // Run profile + badge inserts in parallel
-    await Promise.all([
-      supabase.from('profiles').upsert([{
-        id: data.user.id,
-        username,
-        reputation: 0,
-        total_points: 0,
-        prediction_count: 0,
-        correct_count: 0,
-        streak: 0,
-        best_streak: 0,
-        accuracy_pct: 0,
-        rank: 'Rookie',
-        rank_icon: '&#x1F949;',
-      }], { onConflict: 'id' }),
-      awardFoundingBadge
-        ? supabase.from('user_badges').insert({
-            user_id: data.user.id,
-            badge_type: 'founding_forecaster',
-            badge_label: 'Founding Forecaster',
-            badge_icon: '&#x1F3C5;',
-            awarded_at: new Date().toISOString(),
-          }).select()
-        : Promise.resolve(),
-    ])
+    // Run profile insert
+    await supabase.from('profiles').upsert([{
+      id: data.user.id,
+      username,
+      reputation: 0,
+      total_points: 0,
+      prediction_count: 0,
+      correct_count: 0,
+      streak: 0,
+      best_streak: 0,
+      accuracy_pct: 0,
+      rank: 'Rookie',
+      rank_icon: '🥉',
+    }], { onConflict: 'id' })
 
     // Welcome email — fire and forget
     fetch(`${origin}/api/welcome`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: data.user.email,
+        email: data.user.email || '',
         username,
         country: null,
       }),
     }).catch(e => console.error('Welcome email failed silently:', e))
 
-    // New users → groups page to create first league + challenge friends
-    return NextResponse.redirect(`${origin}/groups?welcome=1`)
+    // New users → predict page to start predicting EPL
+    return NextResponse.redirect(`${origin}/predict?welcome=1`)
   }
 
   // Returning users → wherever they were going
