@@ -119,13 +119,14 @@ export default function Auth() {
     setXLoading(true);
     setMessage('');
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'twitter',
+      provider: 'x',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) { setMessage(error.message); setXLoading(false); }
   };
+
   const handleForgotPassword = async () => {
     if (!email) { setMessage('Enter your email address first'); return; }
     setLoading(true);
@@ -252,6 +253,8 @@ export default function Auth() {
             )}
           </button>
 
+
+
           {/* X (TWITTER) BUTTON */}
           <button onClick={handleXSignIn} disabled={googleLoading || xLoading}
             style={{ width: '100%', padding: '13px', backgroundColor: '#000000', color: 'white', border: '1px solid #333', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px', opacity: xLoading ? 0.7 : 1 }}>
@@ -264,7 +267,6 @@ export default function Auth() {
               </>
             )}
           </button>
-
           {/* DIVIDER */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, height: '1px', backgroundColor: '#1A7A4A' }} />
