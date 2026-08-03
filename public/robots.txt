@@ -1,6 +1,16 @@
 User-agent: *
 Allow: /
 
+# Explicitly allow major crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: AhrefsBot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
 # Block auth-required and API routes
 Disallow: /api/
 Disallow: /admin/
