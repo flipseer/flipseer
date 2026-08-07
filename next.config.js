@@ -22,21 +22,6 @@ const nextConfig = {
         destination: '/nations',
         permanent: true,
       },
-      {
-        source: '/how-to-predict-football',
-        destination: '/guide/how-to-predict-football',
-        permanent: true,
-      },
-      {
-        source: '/football-reputation',
-        destination: '/guide/football-reputation',
-        permanent: true,
-      },
-      {
-        source: '/how-to-play',
-        destination: '/guide/how-to-play',
-        permanent: true,
-      },
     ]
   },
 }
