@@ -1,267 +1,219 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
-import NationPageClientV2 from './NationPageClientV2';
-
-const COUNTRY_DATA: { [key: string]: { name: string; code: string; flag: string; adjective: string; rivals: string[]; slug: string } } = {
-  'india': { name: 'India', code: 'IN', flag: '🇮🇳', adjective: 'Indian', rivals: ['indonesia', 'nigeria', 'brazil'], slug: 'india' },
-  'indonesia': { name: 'Indonesia', code: 'ID', flag: '🇮🇩', adjective: 'Indonesian', rivals: ['india', 'nigeria', 'brazil'], slug: 'indonesia' },
-  'nigeria': { name: 'Nigeria', code: 'NG', flag: '🇳🇬', adjective: 'Nigerian', rivals: ['ghana', 'brazil', 'england'], slug: 'nigeria' },
-  'brazil': { name: 'Brazil', code: 'BR', flag: '🇧🇷', adjective: 'Brazilian', rivals: ['argentina', 'france', 'germany'], slug: 'brazil' },
-  'argentina': { name: 'Argentina', code: 'AR', flag: '🇦🇷', adjective: 'Argentinian', rivals: ['brazil', 'france', 'england'], slug: 'argentina' },
-  'england': { name: 'England', code: 'GB', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', adjective: 'English', rivals: ['france', 'germany', 'argentina'], slug: 'england' },
-  'france': { name: 'France', code: 'FR', flag: '🇫🇷', adjective: 'French', rivals: ['england', 'germany', 'spain'], slug: 'france' },
-  'germany': { name: 'Germany', code: 'DE', flag: '🇩🇪', adjective: 'German', rivals: ['france', 'england', 'spain'], slug: 'germany' },
-  'spain': { name: 'Spain', code: 'ES', flag: '🇪🇸', adjective: 'Spanish', rivals: ['portugal', 'france', 'germany'], slug: 'spain' },
-  'portugal': { name: 'Portugal', code: 'PT', flag: '🇵🇹', adjective: 'Portuguese', rivals: ['spain', 'france', 'brazil'], slug: 'portugal' },
-  'mexico': { name: 'Mexico', code: 'MX', flag: '🇲🇽', adjective: 'Mexican', rivals: ['usa', 'argentina', 'brazil'], slug: 'mexico' },
-  'usa': { name: 'USA', code: 'US', flag: '🇺🇸', adjective: 'American', rivals: ['mexico', 'england', 'brazil'], slug: 'usa' },
-  'ghana': { name: 'Ghana', code: 'GH', flag: '🇬🇭', adjective: 'Ghanaian', rivals: ['nigeria', 'senegal', 'morocco'], slug: 'ghana' },
-  'morocco': { name: 'Morocco', code: 'MA', flag: '🇲🇦', adjective: 'Moroccan', rivals: ['senegal', 'nigeria', 'france'], slug: 'morocco' },
-  'japan': { name: 'Japan', code: 'JP', flag: '🇯🇵', adjective: 'Japanese', rivals: ['south-korea', 'australia', 'brazil'], slug: 'japan' },
-  'south-korea': { name: 'South Korea', code: 'KR', flag: '🇰🇷', adjective: 'Korean', rivals: ['japan', 'australia', 'germany'], slug: 'south-korea' },
-  'australia': { name: 'Australia', code: 'AU', flag: '🇦🇺', adjective: 'Australian', rivals: ['japan', 'south-korea', 'england'], slug: 'australia' },
-  'pakistan': { name: 'Pakistan', code: 'PK', flag: '🇵🇰', adjective: 'Pakistani', rivals: ['india', 'saudi-arabia', 'indonesia'], slug: 'pakistan' },
-  'bangladesh': { name: 'Bangladesh', code: 'BD', flag: '🇧🇩', adjective: 'Bangladeshi', rivals: ['india', 'indonesia', 'nigeria'], slug: 'bangladesh' },
-  'egypt': { name: 'Egypt', code: 'EG', flag: '🇪🇬', adjective: 'Egyptian', rivals: ['morocco', 'nigeria', 'senegal'], slug: 'egypt' },
-  'senegal': { name: 'Senegal', code: 'SN', flag: '🇸🇳', adjective: 'Senegalese', rivals: ['nigeria', 'ghana', 'morocco'], slug: 'senegal' },
-  'south-africa': { name: 'South Africa', code: 'ZA', flag: '🇿🇦', adjective: 'South African', rivals: ['nigeria', 'ghana', 'morocco'], slug: 'south-africa' },
-  'saudi-arabia': { name: 'Saudi Arabia', code: 'SA', flag: '🇸🇦', adjective: 'Saudi', rivals: ['egypt', 'pakistan', 'indonesia'], slug: 'saudi-arabia' },
-  'turkey': { name: 'Turkey', code: 'TR', flag: '🇹🇷', adjective: 'Turkish', rivals: ['germany', 'france', 'croatia'], slug: 'turkey' },
-  'norway': { name: 'Norway', code: 'NO', flag: '🇳🇴', adjective: 'Norwegian', rivals: ['sweden', 'england', 'germany'], slug: 'norway' },
+export const metadata: Metadata = {
+  title: 'How to Predict Football Accurately | Flipseer',
+  description: 'Learn how to predict football matches accurately. Tips on reading form, home advantage, confidence calibration and building a permanent football reputation. Free guide.',
+  keywords: 'how to predict football, football prediction tips, predict football accurately, football betting free, football intelligence, EPL predictions tips',
+  alternates: { canonical: 'https://flipseer.com/how-to-predict-football' },
+  openGraph: {
+    title: 'How to Predict Football Accurately | Flipseer',
+    description: 'Learn the science of football prediction. Build your permanent reputation. Free guide.',
+    url: 'https://flipseer.com/how-to-predict-football',
+  },
 };
-
-type Props = { params: { nation: string } };
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = params.nation.toLowerCase();
-  const country = COUNTRY_DATA[slug];
-  if (!country) return { title: 'Nation Not Found | Flipseer' };
-
-  return {
-    title: `${country.name} Football Reputation | World Cup 2026 | Flipseer`,
-    description: `${country.name} forecasters building their football reputation on Flipseer. See ${country.name}'s global ranking, top predictors, accuracy stats and recent activity. Free. No betting.`,
-    keywords: `${country.name} football predictions, ${country.name} World Cup 2026, ${country.adjective} football predictor, ${country.name} nation battle, football prediction ${country.name}, ${country.name} football reputation`,
-    alternates: {
-      canonical: `https://flipseer.com/${slug}`,
-      languages: {
-        'en': `https://flipseer.com/${slug}`,
-        'en-IN': slug === 'india' ? `https://flipseer.com/india` : undefined,
-        'en-NG': slug === 'nigeria' ? `https://flipseer.com/nigeria` : undefined,
-        'en-ID': slug === 'indonesia' ? `https://flipseer.com/indonesia` : undefined,
-        'en-GH': slug === 'ghana' ? `https://flipseer.com/ghana` : undefined,
-        'en-BR': slug === 'brazil' ? `https://flipseer.com/brazil` : undefined,
-        'en-AR': slug === 'argentina' ? `https://flipseer.com/argentina` : undefined,
-        'en-GB': slug === 'england' ? `https://flipseer.com/england` : undefined,
-        'x-default': `https://flipseer.com/${slug}`,
-      },
-    },
-    openGraph: {
-      title: `${country.flag} ${country.name} — World Cup 2026 Football Reputation | Flipseer`,
-      description: `${country.name} forecasters competing globally. Every correct prediction earns points for ${country.name}. Build your permanent football reputation.`,
-      url: `https://flipseer.com/${slug}`,
-      images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${country.name} Football Reputation | World Cup 2026 | Flipseer`,
-      description: `${country.name} forecasters competing globally on Flipseer. Free. No betting.`,
-    },
-  };
-}
-
-export async function generateStaticParams() {
-  return Object.keys(COUNTRY_DATA).map(nation => ({ nation }));
-}
-
-// Only serve pre-rendered nation pages — return 404 for anything else
-export const dynamicParams = false;
-
-// Routes that should NOT be handled by [nation] page
-const EXCLUDED_SLUGS = [
-  'how-to-predict-football',
-  'football-reputation',
-  'how-to-play',
-  'world-cup-2026',
-  'leaderboard',
-  'nations',
-  'predict',
-  'groups',
-  'auth',
-  'epl',
-  'matches',
-  'admin',
-  'api',
-  'u',
-  'profile',
-  'sitemap.xml',
-  'robots.txt',
-  'privacy',
-  'terms',
+const TIPS = [
+  {
+    number: '01',
+    icon: '📊',
+    title: 'Study recent form — not reputation',
+    content: 'A team\'s last 5 matches matter more than their historical reputation. Brazil may be 5-time World Cup winners, but if they\'ve lost 3 of their last 5, their current form is weak. Always check recent results, not legacy.',
+    stat: 'Teams in good form (W3+ of last 5) win 68% of matches as favourites.',
+  },
+  {
+    number: '02',
+    icon: '🏠',
+    title: 'Home advantage is real — but varies',
+    content: 'Home advantage adds roughly 0.3-0.5 goals to the expected margin. In the Premier League, home teams have a measurable edge — factor this into every prediction, especially for promoted sides playing at home.',
+    stat: 'Home teams win 46% of Premier League matches vs 38% at neutral venues.',
+  },
+  {
+    number: '03',
+    icon: '🎯',
+    title: 'Calibrate your confidence correctly',
+    content: 'Most predictors are overconfident. If you predict at 80% confidence, you should be correct 80% of the time on those calls. Track your accuracy vs confidence over time — this gap reveals your calibration errors.',
+    stat: 'Top forecasters on Flipseer show <10% gap between confidence and accuracy.',
+  },
+  {
+    number: '04',
+    icon: '😱',
+    title: 'Upsets follow patterns',
+    content: 'True upsets are rare but not random. They happen more in: knockout rounds (pressure), extreme weather, when favourites have key injuries, or when underdogs are playing for survival. Identifying these contexts increases upset prediction accuracy.',
+    stat: 'Correctly calling an upset at 40% confidence earns 3× more points on Flipseer.',
+  },
+  {
+    number: '05',
+    icon: '🔒',
+    title: 'Lock in before kickoff — no changing',
+    content: 'The best predictors commit to their call and don\'t second-guess. Last-minute team news can change everything, but the discipline of locking in a prediction before kickoff separates genuine football intelligence from reactive guessing.',
+    stat: 'Flipseer locks all predictions at kickoff — no edits, no deletions. Permanent record.',
+  },
+  {
+    number: '06',
+    icon: '📈',
+    title: 'Track your record — learn from losses',
+    content: 'The most valuable thing you can do is review your wrong predictions. Were you overconfident? Did you ignore form? Did you pick based on fan bias? Your prediction journal is a learning tool, not just a scoreboard.',
+    stat: 'Users who review their journal weekly improve accuracy by 12% over 3 months.',
+  },
 ];
-
-export default async function NationPage({ params }: Props) {
-  const slug = params.nation.toLowerCase();
-
-  // Return 404 for non-nation routes caught by this dynamic segment
-  if (EXCLUDED_SLUGS.includes(slug)) {
-    return notFound();
-  }
-
-  const country = COUNTRY_DATA[slug];
-
-  if (!country) {
-    return (
-      <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Arial, sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌍</div>
-          <h1 style={{ fontSize: '24px', marginBottom: '8px' }}>Nation not found</h1>
-          <a href="/nations" style={{ color: '#2E9E5E' }}>View all nations →</a>
-        </div>
-      </main>
-    );
-  }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  // Parallel data fetch
-  const [
-    { data: nationProfiles },
-    { data: allProfiles },
-    { data: recentPredictions },
-    { data: nationMatches },
-  ] = await Promise.all([
-    // Top forecasters for this nation
-    supabase.from('profiles')
-      .select('id, username, total_points, accuracy_pct, prediction_count, correct_count, rank, rank_icon')
-      .eq('country', country.code)
-      .gt('prediction_count', 0)
-      .order('total_points', { ascending: false })
-      .limit(10),
-
-    // All profiles for nation ranking
-    supabase.from('profiles')
-      .select('country, total_points, accuracy_pct, prediction_count, correct_count')
-      .gt('total_points', 0),
-
-    // Recent predictions from this nation
-    supabase.from('predictions')
-      .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, profiles(username, country), matches(home_team, away_team)')
-      .eq('profiles.country', country.code)
-      .order('created_at', { ascending: false })
-      .limit(5),
-
-    // Recent matches for internal links
-    supabase.from('matches')
-      .select('home_team, away_team, kickoff, status')
-      .eq('competition', 'World Cup 2026')
-      .in('status', ['upcoming', 'completed'])
-      .order('kickoff', { ascending: false })
-      .limit(6),
-  ]);
-
-  // Calculate nation stats
-  const countryMap: { [key: string]: { points: number; forecasters: number; predictions: number; correct: number } } = {};
-  (allProfiles || []).forEach((p: any) => {
-    const c = p.country || 'OTHER';
-    if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0, predictions: 0, correct: 0 };
-    countryMap[c].points += p.total_points || 0;
-    countryMap[c].forecasters += 1;
-    countryMap[c].predictions += p.prediction_count || 0;
-    countryMap[c].correct += p.correct_count || 0;
-  });
-
-  const ranked = Object.entries(countryMap).sort((a, b) => b[1].points - a[1].points);
-  const nationRank = ranked.findIndex(([c]) => c === country.code) + 1;
-  const nationStats = countryMap[country.code] || { points: 0, forecasters: 0, predictions: 0, correct: 0 };
-  const avgAccuracy = nationStats.predictions > 0
-    ? Math.round((nationStats.correct / nationStats.predictions) * 100)
-    : 0;
-
-  // Exact score count from nation profiles
-  const nationProfilesList = nationProfiles || [];
-  const totalNationPredictions = nationStats.predictions;
-  const totalNationPoints = nationStats.points;
-
-  // Build rival nation data
-  const rivalData = country.rivals.map(rivalSlug => {
-    const rivalCountry = COUNTRY_DATA[rivalSlug];
-    if (!rivalCountry) return null;
-    const rivalStats = countryMap[rivalCountry.code];
-    const rivalRank = ranked.findIndex(([c]) => c === rivalCountry.code) + 1;
-    return {
-      slug: rivalSlug,
-      name: rivalCountry.name,
-      flag: rivalCountry.flag,
-      rank: rivalRank,
-      points: rivalStats?.points || 0,
-    };
-  }).filter(Boolean);
-
-  // SEO structured data
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'SportsOrganization',
-    name: `${country.name} Football Prediction Community`,
-    sport: 'Football',
-    description: `${country.name} forecasters building football reputation on Flipseer during World Cup 2026`,
-    url: `https://flipseer.com/${slug}`,
-    memberOf: {
-      '@type': 'SportsOrganization',
-      name: 'Flipseer Nation Battle',
-      url: 'https://flipseer.com/nations',
-    },
-  };
-
+export default function HowToPredictPage() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      {/* Hidden SEO content */}
-      <div style={{ display: 'none' }}>
-        <h1>{country.name} Football Reputation — World Cup 2026</h1>
-        <p>
-          {nationStats.forecasters} {country.adjective} football forecasters competing globally on Flipseer.
-          {country.name} is ranked #{nationRank} in the World Cup 2026 Nation Battle with {totalNationPoints} points
-          from {totalNationPredictions} predictions at {avgAccuracy}% average accuracy.
+    <main style={{
+      backgroundColor: '#0D1F0F', minHeight: '100vh',
+      fontFamily: "-apple-system,'Segoe UI',Arial,sans-serif",
+      color: 'white', paddingBottom: 80,
+    }}>
+      <style>{`
+        .tip-card:hover{border-color:#8B5CF6!important}
+        .tip-card{transition:border-color 0.15s}
+      `}</style>
+      {/* Hero */}
+      <section style={{
+        background: 'linear-gradient(180deg,#071408 0%,#0D1F0F 100%)',
+        padding: 'clamp(48px,10vw,80px) 20px clamp(40px,8vw,64px)',
+        borderBottom: '1px solid #1A3A1A', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 'clamp(48px,12vw,72px)', marginBottom: 16 }}>🧠</div>
+        <h1 style={{
+          fontSize: 'clamp(28px,6vw,48px)',
+          fontWeight: 900, letterSpacing: '-1px',
+          lineHeight: 1.1, marginBottom: 16,
+        }}>
+          How to Predict Football<br/>
+          <span style={{ color: '#8B5CF6' }}>Accurately</span>
+        </h1>
+        <p style={{
+          fontSize: 'clamp(14px,2.5vw,17px)',
+          color: '#9CA3AF', lineHeight: 1.7,
+          maxWidth: 520, margin: '0 auto 28px',
+        }}>
+          Football prediction is a skill, not luck. The best predictors study form,
+          understand probability, and track their record over time. Here's how.
         </p>
-        <h2>Top {country.name} Forecasters</h2>
-        <ol>
-          {nationProfilesList.slice(0, 5).map((p: any, i: number) => (
-            <li key={p.id}>
-              #{i + 1} <a href={`/u/${p.username}`}>@{p.username}</a>
-              {' '}- {p.total_points} points, {p.accuracy_pct}% accuracy
-            </li>
-          ))}
-        </ol>
-        <h2>Explore Other Nations</h2>
-        <ul>
-          {country.rivals.map(r => (
-            <li key={r}><a href={`/${r}`}>{COUNTRY_DATA[r]?.name} Football Predictions</a></li>
-          ))}
-        </ul>
-        <a href="/leaderboard">Global Football Prediction Leaderboard</a>
-        <a href="/nations">Nation Battle Rankings</a>
-        <a href="/predict">Predict World Cup 2026 Matches</a>
-      </div>
-
-      <NationPageClientV2
-        country={country}
-        slug={slug}
-        profiles={nationProfilesList}
-        nationRank={nationRank}
-        nationPoints={totalNationPoints}
-        nationPredictions={totalNationPredictions}
-        avgAccuracy={avgAccuracy}
-        forecasterCount={nationStats.forecasters}
-        rivalData={rivalData}
-        recentPredictions={recentPredictions || []}
-      />
-    </>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="/predict" style={{
+            backgroundColor: '#8B5CF6', color: 'white',
+            padding: '13px 28px', borderRadius: 10, textDecoration: 'none',
+            fontSize: 14, fontWeight: 700,
+            boxShadow: '0 0 24px rgba(139,92,246,0.3)',
+          }}>
+            Predict EPL Free →
+          </a>
+          <a href="/leaderboard" style={{
+            backgroundColor: 'transparent', color: '#9CA3AF',
+            padding: '13px 20px', borderRadius: 10, textDecoration: 'none',
+            fontSize: 14, border: '1px solid #1A3A1A',
+          }}>
+            See Top Predictors →
+          </a>
+        </div>
+      </section>
+      {/* Tips */}
+      <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>
+            6 PRINCIPLES OF ACCURATE FOOTBALL PREDICTION
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {TIPS.map(({ number, icon, title, content, stat }) => (
+              <div key={number} className="tip-card" style={{
+                backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
+                borderRadius: 14, padding: '24px 20px',
+              }}>
+                <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                  <div style={{
+                    fontSize: 11, color: '#8B5CF6', fontWeight: 700,
+                    letterSpacing: '1px', minWidth: 28, paddingTop: 3,
+                  }}>
+                    {number}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 20 }}>{icon}</span>
+                      <h2 style={{ fontSize: 16, fontWeight: 800, color: 'white', margin: 0 }}>{title}</h2>
+                    </div>
+                    <p style={{ fontSize: 14, color: '#8895A3', lineHeight: 1.7, marginBottom: 10 }}>{content}</p>
+                    <div style={{
+                      backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.3)',
+                      borderRadius: 8, padding: '8px 12px',
+                      fontSize: 12, color: '#8B5CF6', lineHeight: 1.5,
+                    }}>
+                      📊 {stat}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      {/* Why Flipseer */}
+      <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 16, textAlign: 'center' }}>
+            WHY FLIPSEER IS DIFFERENT
+          </p>
+          <h2 style={{ fontSize: 'clamp(22px,4vw,32px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 20, textAlign: 'center' }}>
+            Your predictions become a permanent record.
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 12 }}>
+            {[
+              { icon: '🔒', title: 'Locked before kickoff', desc: 'No editing after the whistle. Your call stands forever.' },
+              { icon: '📖', title: 'Permanent journal', desc: 'Every prediction in a public timeline. Your football CV.' },
+              { icon: '🌍', title: 'Nation Battle', desc: 'Predictions earn points for your nation globally.' },
+              { icon: '🆓', title: 'Free forever', desc: 'No betting. No prizes. Pure football intelligence.' },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} style={{
+                backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
+                borderRadius: 12, padding: '18px 16px', textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 6 }}>{title}</div>
+                <div style={{ fontSize: 12, color: '#8895A3', lineHeight: 1.6 }}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      {/* Internal links + CTA */}
+      <section style={{ padding: '56px 20px' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, marginBottom: 12 }}>
+            Start building your football reputation today.
+          </h2>
+          <p style={{ color: '#8895A3', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
+            Free forever. No betting. No card required. Just pure football intelligence.
+          </p>
+          <a href="/predict" style={{
+            display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white',
+            padding: '15px 40px', borderRadius: 10, textDecoration: 'none',
+            fontSize: 16, fontWeight: 700, marginBottom: 24,
+            boxShadow: '0 0 24px rgba(139,92,246,0.3)',
+          }}>
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL 2026/27 Free →
+          </a>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+            {[
+              { href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27' },
+              { href: '/epl/matchweek-1', label: '📅 Matchweek 1' },
+              { href: '/world-cup-2026', label: '🏆 World Cup 2026' },
+              { href: '/nations', label: '🌍 Nation Battle' },
+              { href: '/leaderboard', label: '📊 Leaderboard' },
+              { href: '/football-reputation', label: '⭐ Football Reputation' },
+              { href: '/india', label: '🇮🇳 India' },
+              { href: '/nigeria', label: '🇳🇬 Nigeria' },
+              { href: '/indonesia', label: '🇮🇩 Indonesia' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{
+                display: 'inline-block',
+                backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
+                borderRadius: 8, padding: '7px 14px',
+                textDecoration: 'none', fontSize: 12, color: '#8895A3',
+              }}>
+                {label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
