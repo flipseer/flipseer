@@ -4,7 +4,7 @@ const nextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        { source: '/how-to-predict-football', destination: '/how-to-predict-football' },
+        { source: '/Prediction Guide', destination: '/how-to-predict-football' },
         { source: '/football-reputation', destination: '/football-reputation' },
         { source: '/how-to-play', destination: '/how-to-play' },
       ],
