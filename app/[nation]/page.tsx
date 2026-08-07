@@ -74,6 +74,9 @@ export async function generateStaticParams() {
   return Object.keys(COUNTRY_DATA).map(nation => ({ nation }));
 }
 
+// Only serve pre-rendered nation pages — return 404 for anything else
+export const dynamicParams = false;
+
 // Routes that should NOT be handled by [nation] page
 const EXCLUDED_SLUGS = [
   'how-to-predict-football',
