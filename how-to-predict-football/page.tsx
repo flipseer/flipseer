@@ -1,9 +1,8 @@
 import { Metadata } from 'next';
-
 export const metadata: Metadata = {
   title: 'How to Predict Football Accurately | Flipseer',
   description: 'Learn how to predict football matches accurately. Tips on reading form, home advantage, confidence calibration and building a permanent football reputation. Free guide.',
-  keywords: 'how to predict football, football prediction tips, predict football accurately, football betting free, football intelligence, World Cup predictions tips',
+  keywords: 'how to predict football, football prediction tips, predict football accurately, football betting free, football intelligence, EPL predictions tips',
   alternates: { canonical: 'https://flipseer.com/how-to-predict-football' },
   openGraph: {
     title: 'How to Predict Football Accurately | Flipseer',
@@ -11,7 +10,6 @@ export const metadata: Metadata = {
     url: 'https://flipseer.com/how-to-predict-football',
   },
 };
-
 const TIPS = [
   {
     number: '01',
@@ -24,8 +22,8 @@ const TIPS = [
     number: '02',
     icon: '🏠',
     title: 'Home advantage is real — but varies',
-    content: 'Home advantage adds roughly 0.3-0.5 goals to the expected margin. However in neutral-venue tournaments like the World Cup, this effect disappears. At the World Cup, focus on quality and form over home/away splits.',
-    stat: 'Home teams win 46% of league matches vs 38% at neutral venues.',
+    content: 'Home advantage adds roughly 0.3-0.5 goals to the expected margin. In the Premier League, home teams have a measurable edge — factor this into every prediction, especially for promoted sides playing at home.',
+    stat: 'Home teams win 46% of Premier League matches vs 38% at neutral venues.',
   },
   {
     number: '03',
@@ -56,7 +54,6 @@ const TIPS = [
     stat: 'Users who review their journal weekly improve accuracy by 12% over 3 months.',
   },
 ];
-
 export default function HowToPredictPage() {
   return (
     <main style={{
@@ -65,10 +62,9 @@ export default function HowToPredictPage() {
       color: 'white', paddingBottom: 80,
     }}>
       <style>{`
-        .tip-card:hover{border-color:#2E9E5E!important}
+        .tip-card:hover{border-color:#8B5CF6!important}
         .tip-card{transition:border-color 0.15s}
       `}</style>
-
       {/* Hero */}
       <section style={{
         background: 'linear-gradient(180deg,#071408 0%,#0D1F0F 100%)',
@@ -82,7 +78,7 @@ export default function HowToPredictPage() {
           lineHeight: 1.1, marginBottom: 16,
         }}>
           How to Predict Football<br/>
-          <span style={{ color: '#2E9E5E' }}>Accurately</span>
+          <span style={{ color: '#8B5CF6' }}>Accurately</span>
         </h1>
         <p style={{
           fontSize: 'clamp(14px,2.5vw,17px)',
@@ -94,11 +90,12 @@ export default function HowToPredictPage() {
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/predict" style={{
-            backgroundColor: '#2E9E5E', color: 'white',
+            backgroundColor: '#8B5CF6', color: 'white',
             padding: '13px 28px', borderRadius: 10, textDecoration: 'none',
             fontSize: 14, fontWeight: 700,
+            boxShadow: '0 0 24px rgba(139,92,246,0.3)',
           }}>
-            Start Predicting Free →
+            Predict EPL Free →
           </a>
           <a href="/leaderboard" style={{
             backgroundColor: 'transparent', color: '#9CA3AF',
@@ -109,11 +106,10 @@ export default function HowToPredictPage() {
           </a>
         </div>
       </section>
-
       {/* Tips */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, color: '#2E9E5E', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>
+          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>
             6 PRINCIPLES OF ACCURATE FOOTBALL PREDICTION
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -124,7 +120,7 @@ export default function HowToPredictPage() {
               }}>
                 <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <div style={{
-                    fontSize: 11, color: '#2E9E5E', fontWeight: 700,
+                    fontSize: 11, color: '#8B5CF6', fontWeight: 700,
                     letterSpacing: '1px', minWidth: 28, paddingTop: 3,
                   }}>
                     {number}
@@ -136,9 +132,9 @@ export default function HowToPredictPage() {
                     </div>
                     <p style={{ fontSize: 14, color: '#8895A3', lineHeight: 1.7, marginBottom: 10 }}>{content}</p>
                     <div style={{
-                      backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A',
+                      backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.3)',
                       borderRadius: 8, padding: '8px 12px',
-                      fontSize: 12, color: '#2E9E5E', lineHeight: 1.5,
+                      fontSize: 12, color: '#8B5CF6', lineHeight: 1.5,
                     }}>
                       📊 {stat}
                     </div>
@@ -149,11 +145,10 @@ export default function HowToPredictPage() {
           </div>
         </div>
       </section>
-
       {/* Why Flipseer */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, color: '#2E9E5E', fontWeight: 700, letterSpacing: '3px', marginBottom: 16, textAlign: 'center' }}>
+          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 16, textAlign: 'center' }}>
             WHY FLIPSEER IS DIFFERENT
           </p>
           <h2 style={{ fontSize: 'clamp(22px,4vw,32px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 20, textAlign: 'center' }}>
@@ -178,7 +173,6 @@ export default function HowToPredictPage() {
           </div>
         </div>
       </section>
-
       {/* Internal links + CTA */}
       <section style={{ padding: '56px 20px' }}>
         <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
@@ -189,15 +183,17 @@ export default function HowToPredictPage() {
             Free forever. No betting. No card required. Just pure football intelligence.
           </p>
           <a href="/predict" style={{
-            display: 'inline-block', backgroundColor: '#2E9E5E', color: 'white',
+            display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white',
             padding: '15px 40px', borderRadius: 10, textDecoration: 'none',
             fontSize: 16, fontWeight: 700, marginBottom: 24,
-            boxShadow: '0 0 24px rgba(46,158,94,0.3)',
+            boxShadow: '0 0 24px rgba(139,92,246,0.3)',
           }}>
-            Predict World Cup 2026 Free →
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL 2026/27 Free →
           </a>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
             {[
+              { href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27' },
+              { href: '/epl/matchweek-1', label: '📅 Matchweek 1' },
               { href: '/world-cup-2026', label: '🏆 World Cup 2026' },
               { href: '/nations', label: '🌍 Nation Battle' },
               { href: '/leaderboard', label: '📊 Leaderboard' },
