@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import NationPageClientV2 from './NationPageClientV2';
 
@@ -73,8 +74,37 @@ export async function generateStaticParams() {
   return Object.keys(COUNTRY_DATA).map(nation => ({ nation }));
 }
 
+// Routes that should NOT be handled by [nation] page
+const EXCLUDED_SLUGS = [
+  'how-to-predict-football',
+  'football-reputation',
+  'how-to-play',
+  'world-cup-2026',
+  'leaderboard',
+  'nations',
+  'predict',
+  'groups',
+  'auth',
+  'epl',
+  'matches',
+  'admin',
+  'api',
+  'u',
+  'profile',
+  'sitemap.xml',
+  'robots.txt',
+  'privacy',
+  'terms',
+];
+
 export default async function NationPage({ params }: Props) {
   const slug = params.nation.toLowerCase();
+
+  // Return 404 for non-nation routes caught by this dynamic segment
+  if (EXCLUDED_SLUGS.includes(slug)) {
+    return notFound();
+  }
+
   const country = COUNTRY_DATA[slug];
 
   if (!country) {
