@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require('@sentry/nextjs')
-
 const nextConfig = {
   async headers() {
     return [
@@ -23,10 +22,24 @@ const nextConfig = {
         destination: '/nations',
         permanent: true,
       },
+      {
+        source: '/how-to-predict-football',
+        destination: '/guide/how-to-predict-football',
+        permanent: true,
+      },
+      {
+        source: '/football-reputation',
+        destination: '/guide/football-reputation',
+        permanent: true,
+      },
+      {
+        source: '/how-to-play',
+        destination: '/guide/how-to-play',
+        permanent: true,
+      },
     ]
   },
 }
-
 module.exports = withSentryConfig(nextConfig, {
   org: 'flipseer',
   project: 'flipseer',
