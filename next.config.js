@@ -1,15 +1,7 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require('@sentry/nextjs')
+
 const nextConfig = {
-  async rewrites() {
-    return {
-      beforeFiles: [
-        { source: '/Prediction Guide', destination: '/how-to-predict-football' },
-        { source: '/football-reputation', destination: '/football-reputation' },
-        { source: '/how-to-play', destination: '/how-to-play' },
-      ],
-    }
-  },
   async headers() {
     return [
       {
@@ -34,6 +26,7 @@ const nextConfig = {
     ]
   },
 }
+
 module.exports = withSentryConfig(nextConfig, {
   org: 'flipseer',
   project: 'flipseer',
