@@ -1,241 +1,186 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
-
 const supabase = createClient();
-
-export default function ResultsPage() {
-  const [matches, setMatches] = useState<any[]>([]);
+export default function ResultPage() {
+  const [flipped, setFlipped] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeMatch, setActiveMatch] = useState<any>(null);
-  const [topPredictors, setTopPredictors] = useState<any[]>([]);
-  const [loadingPredictors, setLoadingPredictors] = useState(false);
-  const [stats, setStats] = useState({ total: 0, completed: 0, live: 0, upcoming: 0 });
-
+  const [prediction, setPrediction] = useState<any>(null);
+  const [match, setMatch] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [newBadges, setNewBadges] = useState<any[]>([]);
   useEffect(() => {
     const load = async () => {
-      const { data: completedMatches } = await supabase
-        .from('matches')
-        .select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status')
-        .eq('status', 'completed')
-        .order('kickoff', { ascending: false });
-
-      const { count: totalCount } = await supabase
-        .from('matches').select('*', { count: 'exact', head: true });
-      const { count: completedCount } = await supabase
-        .from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed');
-      const { count: liveCount } = await supabase
-        .from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live');
-      const { count: upcomingCount } = await supabase
-        .from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']);
-
-      setMatches(completedMatches || []);
-      setStats({
-        total: totalCount || 0,
-        completed: completedCount || 0,
-        live: liveCount || 0,
-        upcoming: upcomingCount || 0,
-      });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = '/auth'; return; }
+      const params = new URLSearchParams(window.location.search);
+      const matchId = params.get('match_id');
+      if (!matchId) { window.location.href = '/predict'; return; }
+      const [predRes, matchRes, profileRes, badgeRes] = await Promise.all([
+        supabase.from('predictions').select('*').eq('user_id', session.user.id).eq('match_id', matchId).single(),
+        supabase.from('matches').select('*').eq('id', matchId).single(),
+        supabase.from('profiles').select('*').eq('id', session.user.id).single(),
+        supabase.from('user_badges').select('*').eq('user_id', session.user.id).eq('match_id', matchId),
+      ]);
+      setPrediction(predRes.data);
+      setMatch(matchRes.data);
+      setProfile(profileRes.data);
+      setNewBadges(badgeRes.data || []);
       setLoading(false);
+      setTimeout(() => setFlipped(true), 800);
+      setTimeout(() => setRevealed(true), 1600);
     };
     load();
   }, []);
-
-  const loadTopPredictors = async (match: any) => {
-    setActiveMatch(match);
-    setLoadingPredictors(true);
-    const { data: predictions } = await supabase
-      .from('predictions')
-      .select('user_id, predicted_outcome, confidence_pct, points_earned, exact_bonus, goal_diff_bonus, upset_bonus, predicted_home_score, predicted_away_score')
-      .eq('match_id', match.id)
-      .eq('prediction_processed', true)
-      .order('points_earned', { ascending: false })
-      .limit(10);
-
-    if (!predictions || predictions.length === 0) {
-      setTopPredictors([]);
-      setLoadingPredictors(false);
-      return;
-    }
-
-    const userIds = predictions.map((p: any) => p.user_id);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, username, rank_icon, rank, country')
-      .in('id', userIds);
-
-    const profileMap: { [key: string]: any } = {};
-    profiles?.forEach((p: any) => { profileMap[p.id] = p; });
-
-    const enriched = predictions.map((p: any) => ({
-      ...p,
-      username: profileMap[p.user_id]?.username || 'Unknown',
-      rank_icon: profileMap[p.user_id]?.rank_icon || '🥉',
-      rank: profileMap[p.user_id]?.rank || 'Rookie',
-    }));
-
-    setTopPredictors(enriched);
-    setLoadingPredictors(false);
-  };
-
-  const formatDate = (kickoff: string) => {
-    const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
-    return new Date(utc).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'short',
-      hour: '2-digit', minute: '2-digit', hour12: true,
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    });
-  };
-
-  const getOutcomeLabel = (match: any, outcome: string) => {
-    if (outcome === 'home') return match.home_team;
-    if (outcome === 'away') return match.away_team;
-    return 'Draw';
-  };
-
   if (loading) return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
-        <p style={{ color: '#2E9E5E', fontSize: '18px' }}>Loading match history...</p>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+        <p style={{ color: '#8B5CF6', fontSize: '18px' }}>Loading your result...</p>
       </div>
     </main>
   );
-
-  // Build stat cards — only show Live if there are live matches
-  const statCards = [
-    { label: 'Total Matches', value: stats.total, color: '#9CA3AF' },
-    { label: 'Completed', value: stats.completed, color: '#2E9E5E' },
-    ...(stats.live > 0 ? [{ label: 'Live Now', value: stats.live, color: '#EF4444', pulse: true }] : []),
-    { label: 'Pending', value: stats.upcoming, color: '#F59E0B' },
-  ];
-
-  return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
-      <style>{`
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-      `}</style>
-
-      {/* HEADER */}
-      <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '40px 20px 32px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
-        <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '8px' }}>WORLD CUP 2026</p>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>📊 Match History</h1>
-        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Results, scores and top predictors</p>
-
-        {/* STATS ROW */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
-          {statCards.map(({ label, value, color, pulse }: any) => (
-            <div key={label} style={{ textAlign: 'center', minWidth: '70px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                {pulse && (
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite', flexShrink: 0 }} />
-                )}
-                <div style={{ fontSize: '28px', fontWeight: 'bold', color, fontFamily: 'Georgia, serif' }}>{value}</div>
-              </div>
-              <div style={{ fontSize: '11px', color: '#6B7280' }}>{label}</div>
-            </div>
-          ))}
-        </div>
+  if (!prediction || !match) return (
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ color: '#6B7280' }}>No prediction found for this match.</p>
+        <a href="/predict" style={{ color: '#8B5CF6', textDecoration: 'none', fontWeight: 'bold' }}>Go to Predict</a>
       </div>
-
-      <div style={{ maxWidth: '700px', margin: '0 auto', padding: '24px 20px 0' }}>
-
-        {/* TOP PREDICTORS PANEL */}
-        {activeMatch && (
-          <div style={{ backgroundColor: '#0D2B14', border: '2px solid #2E9E5E', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', margin: 0, marginBottom: '4px' }}>🎯 Top Predictors</h2>
-                <p style={{ fontSize: '12px', color: '#6B7280', margin: 0 }}>
-                  {activeMatch.home_team} {activeMatch.home_score}–{activeMatch.away_score} {activeMatch.away_team}
-                </p>
-              </div>
-              <button onClick={() => setActiveMatch(null)} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Close</button>
+    </main>
+  );
+  const won = prediction.points_earned > 0;
+  const points = prediction.points_earned || 0;
+  const matchName = match.home_team + ' vs ' + match.away_team;
+  const actualScore = match.home_score + '-' + match.away_score;
+  const outcomeLabel = prediction.predicted_outcome === 'home' ? match.home_team
+    : prediction.predicted_outcome === 'away' ? match.away_team : 'Draw';
+  const competition = match.competition || 'EPL 2026/27';
+  const hashtag = competition.includes('World Cup') ? '#WorldCup2026' : '#PremierLeague #EPL2027';
+  const breakdown = [];
+  if (prediction.base_points > 0) breakdown.push({ label: 'Correct outcome', pts: '+' + prediction.base_points, color: '#2E9E5E' });
+  if (prediction.exact_bonus > 0) breakdown.push({ label: 'Exact score', pts: '+' + prediction.exact_bonus, color: '#F59E0B' });
+  if (prediction.goal_diff_bonus > 0) breakdown.push({ label: 'Goal difference', pts: '+' + prediction.goal_diff_bonus, color: '#3B82F6' });
+  if (prediction.upset_bonus > 0) breakdown.push({ label: 'Upset bonus', pts: '+' + prediction.upset_bonus, color: '#8B5CF6' });
+  if (prediction.confidence_multiplier > 1) breakdown.push({ label: 'Confidence x' + prediction.confidence_multiplier, pts: 'x' + prediction.confidence_multiplier, color: '#FB923C' });
+  const shareText = won
+    ? 'I predicted ' + outcomeLabel + ' in ' + matchName + ' and earned +' + points + ' pts on Flipseer! Build your football reputation at flipseer.com ' + hashtag + ' #Flipseer'
+    : 'I missed ' + matchName + ' on Flipseer but my record lives on! flipseer.com ' + hashtag + ' #Flipseer';
+  const accentColor = competition.includes('World Cup') ? '#2E9E5E' : '#8B5CF6';
+  return (
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', padding: '40px 20px' }}>
+      <style>{`
+        @keyframes flipIn { 0% { transform: rotateY(90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
+        @keyframes slideUp { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); } 50% { box-shadow: 0 0 60px rgba(139,92,246,0.8); } }
+        @keyframes badgePop { 0% { transform: scale(0) rotate(-10deg); opacity: 0; } 70% { transform: scale(1.2) rotate(5deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+      `}</style>
+      <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+        {/* Match header */}
+        <div style={{ textAlign: 'center', marginBottom: '24px', animation: 'slideUp 0.5s ease forwards' }}>
+          <p style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '2px', marginBottom: '6px' }}>FULL TIME · {competition.toUpperCase()}</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '6px' }}>{matchName}</h2>
+          <div style={{ fontSize: '36px', fontWeight: 'bold', color: accentColor, fontFamily: 'Georgia, serif' }}>{actualScore}</div>
+          {match.is_upset && (
+            <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', backgroundColor: 'rgba(245,158,11,0.1)', padding: '3px 12px', borderRadius: '999px', border: '1px solid #F59E0B' }}>
+              UPSET RESULT
+            </span>
+          )}
+        </div>
+        {/* FLIP CARD */}
+        <div
+          onClick={() => { if (!flipped) { setFlipped(true); setTimeout(() => setRevealed(true), 800); } }}
+          style={{
+            backgroundColor: '#0D2B14',
+            border: '2px solid ' + (won ? accentColor : '#7F1D1D'),
+            borderRadius: '20px', padding: '32px 24px', textAlign: 'center', marginBottom: '20px',
+            cursor: flipped ? 'default' : 'pointer',
+            animation: flipped ? 'flipIn 0.6s ease forwards' : 'pulse 1.5s ease infinite',
+          }}>
+          {!flipped ? (
+            <div>
+              <div style={{ fontSize: '56px', marginBottom: '12px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+              <p style={{ color: accentColor, fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Tap to reveal your result</p>
+              <p style={{ color: '#4B5563', fontSize: '12px', marginTop: '6px' }}>Your prediction has been processed</p>
             </div>
-            {loadingPredictors ? (
-              <p style={{ color: '#6B7280', textAlign: 'center', padding: '20px' }}>Loading...</p>
-            ) : topPredictors.length === 0 ? (
-              <p style={{ color: '#6B7280', textAlign: 'center', padding: '20px' }}>No processed predictions yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {topPredictors.map((pred, i) => {
-                  const medals = ['🥇', '🥈', '🥉'];
-                  const medal = i < 3 ? medals[i] : '#' + (i + 1);
-                  const won = pred.points_earned > 0;
-                  return (
-                    <div key={pred.user_id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '10px', backgroundColor: won ? 'rgba(46,158,94,0.06)' : '#0D1F0F', border: '1px solid ' + (won ? '#1A7A4A' : '#1A3A1A') }}>
-                      <div style={{ fontSize: '16px', width: '28px', textAlign: 'center' }}>
-                        {i < 3 ? medal : <span style={{ color: '#6B7280', fontWeight: 'bold', fontSize: '13px' }}>{medal}</span>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{pred.username}</div>
-                        <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
-                          {getOutcomeLabel(activeMatch, pred.predicted_outcome)} · {pred.confidence_pct}% confidence
-                          {pred.predicted_home_score !== null && pred.predicted_away_score !== null && (
-                            <span> · Predicted: {pred.predicted_home_score}–{pred.predicted_away_score}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 'bold', color: won ? '#2E9E5E' : '#6B7280' }}>
-                          {won ? '+' + pred.points_earned : '0'} pts
-                        </div>
-                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', marginTop: '3px' }}>
-                          {pred.exact_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(245,158,11,0.2)', color: '#F59E0B', padding: '1px 6px', borderRadius: '999px' }}>EXACT</span>}
-                          {pred.goal_diff_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(59,130,246,0.2)', color: '#3B82F6', padding: '1px 6px', borderRadius: '999px' }}>DIFF</span>}
-                          {pred.upset_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(139,92,246,0.2)', color: '#8B5CF6', padding: '1px 6px', borderRadius: '999px' }}>UPSET</span>}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+          ) : (
+            <div style={{ animation: 'flipIn 0.5s ease forwards' }}>
+              <div style={{ fontSize: '56px', marginBottom: '8px' }}>{won ? '✅' : '❌'}</div>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', color: won ? accentColor : '#EF4444', marginBottom: '4px' }}>
+                {won ? 'You called it!' : 'Missed this one'}
+              </h2>
+              <p style={{ color: '#9CA3AF', fontSize: '13px', marginBottom: '20px' }}>
+                You picked: <strong style={{ color: 'white' }}>{outcomeLabel}</strong> at <strong style={{ color: 'white' }}>{prediction.confidence_pct}%</strong> confidence
+              </p>
+              <div style={{ backgroundColor: won ? 'rgba(139,92,246,0.15)' : 'rgba(127,29,29,0.15)', border: '1px solid ' + (won ? accentColor : '#7F1D1D'), borderRadius: '14px', padding: '20px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '52px', fontWeight: 'bold', color: won ? accentColor : '#EF4444', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
+                  {won ? '+' + points : '0'}
+                </div>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>points earned</div>
+                {breakdown.length > 0 && (
+                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '12px' }}>
+                    {breakdown.map((b, i) => (
+                      <span key={i} style={{ fontSize: '11px', color: b.color, backgroundColor: 'rgba(0,0,0,0.3)', padding: '3px 10px', borderRadius: '999px', border: '1px solid ' + b.color + '40' }}>
+                        {b.label}: {b.pts}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+              {revealed && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', animation: 'slideUp 0.4s ease forwards' }}>
+                  {[
+                    { label: 'TOTAL PTS', value: profile?.total_points || 0 },
+                    { label: 'ACCURACY', value: (profile?.accuracy_pct || 0) + '%' },
+                    { label: 'STREAK', value: profile?.streak || 0 },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ backgroundColor: '#0D1F0F', borderRadius: '10px', padding: '10px 6px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '9px', color: '#6B7280', letterSpacing: '1px', marginBottom: '3px' }}>{label}</div>
+                      <div style={{ fontSize: '16px', fontWeight: 'bold', color: accentColor }}>{value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* NEW BADGES */}
+        {revealed && newBadges.length > 0 && (
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #F59E0B', borderRadius: '16px', padding: '20px', marginBottom: '20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px', margin: '0 0 12px' }}>NEW BADGE{newBadges.length > 1 ? 'S' : ''} UNLOCKED!</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              {newBadges.map((b) => (
+                <div key={b.id} style={{ animation: 'badgePop 0.5s ease forwards', textAlign: 'center' }}>
+                  <div style={{ fontSize: '40px', marginBottom: '4px' }}>{b.badge_icon}</div>
+                  <div style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>{b.badge_label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-
-        {/* MATCH LIST */}
-        {matches.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', borderRadius: '16px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
-            <h3 style={{ fontFamily: 'Georgia, serif', color: '#2E9E5E', marginBottom: '8px' }}>No results yet</h3>
-            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Match results will appear here after kick-off</p>
-            <a href="/predict" style={{ backgroundColor: '#1A7A4A', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
-              Predict Upcoming Matches →
+        {/* ACTION BUTTONS */}
+        {revealed && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <a href="/predict" style={{ display: 'block', backgroundColor: accentColor, color: 'white', padding: '14px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', textAlign: 'center' }}>
+              Predict Next Match →
             </a>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {matches.map((match) => (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#6B7280' }}>{match.league} · {formatDate(match.kickoff)}</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {match.is_upset && (
-                      <span style={{ fontSize: '10px', backgroundColor: 'rgba(139,92,246,0.2)', color: '#8B5CF6', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>UPSET</span>
-                    )}
-                    <span style={{ fontSize: '10px', backgroundColor: 'rgba(46,158,94,0.2)', color: '#2E9E5E', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>FT</span>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'home' ? 'white' : '#6B7280', flex: 1 }}>{match.home_team}</span>
-                  <div style={{ textAlign: 'center', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 16px', margin: '0 12px', flexShrink: 0 }}>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{match.home_score} – {match.away_score}</span>
-                  </div>
-                  <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'away' ? 'white' : '#6B7280', flex: 1, textAlign: 'right' }}>{match.away_team}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    onClick={() => loadTopPredictors(match)}
-                    style={{ flex: 1, padding: '8px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                    🎯 Top Predictors
-                  </button>
-                  <a href="/predict" style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
-                    ⚽ Predict Next
-                  </a>
-                </div>
-              </div>
-            ))}
+            <a href="/leaderboard" style={{ display: 'block', backgroundColor: 'transparent', color: accentColor, padding: '12px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold', textAlign: 'center', border: '1px solid ' + accentColor }}>
+              View Leaderboard →
+            </a>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, display: 'block', backgroundColor: '#25D366', color: 'white', padding: '11px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
+                Share on WhatsApp
+              </a>
+              <a href={'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, display: 'block', backgroundColor: '#000000', color: 'white', padding: '11px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
+                Share on X
+              </a>
+            </div>
+            <a href={'/u/' + (profile?.username || '')} style={{ display: 'block', color: '#4B5563', padding: '10px', textDecoration: 'none', fontSize: '12px', textAlign: 'center' }}>
+              View full profile →
+            </a>
           </div>
         )}
       </div>
