@@ -2,7 +2,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import NationShareCard from '@/components/NationShareCard';
+
 const supabase = createClient();
+
 type Match = {
   id: number;
   api_id: number;
@@ -28,6 +30,7 @@ const LEAGUES = [
   { key: 'NPFL 2026/27', label: 'NPFL', icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
   { key: 'Liga 1 2026/27', label: 'Liga 1', icon: '&#x1F1EE;&#x1F1E9;', color: '#CE1126', active: false },
 ];
+
 function formatKickoffLocal(kickoffUtc: string): string {
   const utcString = kickoffUtc.endsWith('Z') ? kickoffUtc : kickoffUtc.replace(' ', 'T') + 'Z';
   const date = new Date(utcString);
@@ -52,6 +55,7 @@ function formatKickoffLocal(kickoffUtc: string): string {
   });
   return formatted + (tzLabel ? ' ' + tzLabel : '');
 }
+
 function useCountdown(kickoff: string) {
   const compute = useCallback(() => {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
@@ -73,6 +77,7 @@ function useCountdown(kickoff: string) {
   }, [compute]);
   return state;
 }
+
 function buildShareUrl({ match, pred, username, country }: {
   match: Match; pred: any; username: string; country: string;
 }) {
@@ -90,6 +95,81 @@ function buildShareUrl({ match, pred, username, country }: {
   if (match.league) params.set('league', match.league);
   return 'https://flipseer.com/predict/share?' + params.toString();
 }
+
+// ── LOGGED OUT MATCH CARD ──
+function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | undefined }) {
+  const { locked, label: timeLeft } = useCountdown(match.kickoff);
+  const kickoffDate = formatKickoffLocal(match.kickoff);
+  const getPct = (count: number, total: number) => total === 0 ? 0 : Math.round((count / total) * 100);
+  const homePct = comm ? getPct(comm.home, comm.total) : 0;
+  const drawPct = comm ? getPct(comm.draw, comm.total) : 0;
+  const awayPct = comm ? getPct(comm.away, comm.total) : 0;
+
+  return (
+    <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>
+          {match.league} · {kickoffDate}
+        </span>
+        {!locked && timeLeft && (
+          <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+            ⏱ Locks in {timeLeft}
+          </span>
+        )}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.home_team}</span>
+        <span style={{ fontSize: '13px', color: '#6B7280' }}>vs</span>
+        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.away_team}</span>
+      </div>
+      {comm && comm.total > 0 && (
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '11px', color: '#6B7280' }}>
+            <span>🌍 {comm.total} prediction{comm.total !== 1 ? 's' : ''}</span>
+            <span>Community split</span>
+          </div>
+          <div style={{ display: 'flex', borderRadius: '6px', overflow: 'hidden', height: '8px', marginBottom: '6px' }}>
+            {homePct > 0 && <div style={{ width: homePct + '%', backgroundColor: '#8B5CF6' }} />}
+            {drawPct > 0 && <div style={{ width: drawPct + '%', backgroundColor: '#6B7280' }} />}
+            {awayPct > 0 && <div style={{ width: awayPct + '%', backgroundColor: '#3B82F6' }} />}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+            <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>{match.home_team} {homePct}%</span>
+            <span style={{ color: '#6B7280' }}>Draw {drawPct}%</span>
+            <span style={{ color: '#3B82F6', fontWeight: 'bold' }}>{match.away_team} {awayPct}%</span>
+          </div>
+        </div>
+      )}
+      {/* Locked-out predict buttons — tap to sign up */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+        {[
+          { label: match.home_team + ' Win' },
+          { label: 'Draw' },
+          { label: match.away_team + ' Win' },
+        ].map(({ label }) => (
+          <a key={label} href="/auth" style={{
+            flex: 1, padding: '10px 4px', borderRadius: '8px',
+            border: '1px solid #1A7A4A', backgroundColor: 'transparent',
+            color: '#9CA3AF', fontSize: '12px', fontWeight: 'bold',
+            textDecoration: 'none', textAlign: 'center', display: 'block',
+          }}>
+            {label}
+          </a>
+        ))}
+      </div>
+      <a href="/auth" style={{
+        display: 'block', width: '100%', padding: '12px',
+        backgroundColor: '#8B5CF6', color: 'white', border: 'none',
+        borderRadius: '8px', fontSize: '14px', fontWeight: 'bold',
+        cursor: 'pointer', textAlign: 'center', textDecoration: 'none',
+        boxSizing: 'border-box',
+      }}>
+        Sign in free to predict →
+      </a>
+    </div>
+  );
+}
+
 // ── COMING SOON PLACEHOLDER ──
 function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
   const launch = league.key === 'Champions League 2026/27' ? 'September 2026'
@@ -103,25 +183,16 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
         <div style={{ fontSize: '64px', marginBottom: '20px' }}>🏆</div>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>
-          FIFA World Cup 2026
-        </h2>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>FIFA World Cup 2026</h2>
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '999px', padding: '6px 20px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>
-            🇪🇸 Spain are World Champions 2026
-          </span>
+          <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>🇪🇸 Spain are World Champions 2026</span>
         </div>
         <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
-          The tournament is over. Spain beat France 2-0 in the Final.<br/>
-          Your World Cup predictions are permanent — locked forever.
+          The tournament is over. Spain beat France 2-0 in the Final.<br />Your World Cup predictions are permanent — locked forever.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/world-cup-2026" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
-            View All Results →
-          </a>
-          <a href="/leaderboard" style={{ backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
-            Final Leaderboard →
-          </a>
+          <a href="/world-cup-2026" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>View All Results →</a>
+          <a href="/leaderboard" style={{ backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Final Leaderboard →</a>
         </div>
       </div>
     );
@@ -130,24 +201,19 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
       <div style={{ fontSize: '64px', marginBottom: '20px' }} dangerouslySetInnerHTML={{ __html: league.icon }} />
-      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>
-        {league.key}
-      </h2>
+      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>{league.key}</h2>
       <div style={{ display: 'inline-block', backgroundColor: league.color + '20', border: '1px solid ' + league.color, borderRadius: '999px', padding: '6px 20px', marginBottom: '20px' }}>
-        <span style={{ fontSize: '13px', color: league.color, fontWeight: 'bold' }}>
-          ⏳ Launches {launch}
-        </span>
+        <span style={{ fontSize: '13px', color: league.color, fontWeight: 'bold' }}>⏳ Launches {launch}</span>
       </div>
       <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
-        Coming soon. Your prediction record continues across every competition — EPL, UCL and beyond.
+        Coming soon. Your prediction record continues across every competition.
       </p>
-      <a href="/epl" style={{ backgroundColor: league.color, color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
-        Learn More →
-      </a>
+      <a href="/epl" style={{ backgroundColor: league.color, color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Learn More →</a>
     </div>
   );
 }
-// ── MATCH CARD ──
+
+// ── LOGGED IN MATCH CARD ──
 function MatchCard({
   match, pred, isSaved, isLoading, comm, username, country,
   onPredict, onConfidence, onScore, onSave,
@@ -184,6 +250,7 @@ function MatchCard({
     setShared(true);
     setTimeout(() => setShared(false), 3000);
   };
+
   return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isSaved ? '#8B5CF6' : '#1A7A4A'), borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
@@ -308,7 +375,7 @@ function MatchCard({
                   {' '}· {pred.confidence}% confidence
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleShare} style={{ flex: 1, padding: '8px', backgroundColor: '#4C1D95', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
                   {shared ? 'Shared!' : 'Share'}
                 </button>
@@ -317,11 +384,6 @@ function MatchCard({
                   WhatsApp
                 </a>
               </div>
-              <a href="/groups" style={{ display: 'block', padding: '8px', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '6px', textAlign: 'center', textDecoration: 'none' }}>
-                <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>
-                  Think your friends can beat this call? Challenge them →
-                </span>
-              </a>
             </div>
           ) : (
             <span style={{ fontSize: '13px', color: '#6B7280', display: 'block', textAlign: 'center' }}>🔒 Predictions closed</span>
@@ -342,6 +404,7 @@ function MatchCard({
     </div>
   );
 }
+
 // ── MAIN PAGE ──
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
@@ -358,49 +421,28 @@ export default function Predict() {
   const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const DAILY_LIMIT = 16;
+
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { window.location.href = '/auth'; return; }
-      setUser(session.user);
+      setAuthChecked(true);
+
+      // Load EPL matches for everyone — logged in or not
       setMatchesLoading(true);
-      const [profileRes, matchRes, predRes, commRes] = await Promise.all([
-        supabase.from('profiles').select('username, country, prediction_count').eq('id', session.user.id).single(),
+      const [matchRes, commRes] = await Promise.all([
         supabase.from('matches')
           .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
           .in('status', ['upcoming'])
           .eq('competition', 'EPL 2026/27')
           .order('kickoff', { ascending: true }),
-        supabase.from('predictions').select('*').eq('user_id', session.user.id),
         supabase.from('predictions').select('match_id, predicted_outcome'),
       ]);
-      if (profileRes.data?.username) setUsername(profileRes.data.username);
-      if (profileRes.data?.country) setCountry(profileRes.data.country);
-      setLifetimePredictionCount(profileRes.data?.prediction_count ?? 0);
       setMatches(matchRes.data || []);
       setMatchesLoading(false);
-      const predData = predRes.data;
-      if (predData) {
-        const existing: any = {};
-        const savedMap: any = {};
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        let todayCount = 0;
-        predData.forEach((p: any) => {
-          existing[p.match_id] = {
-            outcome: p.predicted_outcome,
-            confidence: p.confidence_pct,
-            predicted_home_score: p.predicted_home_score ?? undefined,
-            predicted_away_score: p.predicted_away_score ?? undefined,
-          };
-          savedMap[p.match_id] = true;
-          if (new Date(p.created_at) >= todayStart) todayCount++;
-        });
-        setPredictions(existing);
-        setSaved(savedMap);
-        setDailyUsed(todayCount);
-      }
+
+      // Community stats for everyone
       const commData = commRes.data;
       if (commData) {
         const stats: { [key: number]: CommunityStats } = {};
@@ -411,9 +453,43 @@ export default function Predict() {
         });
         setCommunity(stats);
       }
+
+      // Additional data for logged-in users only
+      if (session) {
+        setUser(session.user);
+        const [profileRes, predRes] = await Promise.all([
+          supabase.from('profiles').select('username, country, prediction_count').eq('id', session.user.id).single(),
+          supabase.from('predictions').select('*').eq('user_id', session.user.id),
+        ]);
+        if (profileRes.data?.username) setUsername(profileRes.data.username);
+        if (profileRes.data?.country) setCountry(profileRes.data.country);
+        setLifetimePredictionCount(profileRes.data?.prediction_count ?? 0);
+        const predData = predRes.data;
+        if (predData) {
+          const existing: any = {};
+          const savedMap: any = {};
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          let todayCount = 0;
+          predData.forEach((p: any) => {
+            existing[p.match_id] = {
+              outcome: p.predicted_outcome,
+              confidence: p.confidence_pct,
+              predicted_home_score: p.predicted_home_score ?? undefined,
+              predicted_away_score: p.predicted_away_score ?? undefined,
+            };
+            savedMap[p.match_id] = true;
+            if (new Date(p.created_at) >= todayStart) todayCount++;
+          });
+          setPredictions(existing);
+          setSaved(savedMap);
+          setDailyUsed(todayCount);
+        }
+      }
     };
     init();
   }, []);
+
   const handleLeagueChange = async (leagueKey: string) => {
     setActiveLeague(leagueKey);
     const league = LEAGUES.find(l => l.key === leagueKey);
@@ -427,6 +503,7 @@ export default function Predict() {
     setMatches(data || []);
     setMatchesLoading(false);
   };
+
   const handlePredict = (matchId: number, outcome: string) => {
     setPredictions(prev => ({
       ...prev,
@@ -488,8 +565,10 @@ export default function Predict() {
       alert(data.error || 'Failed to save prediction. Please try again.');
     }
   };
+
   const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
   const activeLeagueData = LEAGUES.find(l => l.key === activeLeague) || LEAGUES[0];
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
       {/* HEADER */}
@@ -501,14 +580,14 @@ export default function Predict() {
           Lock in your call before kickoff. Permanent record. Free forever.
         </p>
       </section>
+
       {/* LEAGUE TABS */}
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
           {LEAGUES.map((league) => (
             <button key={league.key} onClick={() => handleLeagueChange(league.key)}
               style={{
-                flexShrink: 0,
-                display: 'flex', alignItems: 'center', gap: '6px',
+                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px',
                 padding: '10px 16px', borderRadius: '10px',
                 border: '2px solid ' + (activeLeague === league.key ? league.color : '#1A3A1A'),
                 backgroundColor: activeLeague === league.key ? league.color + '20' : '#0D2B14',
@@ -520,7 +599,7 @@ export default function Predict() {
               <span dangerouslySetInnerHTML={{ __html: league.icon }} />
               {league.label}
               {!league.active && (
-                <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '2px 7px', borderRadius: '999px', marginLeft: '4px', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '2px 7px', borderRadius: '999px', marginLeft: '4px' }}>
                   {league.key === 'World Cup 2026' ? 'DONE' : 'SOON'}
                 </span>
               )}
@@ -528,58 +607,40 @@ export default function Predict() {
           ))}
         </div>
       </div>
-      {/* DAILY LIMIT */}
-      {activeLeagueData.active && (
-        <section style={{ textAlign: 'center', padding: '0 20px 16px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(139,92,246,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#8B5CF6'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#8B5CF6', fontWeight: 'bold' }}>
-              {remaining === 0
-                ? 'Daily limit reached - come back tomorrow!'
-                : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions - ' + remaining + ' remaining'
-              }
-            </span>
-          </div>
-          {username !== 'forecaster' && (
-            <div>
-              <a href={'/u/' + username} style={{ color: '#8B5CF6', fontSize: '13px', textDecoration: 'none' }}>
-                View your journal →
-              </a>
-            </div>
-          )}
-        </section>
-      )}
-      {/* FIRST PREDICTION PROMPT */}
-      {activeLeagueData.active && dailyUsed === 0 && username !== 'forecaster' && (
+
+      {/* GUEST SIGN UP BANNER */}
+      {!user && authChecked && activeLeagueData.active && (
         <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
-          <div style={{ background: 'linear-gradient(135deg, #1A0B2E, #2D1B69)', border: '2px solid #8B5CF6', borderRadius: '14px', padding: '20px 24px', boxShadow: '0 0 20px rgba(139,92,246,0.15)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '36px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-              <div style={{ flex: 1, minWidth: '200px' }}>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '6px', fontFamily: 'Georgia, serif' }}>
-                  Welcome, @{username}! Premier League starts August 21.
-                </div>
-                <div style={{ fontSize: '13px', color: '#9CA3AF', lineHeight: '1.6', marginBottom: '12px' }}>
-                  Pick a match below. Set your confidence. Lock it in before kickoff.<br />
-                  <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>Your permanent EPL record starts now. 🔒</span>
-                </div>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                  {[
-                    { icon: '🎯', text: 'Pick outcome' },
-                    { icon: '📊', text: 'Set confidence' },
-                    { icon: '🔒', text: 'Lock forever' },
-                    { icon: '⚡', text: 'Earn points' },
-                  ].map(({ icon, text }) => (
-                    <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ fontSize: '14px' }}>{icon}</span>
-                      <span style={{ fontSize: '11px', color: '#6B7280' }}>{text}</span>
-                    </div>
-                  ))}
-                </div>
+          <div style={{ background: 'linear-gradient(135deg, #1A0B2E, #2D1B69)', border: '2px solid #8B5CF6', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>
+                🏅 EPL Founding Forecaster badge — this week only
+              </div>
+              <div style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                Sign in free. Predict before August 24. Badge awarded permanently.
               </div>
             </div>
+            <a href="/auth" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+              Sign in free →
+            </a>
           </div>
         </div>
       )}
+
+      {/* DAILY LIMIT — logged in only */}
+      {user && activeLeagueData.active && (
+        <section style={{ textAlign: 'center', padding: '0 20px 16px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(139,92,246,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#8B5CF6'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#8B5CF6', fontWeight: 'bold' }}>
+              {remaining === 0 ? 'Daily limit reached - come back tomorrow!' : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions - ' + remaining + ' remaining'}
+            </span>
+          </div>
+          {username !== 'forecaster' && (
+            <div><a href={'/u/' + username} style={{ color: '#8B5CF6', fontSize: '13px', textDecoration: 'none' }}>View your journal →</a></div>
+          )}
+        </section>
+      )}
+
       {/* CONTENT */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 40px' }}>
         {!activeLeagueData.active ? (
@@ -595,30 +656,35 @@ export default function Predict() {
             <p style={{ marginBottom: '8px' }}>No upcoming {activeLeague} matches right now.</p>
             <p style={{ fontSize: '12px', color: '#8895A3' }}>Check back soon — new matches are added automatically.</p>
           </div>
+        ) : !user ? (
+          // GUEST VIEW — show matches with sign-in prompt
+          <>
+            {matches.map((match) => (
+              <GuestMatchCard key={match.id} match={match} comm={community[match.id]} />
+            ))}
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
+                Sign in free to predict →
+              </a>
+              <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '8px' }}>Free forever · No betting · No card required</p>
+            </div>
+          </>
         ) : (
+          // LOGGED IN VIEW
           (() => {
             const isBrandNewUser = lifetimePredictionCount === 0 && username !== 'forecaster';
             const visibleMatches = (isBrandNewUser && !showAllMatches) ? matches.slice(0, 1) : matches;
             return (
               <>
                 {isBrandNewUser && !showAllMatches && (
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    marginBottom: 10, padding: '10px 16px',
-                    backgroundColor: 'rgba(139,92,246,0.1)',
-                    border: '1px solid rgba(139,92,246,0.3)',
-                    borderRadius: 8,
-                  }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '10px 16px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8 }}>
                     <span style={{ fontSize: 18 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-                    <span style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700, letterSpacing: '0.3px' }}>
-                      YOUR FIRST EPL CALL — pick a match, your record begins
-                    </span>
+                    <span style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700 }}>YOUR FIRST EPL CALL — pick a match, your record begins</span>
                   </div>
                 )}
                 {visibleMatches.map((match) => (
                   <MatchCard
-                    key={match.id}
-                    match={match}
+                    key={match.id} match={match}
                     pred={predictions[match.id]}
                     isSaved={saved[match.id] ?? false}
                     isLoading={loading[match.id] ?? false}
@@ -631,12 +697,7 @@ export default function Predict() {
                   />
                 ))}
                 {isBrandNewUser && !showAllMatches && matches.length > 1 && (
-                  <button onClick={() => setShowAllMatches(true)} style={{
-                    width: '100%', marginTop: 8, padding: '12px',
-                    backgroundColor: 'transparent', border: '1px dashed #2D1B69',
-                    borderRadius: 10, color: '#6B7280', fontSize: 13,
-                    cursor: 'pointer', fontWeight: 600,
-                  }}>
+                  <button onClick={() => setShowAllMatches(true)} style={{ width: '100%', marginTop: 8, padding: '12px', backgroundColor: 'transparent', border: '1px dashed #2D1B69', borderRadius: 10, color: '#6B7280', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
                     Show all {matches.length} matches →
                   </button>
                 )}
@@ -645,6 +706,7 @@ export default function Predict() {
           })()
         )}
       </section>
+
       {nationShare && country && (
         <NationShareCard
           country={country}
