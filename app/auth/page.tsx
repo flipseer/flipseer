@@ -81,6 +81,46 @@ const NATION_TO_CODE: { [key: string]: string } = {
   'Kenya': 'KE', 'Haiti': 'HT', 'Uruguay': 'UY', 'Paraguay': 'PY',
   'Chile': 'CL', 'Peru': 'PE', 'Qatar': 'QA', 'Switzerland': 'CH',
 };
+
+// ── SAFE PROFILE CREATOR — called after any signup method ──
+async function ensureProfile(userId: string, email: string, username: string, country: string | null) {
+  // Check if profile already exists
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .single();
+  if (existing) return; // Already has profile — skip
+  // Create profile
+  const { error } = await supabase.from('profiles').insert({
+    id: userId,
+    username: username.trim(),
+    country: country || null,
+    reputation: 0,
+    total_points: 0,
+    prediction_count: 0,
+    correct_count: 0,
+    streak: 0,
+    best_streak: 0,
+    accuracy_pct: 0,
+    rank: 'Rookie',
+    rank_icon: '🥉',
+  });
+  if (error) {
+    console.error('Profile creation failed:', error.message);
+    // Retry with upsert as fallback
+    await supabase.from('profiles').upsert([{
+      id: userId,
+      username: username.trim(),
+      country: country || null,
+      reputation: 0, total_points: 0,
+      prediction_count: 0, correct_count: 0,
+      streak: 0, best_streak: 0,
+      accuracy_pct: 0, rank: 'Rookie', rank_icon: '🥉',
+    }], { onConflict: 'id' });
+  }
+}
+
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -93,6 +133,7 @@ export default function Auth() {
   const [xLoading, setXLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [detectedNation, setDetectedNation] = useState('');
+
   useEffect(() => {
     try {
       const nation = localStorage.getItem('flipseer_detected_nation');
@@ -103,6 +144,7 @@ export default function Auth() {
       }
     } catch (e) {}
   }, []);
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     setMessage('');
@@ -115,14 +157,13 @@ export default function Auth() {
     });
     if (error) { setMessage(error.message); setGoogleLoading(false); }
   };
+
   const handleXSignIn = async () => {
     setXLoading(true);
     setMessage('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'x',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     if (error) { setMessage(error.message); setXLoading(false); }
   };
@@ -138,39 +179,49 @@ export default function Auth() {
     else { setMessage('Password reset link sent! Check your inbox.'); }
     setLoading(false);
   };
+
   const handleAuth = async () => {
     if (!email || !password) return;
     setLoading(true);
     setMessage('');
     if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { setMessage(error.message); }
-      else { window.location.href = '/profile'; }
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setMessage(error.message);
+      } else if (data.user) {
+        // Ensure profile exists on every login — catches missed signups
+        const fallbackUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '') + '_' + data.user.id.slice(-4);
+        await ensureProfile(data.user.id, email, fallbackUsername, null);
+        window.location.href = '/predict';
+      }
     } else {
       if (!username.trim()) { setMessage('Username is required'); setLoading(false); return; }
+      if (username.trim().length < 3) { setMessage('Username must be at least 3 characters'); setLoading(false); return; }
+      // Check username not taken
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username.trim())
+        .single();
+      if (existing) { setMessage('Username already taken — try another'); setLoading(false); return; }
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error && error.message !== 'Error sending confirmation email') {
         setMessage(error.message);
       } else if (data.user) {
-        await supabase.from('profiles').upsert([{
-          id: data.user.id,
-          username: username.trim(),
-          country: country || null,
-          reputation: 0, total_points: 0,
-          prediction_count: 0, correct_count: 0,
-          streak: 0, best_streak: 0,
-          accuracy_pct: 0, rank: 'Rookie', rank_icon: '🥉',
-        }], { onConflict: 'id' });
+        // Create profile with guaranteed execution
+        await ensureProfile(data.user.id, email, username, country || null);
+        // Welcome email — fire and forget
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username, country }),
         }).catch(() => {});
-        window.location.href = '/profile';
+        window.location.href = '/predict?welcome=1';
       }
     }
     setLoading(false);
   };
+
   if (isForgot) {
     return (
       <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
@@ -206,6 +257,7 @@ export default function Auth() {
       </main>
     );
   }
+
   const selectedCountry = COUNTRIES.find(c => c.code === country);
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
@@ -221,7 +273,6 @@ export default function Auth() {
       </div>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '420px' }}>
-          {/* HEADING */}
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '36px', marginBottom: '8px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>
@@ -236,8 +287,7 @@ export default function Auth() {
               }
             </p>
           </div>
-
-          {/* GOOGLE BUTTON */}
+          {/* GOOGLE */}
           <button onClick={handleGoogleSignIn} disabled={googleLoading || xLoading}
             style={{ width: '100%', padding: '13px', backgroundColor: 'white', color: '#1F2937', border: '1px solid #D1D5DB', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '10px', opacity: googleLoading ? 0.7 : 1 }}>
             {googleLoading ? 'Connecting...' : (
@@ -252,10 +302,7 @@ export default function Auth() {
               </>
             )}
           </button>
-
-
-
-          {/* X (TWITTER) BUTTON */}
+          {/* X */}
           <button onClick={handleXSignIn} disabled={googleLoading || xLoading}
             style={{ width: '100%', padding: '13px', backgroundColor: '#000000', color: 'white', border: '1px solid #333', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px', opacity: xLoading ? 0.7 : 1 }}>
             {xLoading ? 'Connecting...' : (
@@ -273,7 +320,6 @@ export default function Auth() {
             <span style={{ color: '#6B7280', fontSize: '12px' }}>or use email</span>
             <div style={{ flex: 1, height: '1px', backgroundColor: '#1A7A4A' }} />
           </div>
-
           {/* TOGGLE */}
           <div style={{ display: 'flex', marginBottom: '20px', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '4px' }}>
             <button onClick={() => { setIsLogin(true); setMessage(''); }}
@@ -285,16 +331,15 @@ export default function Auth() {
               Sign Up
             </button>
           </div>
-
           {/* SIGNUP FIELDS */}
           {!isLogin && (
             <>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Username</label>
                 <input type="text" placeholder="e.g. football_oracle" value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_'))}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, '_').replace(/[^a-z0-9_]/g, ''))}
                   style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
-                <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Your permanent public identity</p>
+                <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>Your permanent public identity · letters, numbers, underscores only</p>
               </div>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>
@@ -318,7 +363,6 @@ export default function Auth() {
               </div>
             </>
           )}
-
           {/* EMAIL */}
           <div style={{ marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Email</label>
@@ -326,7 +370,6 @@ export default function Auth() {
               onChange={(e) => setEmail(e.target.value)}
               style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
           </div>
-
           {/* PASSWORD */}
           <div style={{ marginBottom: '8px' }}>
             <label style={{ fontSize: '13px', color: '#9CA3AF', display: 'block', marginBottom: '6px' }}>Password</label>
@@ -335,7 +378,6 @@ export default function Auth() {
               onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
               style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: '#0D1F0F', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
           </div>
-
           {isLogin && (
             <div style={{ textAlign: 'right', marginBottom: '20px' }}>
               <button onClick={() => { setIsForgot(true); setMessage(''); }}
@@ -345,18 +387,15 @@ export default function Auth() {
             </div>
           )}
           {!isLogin && <div style={{ marginBottom: '20px' }} />}
-
           {message && (
-            <div style={{ backgroundColor: message.includes('reset') || message.includes('created') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+            <div style={{ backgroundColor: message.includes('reset') || message.includes('sent') ? '#1A7A4A' : '#7F1D1D', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
               {message}
             </div>
           )}
-
           <button onClick={handleAuth} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? 'Please wait...' : isLogin ? 'Sign In →' : detectedNation ? `Join & Represent ${detectedNation} →` : 'Create Account →'}
           </button>
-
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
             <span style={{ color: '#6B7280', fontSize: '13px' }}>
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
@@ -366,7 +405,6 @@ export default function Auth() {
               </button>
             </span>
           </div>
-
           {/* TRUST SHIELD */}
           <div style={{ marginTop: '20px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '12px', padding: '14px 16px' }}>
             <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center', marginBottom: '10px' }}>YOUR DATA. YOUR RULES.</div>
@@ -384,9 +422,7 @@ export default function Auth() {
               ))}
             </div>
             <div style={{ textAlign: 'center', marginTop: '10px' }}>
-              <a href="/privacy" style={{ fontSize: '11px', color: '#4B5563', textDecoration: 'none' }}>
-                Full privacy policy →
-              </a>
+              <a href="/privacy" style={{ fontSize: '11px', color: '#4B5563', textDecoration: 'none' }}>Full privacy policy →</a>
             </div>
           </div>
           <p style={{ textAlign: 'center', color: '#4B5563', fontSize: '11px', marginTop: '16px' }}>
