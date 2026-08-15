@@ -342,7 +342,7 @@ export default function Home() {
   const [nextMatchCountdown, setNextMatchCountdown] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeForecasters, setActiveForecasters] = useState(0);
-  const [predictions24h, setPredictions24h] = useState(0);
+  const [totalPredictions, setTotalPredictions] = useState(0);
   const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
   const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
   useEffect(() => { setMounted(true); }, []);
@@ -355,7 +355,7 @@ export default function Home() {
           supabase.from('profiles').select('*', { count: 'exact', head: true }),
           supabase.from('profiles').select('*', { count: 'exact', head: true }).gt('prediction_count', 0),
         ]);
-        setPredictions24h(predCount || 0);
+        setTotalPredictions(predCount || 0);
         setTotalUsers(userCount || 0);
         setActiveForecasters(activeCount || 0);
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -482,7 +482,7 @@ export default function Home() {
         <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {predictions24h} predictions</span> in last 24h
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
             </span>
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
               <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
