@@ -409,8 +409,6 @@ export default function GroupsPage() {
         )}
         {/* INVITE BANNER */}
         <InviteBanner />
-        {/* INVITE BANNER */}
-        <InviteBanner />
         {/* HOW IT WORKS */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '16px', padding: '24px' }}>
           <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '20px' }}>HOW GROUPS WORK</div>
