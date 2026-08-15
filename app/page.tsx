@@ -481,9 +481,11 @@ export default function Home() {
       {mounted && totalUsers > 0 && (
         <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
-            </span>
+            {totalPredictions > 0 && (
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
+              </span>
+            )}
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
               <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
             </span>
