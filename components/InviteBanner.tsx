@@ -1,5 +1,4 @@
 // InviteBanner.tsx — add to homepage page
-// InviteBanner.tsx — add to Groups page
 // Usage: import InviteBanner from '@/components/InviteBanner'
 //        <InviteBanner />
 'use client';
