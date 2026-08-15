@@ -387,7 +387,7 @@ export default function Home() {
           try { localStorage.setItem('flipseer_detected_nation', detectedNation); } catch (e) {}
         }
         let leaderboardData: any[] = [];
-        if ((userCount || 0) >= 5) {
+        if ((stats.totalUsers || 0) >= 5) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
           if (data && Array.isArray(data)) leaderboardData = data;
