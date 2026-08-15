@@ -349,14 +349,11 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [{ count: predCount }, { count: userCount }, { count: activeCount }] = await Promise.all([
-          supabase.from('predictions').select('*', { count: 'exact', head: true }),
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
-          supabase.from('profiles').select('*', { count: 'exact', head: true }).gt('prediction_count', 0),
-        ]);
-        setTotalPredictions(predCount || 0);
-        setTotalUsers(userCount || 0);
-        setActiveForecasters(activeCount || 0);
+        const statsRes = await fetch('/api/stats');
+        const stats = await statsRes.json();
+        setTotalPredictions(stats.totalPredictions || 0);
+        setTotalUsers(stats.totalUsers || 0);
+        setActiveForecasters(stats.activeForecasters || 0);
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const tzToCountry: { [key: string]: string } = {
           'Asia/Calcutta': 'India', 'Asia/Kolkata': 'India', 'Asia/Jakarta': 'Indonesia',
