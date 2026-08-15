@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '&#x1F1EE;&#x1F1F3;', 'Brazil': '&#x1F1E7;&#x1F1F7;',
@@ -597,6 +598,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* INVITE BANNER */}
+      <InviteBanner />
       {/* EPL FOUNDING FORECASTER BADGE SECTION */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
