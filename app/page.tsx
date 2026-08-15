@@ -349,9 +349,8 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const [{ count: predCount }, { count: userCount }, { count: activeCount }] = await Promise.all([
-          supabase.from('predictions').select('*', { count: 'exact', head: true }).gte('created_at', since),
+          supabase.from('predictions').select('*', { count: 'exact', head: true }),
           supabase.from('profiles').select('*', { count: 'exact', head: true }),
           supabase.from('profiles').select('*', { count: 'exact', head: true }).gt('prediction_count', 0),
         ]);
