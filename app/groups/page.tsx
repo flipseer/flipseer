@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import InviteBanner from '@/components/InviteBanner';
+import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
 const FLAG: { [key: string]: string } = {
   'IN': '&#x1F1EE;&#x1F1F3;', 'ID': '&#x1F1EE;&#x1F1E9;',
@@ -406,6 +408,10 @@ export default function GroupsPage() {
             </div>
           </div>
         )}
+        {/* INVITE BANNER */}
+        <InviteBanner />
+        {/* INVITE BANNER */}
+        <InviteBanner />
         {/* HOW IT WORKS */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '16px', padding: '24px' }}>
           <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '20px' }}>HOW GROUPS WORK</div>
