@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
-import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
 const FLAG: { [key: string]: string } = {
   'IN': '&#x1F1EE;&#x1F1F3;', 'ID': '&#x1F1EE;&#x1F1E9;',
