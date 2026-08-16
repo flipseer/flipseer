@@ -147,6 +147,7 @@ function UpcomingMatches() {
       const { data } = await supabase
         .from('matches')
         .select('id, home_team, away_team, kickoff, status, league, competition')
+        .eq('competition', 'EPL 2026/27')
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
         .limit(5);
