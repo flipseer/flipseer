@@ -42,12 +42,13 @@ export default function UCLPage() {
             if (rank > 0) setUserRank(rank);
           }
         }
-        // Fetch upcoming UCL matches
+        // Fetch upcoming UCL matches — group stage only (Sep 17+)
         const { data: matches } = await supabase
           .from('matches')
           .select('id, home_team, away_team, kickoff, status, round')
           .eq('competition', 'UCL 2026/27')
           .in('status', ['upcoming', 'live'])
+          .gte('kickoff', '2026-09-17')
           .order('kickoff', { ascending: true })
           .limit(8);
         setUclMatches(matches || []);
@@ -128,44 +129,20 @@ export default function UCLPage() {
             </a>
           </div>
         )}
-        {/* UPCOMING UCL MATCHES */}
-        {uclMatches.length > 0 && (
-          <div style={{ marginBottom: '32px' }}>
-            <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>UPCOMING UCL FIXTURES</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {uclMatches.map((match) => (
-                <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ minWidth: '70px', textAlign: 'center', flexShrink: 0 }}>
-                    <div style={{ fontSize: '10px', color: '#6B7280', marginBottom: '2px' }}>{match.round?.replace('Regular Season - ', 'MD') || 'UCL'}</div>
-                    <div style={{ fontSize: '10px', color: '#9CA3AF' }}>{formatKickoff(match.kickoff)}</div>
-                  </div>
-                  <div style={{ flex: 1, textAlign: 'center' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '11px', color: '#6B7280', margin: '0 8px' }}>vs</span>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>{match.away_team}</span>
-                  </div>
-                  <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '6px 12px', borderRadius: '6px', textDecoration: 'none', fontSize: '11px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                    Predict →
-                  </a>
-                </div>
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: '12px' }}>
-              <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>View all UCL fixtures →</a>
-            </div>
-          </div>
-        )}
-        {/* COMING SOON — Group Stage */}
-        {uclMatches.length === 0 && (
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '32px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px' }}>⭐</div>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '8px' }}>Group Stage starts September 17</h2>
-            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Qualifying rounds are complete. Group stage fixtures open for predictions soon.</p>
-            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
-              Predict EPL While You Wait →
-            </a>
-          </div>
-        )}
+        {/* GROUP STAGE — Coming Soon */}
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>⭐</div>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '8px' }}>Group Stage starts September 17</h2>
+          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '8px' }}>
+            Qualifying rounds are complete. 32 clubs. 8 groups. Group stage fixtures open for predictions on Sep 17.
+          </p>
+          <p style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', marginBottom: '20px' }}>
+            Your EPL reputation carries directly into UCL.
+          </p>
+          <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL While You Wait →
+          </a>
+        </div>
         {/* KEY FACTS */}
         <div style={{ marginBottom: '32px' }}>
           <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>COMPETITION FACTS</p>
