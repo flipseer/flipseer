@@ -39,14 +39,14 @@ const COUNTRIES = [
 const COMPETITION_TABS = [
   { key: 'all', label: 'All', icon: '&#x26BD;' },
   { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;' },
+  { key: 'UCL 2026/27', label: 'UCL', icon: '&#x2B50;' },
   { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;' },
-  { key: 'Champions League 2026/27', label: 'UCL', icon: '&#x2B50;' },
-  { key: 'La Liga 2026/27', label: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;' },
 ];
 const UPCOMING_COMPETITIONS = [
   { name: 'EPL 2026/27', icon: '&#x1F3F4;', date: 'LIVE', color: '#8B5CF6' },
-  { name: 'Champions League 2026/27', icon: '&#x2B50;', date: 'Sep 2026', color: '#F59E0B' },
-  { name: 'La Liga 2026/27', icon: '&#x1F1EA;&#x1F1F8;', date: 'Sep 2026', color: '#EF4444' },
+  { name: 'UCL 2026/27', icon: '&#x2B50;', date: 'Sep 2026', color: '#A78BFA' },
+  { name: 'ISL 2026/27', icon: '&#x1F1EE;&#x1F1F3;', date: 'Nov 2026', color: '#F59E0B' },
+  { name: 'NPFL/GPL/Liga 1', icon: '&#x1F30D;', date: 'Jan 2027', color: '#6B7280' },
 ];
 const BADGE_COLORS: { [key: string]: string } = {
   score_master: '#3B82F6',
@@ -281,14 +281,20 @@ function TournamentBreakdown({ userId }: { userId: string }) {
   const ICONS: { [key: string]: string } = {
     'World Cup 2026': '&#x1F3C6;',
     'EPL 2026/27': '&#x1F3F4;',
-    'Champions League 2026/27': '&#x2B50;',
-    'La Liga 2026/27': '&#x1F1EA;&#x1F1F8;',
+    'UCL 2026/27': '&#x2B50;',
+    'ISL 2026/27': '&#x1F1EE;&#x1F1F3;',
+    'NPFL 2026/27': '&#x1F1F3;&#x1F1EC;',
+    'Ghana PL 2026/27': '&#x1F1EC;&#x1F1ED;',
+    'Liga 1 2026/27': '&#x1F1EE;&#x1F1E9;',
   };
   const COLORS: { [key: string]: string } = {
     'EPL 2026/27': '#8B5CF6',
+    'UCL 2026/27': '#A78BFA',
     'World Cup 2026': '#F59E0B',
-    'Champions League 2026/27': '#F59E0B',
-    'La Liga 2026/27': '#EF4444',
+    'ISL 2026/27': '#F59E0B',
+    'NPFL 2026/27': '#2E9E5E',
+    'Ghana PL 2026/27': '#F59E0B',
+    'Liga 1 2026/27': '#EF4444',
   };
   if (loading) return null;
   return (
