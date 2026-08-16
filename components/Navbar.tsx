@@ -37,6 +37,7 @@ export default function Navbar() {
     { href: '/nations', label: '🌍 Nations', accent: true },
     { href: '/groups', label: 'Groups' },
     { href: '/epl', label: '✨ EPL', glitter: true },
+    { href: '/ucl', label: '⭐ UCL', accent: true },
   ];
 
   return (
@@ -188,6 +189,7 @@ export default function Navbar() {
             <span style={{ fontSize: '10px', backgroundColor: '#F59E0B', color: 'black', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>LIVE</span>
           </a>
 
+          <a href="/ucl" style={{ ...mobileLink(isActive('/ucl')), color: isActive('/ucl') ? '#8B5CF6' : '#C4B5FD' }}>⭐ UCL 2026/27 <span style={{fontSize:'9px',backgroundColor:'rgba(139,92,246,0.2)',padding:'2px 6px',borderRadius:'999px',marginLeft:'4px'}}>SEP</span></a>
           <a href="/world-cup-2026" style={mobileLink(isActive('/world-cup-2026'))}>&#x1F3C6; World Cup 2026</a>
           <a href="/results" style={mobileLink(isActive('/results'))}>&#x1F4CA; Results</a>
           <a href="/leaderboard" style={mobileLink(isActive('/leaderboard'))}>&#x1F3C5; Rankings</a>
