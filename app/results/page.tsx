@@ -19,9 +19,12 @@ export default function ResultsPage() {
     const load = async () => {
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
-          .eq('status', 'completed').eq('competition', activeCompetition).order('kickoff', { ascending: false }),
+          .eq('status', 'completed').eq('competition', activeCompetition)
+          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-09-01' : '2000-01-01')
+          .order('kickoff', { ascending: false }),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition)
+          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-09-01' : '2000-01-01'),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
