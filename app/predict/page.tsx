@@ -24,9 +24,9 @@ type CommunityStats = {
 const LEAGUES = [
   { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;', color: '#8B5CF6', active: true },
   { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;', color: '#F59E0B', active: false },
-  { key: 'Champions League 2026/27', label: 'UCL', icon: '&#x2B50;', color: '#F59E0B', active: false },
-  { key: 'La Liga 2026/27', label: 'La Liga', icon: '&#x1F1EA;&#x1F1F8;', color: '#EF4444', active: false },
-  { key: 'Indian Super League 2026/27', label: 'ISL', icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: false },
+  { key: 'UCL 2026/27', label: 'UCL', icon: '&#x2B50;', color: '#A78BFA', active: false },
+
+  { key: 'ISL 2026/27', label: 'ISL', icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: false },
   { key: 'NPFL 2026/27', label: 'NPFL', icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
   { key: 'Liga 1 2026/27', label: 'Liga 1', icon: '&#x1F1EE;&#x1F1E9;', color: '#CE1126', active: false },
 ];
