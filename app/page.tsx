@@ -410,7 +410,7 @@ export default function Home() {
             if (sorted.length >= 1) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
           }
         }
-        const { data: nextMatch } = await supabase.from('matches').select('kickoff').in('status', ['upcoming', 'locked']).order('kickoff', { ascending: true }).limit(1).single();
+        const { data: nextMatch } = await supabase.from('matches').select('kickoff').eq('competition', 'EPL 2026/27').in('status', ['upcoming', 'locked']).order('kickoff', { ascending: true }).limit(1).single();
         if (nextMatch?.kickoff) {
           const utc = nextMatch.kickoff.endsWith('Z') ? nextMatch.kickoff : nextMatch.kickoff.replace(' ', 'T') + 'Z';
           const diff = new Date(utc).getTime() - Date.now();
