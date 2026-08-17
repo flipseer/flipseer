@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Spain World Cup 2026 Predictions | Flipseer - La Roja',
   description: 'Predict FIFA World Cup 2026 matches and represent Spain on the global leaderboard. 2010 World Champions. La Roja back on top? Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/spain' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function SpainWorldCup2026() {
   return (
