@@ -101,7 +101,7 @@ export default function Navbar() {
         {/* LOGO */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
           <Image
-            src="/logo/flipseer-navbar-logo.png"
+            src="/icons/flipseer-navbar-logo.png"
             alt="Flipseer"
             width={1272}
             height={200}
