@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Brazil World Cup 2026 Predictions | Flipseer - Selecao Fans',
   description: 'Predict FIFA World Cup 2026 matches and represent Brazil on the global leaderboard. 5x World Champions. Build your permanent football reputation.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/brazil' },
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },
 }
 
 export default function BrazilWorldCup2026() {
