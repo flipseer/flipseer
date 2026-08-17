@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Germany World Cup 2026 Predictions | Flipseer - Die Mannschaft',
   description: 'Predict FIFA World Cup 2026 matches and represent Germany on the global leaderboard. 4x World Champions. Die Mannschaft rises again. Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/germany' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function GermanyWorldCup2026() {
   return (
