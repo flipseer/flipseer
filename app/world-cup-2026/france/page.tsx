@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'France World Cup 2026 Predictions | Flipseer - Les Bleus',
   description: 'Predict FIFA World Cup 2026 matches and represent France on the global leaderboard. 2018 World Champions. Can Les Bleus do it again? Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/france' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function FranceWorldCup2026() {
   return (
