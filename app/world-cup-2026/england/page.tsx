@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'England World Cup 2026 Predictions | Flipseer - Three Lions',
   description: 'Predict FIFA World Cup 2026 matches and represent England on the global leaderboard. Is it coming home? Build your permanent football reputation.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/england' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function EnglandWorldCup2026() {
   return (
