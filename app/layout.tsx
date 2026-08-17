@@ -7,7 +7,7 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import PushNotificationPrompt from '@/components/PushNotificationPrompt';
 
 export const viewport: Viewport = {
-  themeColor: '#1A7A4A',
+  themeColor: '#02081F',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -51,14 +51,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.ico' },
+      { url: '/icons/icon-16x16.png', sizes: '16x16', type: 'image/png' },
       { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
     ],
-    apple: [
-      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-    ],
+    apple: '/icons/apple-touch-icon.png',
     shortcut: '/icons/icon-96x96.png',
   },
 };
@@ -77,7 +76,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Flipseer" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#1A7A4A" />
+        <meta name="msapplication-TileColor" content="#02081F" />
         <meta name="msapplication-tap-highlight" content="no" />
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -131,7 +130,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body style={{ margin: 0, padding: 0, backgroundColor: '#0D1F0F' }}>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#02081F' }}>
         <Navbar />
         {children}
         <FlipseerChat />
