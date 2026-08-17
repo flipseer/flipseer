@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'USA World Cup 2026 Predictions | Flipseer - USMNT Host Nation',
   description: 'Predict FIFA World Cup 2026 matches and represent USA on the global leaderboard. Host nation. Soccer on home soil. Build your permanent football reputation.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/usa' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function USAWorldCup2026() {
   return (
