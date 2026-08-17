@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
@@ -98,8 +99,15 @@ export default function Navbar() {
       }}>
 
         {/* LOGO */}
-        <Link href="/" style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif', textDecoration: 'none', letterSpacing: '1px', flexShrink: 0 }}>
-          &#x26BD; FLIPSEER
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
+          <Image
+            src="/logo/flipseer-homepage-logo-no-tagline.png"
+            alt="Flipseer"
+            width={160}
+            height={41}
+            priority
+            style={{ height: '32px', width: 'auto' }}
+          />
         </Link>
 
         {/* DESKTOP NAV */}
