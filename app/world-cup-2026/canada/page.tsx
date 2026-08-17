@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Canada World Cup 2026 Predictions | Flipseer - Les Rouges Host Nation',
   description: 'Predict FIFA World Cup 2026 matches and represent Canada on the global leaderboard. Host nation. Les Rouges on home soil. Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/canada' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function CanadaWorldCup2026() {
   return (
