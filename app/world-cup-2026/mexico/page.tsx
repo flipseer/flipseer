@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Mexico World Cup 2026 Predictions | Flipseer - El Tri Host Nation',
   description: 'Predict FIFA World Cup 2026 matches and represent Mexico on the global leaderboard. Host nation. Azteca roars again. Build your permanent football reputation.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/mexico' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function MexicoWorldCup2026() {
   return (
