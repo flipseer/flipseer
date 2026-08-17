@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Argentina World Cup 2026 Predictions | Flipseer - Defending Champions',
   description: 'Predict FIFA World Cup 2026 matches and represent Argentina on the global leaderboard. Defending champions. Can they do it again?',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/argentina' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function ArgentinaWorldCup2026() {
   return (
