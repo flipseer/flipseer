@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Nigeria World Cup 2026 Predictions | Flipseer - Super Eagles',
   description: 'Predict FIFA World Cup 2026 matches and represent Nigeria on the global leaderboard. Build your permanent football reputation. Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/nigeria' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function NigeriaWorldCup2026() {
   return (
