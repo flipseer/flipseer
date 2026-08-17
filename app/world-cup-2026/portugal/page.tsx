@@ -3,8 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Portugal World Cup 2026 Predictions | Flipseer - Selecao das Quinas',
   description: 'Predict FIFA World Cup 2026 matches and represent Portugal on the global leaderboard. Ronaldo legacy. A Selecao das Quinas in 2026. Free. No betting.',
-  alternates: { canonical: 'https://flipseer.com/world-cup-2026/portugal' },
-}
+alternates: { canonical: 'https://flipseer.com/world-cup-2026' },}
 
 export default function PortugalWorldCup2026() {
   return (
