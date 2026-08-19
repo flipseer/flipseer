@@ -1,53 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-
 export const runtime = 'nodejs';
-
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
 export async function POST(req: NextRequest) {
   try {
-    // FIX 1: Only use server-side secrets — never NEXT_PUBLIC_* for auth
-    // NEXT_PUBLIC_ADMIN_PASSWORD is exposed in client JS bundles and is
-    // not safe to use as an auth check on a server route.
     const cronSecret = req.headers.get('x-cron-secret');
     const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null
       || req.headers.get('user-agent')?.includes('vercel');
-
     const validCron = cronSecret === process.env.CRON_SECRET;
-
     if (!validCron && !isVercelCron) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
     const body = await req.json();
     const match_id = Number(body.match_id);
-
     if (!match_id) {
       return NextResponse.json({ error: 'match_id required' }, { status: 400 });
     }
-
     // Get match
     const { data: match, error: matchError } = await supabaseAdmin
       .from('matches')
       .select('*')
       .eq('id', match_id)
       .single();
-
     if (matchError || !match) {
       return NextResponse.json({ error: 'Match not found', match_id }, { status: 404 });
     }
-
-    // Get predictions separately
+    // ── Only notify for active competitions — skip UCL playoffs until Sep 17 ──
+    const ACTIVE_COMPETITIONS = ['EPL 2026/27', 'World Cup 2026'];
+    if (!ACTIVE_COMPETITIONS.includes(match.competition)) {
+      return NextResponse.json({
+        success: true,
+        message: 'Notifications skipped — ' + match.competition + ' not active for notifications yet',
+        sent: 0,
+      });
+    }
+    const isEPL = match.competition === 'EPL 2026/27';
+    const accentColor = isEPL ? '#8B5CF6' : '#2E9E5E';
+    const headerEmoji = isEPL ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' : '🏆';
+    // Get predictions
     const { data: predictions, error: predError } = await supabaseAdmin
       .from('predictions')
       .select('*')
       .eq('match_id', match_id)
       .eq('prediction_processed', true);
-
     if (!predictions || predictions.length === 0) {
       return NextResponse.json({
         success: true,
@@ -56,17 +54,14 @@ export async function POST(req: NextRequest) {
         debug: { match_id, pred_count: predictions?.length || 0, error: predError?.message }
       });
     }
-
-    // Get profiles separately
+    // Get profiles
     const userIds = predictions.map((p: any) => p.user_id);
     const { data: profiles } = await supabaseAdmin
       .from('profiles')
       .select('id, username, total_points, correct_count, prediction_count, accuracy_pct, streak')
       .in('id', userIds);
-
     const profileMap: { [key: string]: any } = {};
     profiles?.forEach((p: any) => { profileMap[p.id] = p; });
-
     // Get emails
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
     const emailMap: { [key: string]: string } = {};
@@ -75,52 +70,37 @@ export async function POST(req: NextRequest) {
         if (userIds.includes(u.id) && u.email) emailMap[u.id] = u.email;
       });
     }
-
     const { Resend } = await import('resend');
     const resend = new Resend(process.env.RESEND_API_KEY);
-
     let sent = 0;
     let failed = 0;
-
     const matchName = match.home_team + ' vs ' + match.away_team;
     const actualScore = match.home_score + '-' + match.away_score;
     const isUpset = match.is_upset === true;
-
-    // FIX 2: Throttle to ~4 emails/sec (250ms gap) to stay under
-    // Resend's 5 requests/sec rate limit. Previous version sent
-    // sequentially but with no delay, risking 429s on busy matches.
     for (const pred of predictions) {
       const email = emailMap[pred.user_id];
       if (!email) continue;
-
       const profile = profileMap[pred.user_id];
       const username = profile?.username || 'Forecaster';
       const won = pred.points_earned > 0;
       const points = pred.points_earned || 0;
-      const totalPoints = profile?.total_points || 0;
-      const accuracy = profile?.accuracy_pct || 0;
-      const streak = profile?.streak || 0;
-
       const outcomeLabel =
         pred.predicted_outcome === 'home' ? match.home_team :
         pred.predicted_outcome === 'away' ? match.away_team : 'Draw';
-
       const breakdown = [];
       if (pred.base_points > 0) breakdown.push('+' + pred.base_points + ' outcome');
       if (pred.exact_bonus > 0) breakdown.push('+' + pred.exact_bonus + ' exact score');
       if (pred.goal_diff_bonus > 0) breakdown.push('+' + pred.goal_diff_bonus + ' goal diff');
       if (pred.upset_bonus > 0) breakdown.push('+' + pred.upset_bonus + ' upset');
       if (pred.confidence_multiplier > 1) breakdown.push('x' + pred.confidence_multiplier + ' confidence');
-
       const subject = won
-        ? 'You called it! +' + points + ' pts - ' + matchName
-        : 'Missed this one - ' + matchName + ' result';
-
+        ? `${headerEmoji} You called it! +${points} pts — ${matchName}`
+        : `${headerEmoji} Missed this one — ${matchName} result`;
       const html = `
 <div style="background:#0D1F0F;padding:40px 32px;font-family:Arial,sans-serif;color:white;max-width:580px;margin:0 auto;border-radius:16px">
   <div style="text-align:center;margin-bottom:28px">
-    <div style="font-size:44px;margin-bottom:10px">${won ? '&#x2705;' : '&#x274C;'}</div>
-    <h1 style="font-family:Georgia,serif;color:${won ? '#2E9E5E' : '#EF4444'};font-size:26px;margin:0 0 6px">
+    <div style="font-size:44px;margin-bottom:10px">${won ? '✅' : '❌'}</div>
+    <h1 style="font-family:Georgia,serif;color:${won ? accentColor : '#EF4444'};font-size:26px;margin:0 0 6px">
       ${won ? 'You called it right!' : 'Missed this one'}
     </h1>
     <p style="color:#9CA3AF;font-size:14px;margin:0">@${username}</p>
@@ -128,10 +108,10 @@ export async function POST(req: NextRequest) {
   <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
     <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 8px">FULL TIME</p>
     <p style="color:white;font-size:18px;font-weight:bold;margin:0 0 8px">${matchName}</p>
-    <p style="color:#2E9E5E;font-size:36px;font-weight:bold;font-family:Georgia,serif;margin:0 0 8px">${actualScore}</p>
+    <p style="color:${accentColor};font-size:36px;font-weight:bold;font-family:Georgia,serif;margin:0 0 8px">${actualScore}</p>
     ${isUpset ? '<p style="color:#F59E0B;font-size:12px;font-weight:bold;margin:0">UPSET RESULT</p>' : ''}
   </div>
-  <div style="background:#0D2B14;border:2px solid ${won ? '#2E9E5E' : '#7F1D1D'};border-radius:12px;padding:20px;margin-bottom:20px">
+  <div style="background:#0D2B14;border:2px solid ${won ? accentColor : '#7F1D1D'};border-radius:12px;padding:20px;margin-bottom:20px">
     <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 14px">YOUR PREDICTION</p>
     <table style="width:100%;border-collapse:collapse">
       <tr>
@@ -143,24 +123,21 @@ export async function POST(req: NextRequest) {
         <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${pred.confidence_pct}%</td>
       </tr>
     </table>
-    <div style="background:${won ? 'rgba(46,158,94,0.15)' : 'rgba(127,29,29,0.15)'};border:1px solid ${won ? '#2E9E5E' : '#7F1D1D'};border-radius:8px;padding:14px;text-align:center;margin-top:14px">
-      <p style="color:${won ? '#2E9E5E' : '#EF4444'};font-size:28px;font-weight:bold;margin:0">${won ? '+' + points + ' pts' : '0 pts'}</p>
-      ${breakdown.length > 0 ? '<p style="color:#6B7280;font-size:11px;margin:4px 0 0">' + breakdown.join(' &middot; ') + '</p>' : ''}
+    <div style="background:${won ? 'rgba(139,92,246,0.15)' : 'rgba(127,29,29,0.15)'};border:1px solid ${won ? accentColor : '#7F1D1D'};border-radius:8px;padding:14px;text-align:center;margin-top:14px">
+      <p style="color:${won ? accentColor : '#EF4444'};font-size:28px;font-weight:bold;margin:0">${won ? '+' + points + ' pts' : '0 pts'}</p>
+      ${breakdown.length > 0 ? '<p style="color:#6B7280;font-size:11px;margin:4px 0 0">' + breakdown.join(' · ') + '</p>' : ''}
     </div>
   </div>
-  <a href="https://flipseer.com/predict" style="display:block;background:#1A7A4A;color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
-    Predict Next Match &#x2192;
+  <a href="https://flipseer.com/predict" style="display:block;background:${accentColor};color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
+    ${headerEmoji} Predict Next Match →
   </a>
-  <a href="https://flipseer.com/leaderboard" style="display:block;background:transparent;color:#2E9E5E;padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid #2E9E5E;margin-bottom:24px">
-    View Leaderboard &#x2192;
+  <a href="https://flipseer.com/leaderboard" style="display:block;background:transparent;color:${accentColor};padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid ${accentColor};margin-bottom:24px">
+    View Leaderboard →
   </a>
-  <div style="border-top:1px solid #1A7A4A;padding-top:16px;text-align:center">
-    <p style="color:#4B5563;font-size:11px;margin:0">
-      Flipseer &middot; Pure football reputation. No betting. Ever.
-    </p>
+  <div style="border-top:1px solid #1A3A1A;padding-top:16px;text-align:center">
+    <p style="color:#4B5563;font-size:11px;margin:0">Flipseer · Pure football reputation. No betting. Ever.</p>
   </div>
 </div>`;
-
       let attempt = 0;
       while (attempt < 3) {
         try {
@@ -186,11 +163,8 @@ export async function POST(req: NextRequest) {
           break;
         }
       }
-
-      // Throttle: ~4 emails/sec, under Resend's 5/sec cap
       await new Promise(r => setTimeout(r, 250));
     }
-
     return NextResponse.json({
       success: true,
       match: matchName,
@@ -198,7 +172,6 @@ export async function POST(req: NextRequest) {
       emails_sent: sent,
       emails_failed: failed,
     });
-
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
