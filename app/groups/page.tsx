@@ -120,9 +120,25 @@ export default function GroupsPage() {
     await loadMyGroups(userId);
     showToast('Left the group');
   };
+  const getShareMessage = (group: any) => {
+    const joinUrl = `https://flipseer.com/groups?join=${group.invite_code}`;
+    const name = group.name.toLowerCase();
+    if (name.includes('office') || name.includes('work')) {
+      return `🏢 Office EPL League — who actually knows football?\n\nI've set up a Flipseer league for us. Predict every Premier League match before kickoff.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+    } else if (name.includes('family')) {
+      return `👨‍👩‍👧‍👦 Family EPL League — who knows football best?\n\nSet up a Flipseer league for us. Predict every match before kickoff. Full season.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+    } else if (name.includes('uni') || name.includes('college') || name.includes('campus')) {
+      return `🎓 University EPL League — campus bragging rights!\n\nPredict every Premier League match before kickoff. See who tops the league.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+    } else if (name.includes('nigeria') || name.includes('india') || name.includes('indonesia') || name.includes('ghana') || name.includes('country')) {
+      return `🌍 Country EPL League — represent your nation!\n\nEvery correct prediction earns points for our nation in Flipseer's Nation Battle.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+    } else if (name.includes('arsenal') || name.includes('liverpool') || name.includes('city') || name.includes('united') || name.includes('fan') || name.includes('club')) {
+      return `⚽ Fan League — who calls it best?\n\nPredict every EPL match before kickoff. Prove you know football.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+    }
+    return `🏴󠁧󠁢󠁥󠁮󠁧󠁿 Join my EPL league "${group.name}" on Flipseer!\n\nPredict every Premier League match. Compete privately AND earn points globally.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\n#PremierLeague #EPL2027 #Flipseer`;
+  };
   const shareGroup = (group: any) => {
-    const joinUrl = `https://flipseer.com/join/${group.invite_code}`;
-    const text = `🏴󠁧󠁢󠁥󠁮󠁧󠁿 Join my Flipseer league "${group.name}"!\n\nPredict EPL 2026/27 matches. Compete privately AND earn points globally.\n\nOne click to join → ${joinUrl}\n\n#PremierLeague #EPL2027 #Flipseer`;
+    const joinUrl = `https://flipseer.com/groups?join=${group.invite_code}`;
+    const text = getShareMessage(group);
     if (navigator.share) {
       navigator.share({ title: 'Join ' + group.name + ' on Flipseer', text, url: joinUrl });
     } else {
@@ -388,12 +404,12 @@ export default function GroupsPage() {
             <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>POPULAR LEAGUE IDEAS</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px' }}>
               {[
-                { icon: '🏆', name: 'Friends League', desc: 'Your inner circle' },
-                { icon: '⚽', name: 'Family League', desc: 'Keep it in the family' },
-                { icon: '🇮🇳', name: 'India Fans', desc: 'Represent the nation' },
-                { icon: '🏢', name: 'Office League', desc: 'Beat your colleagues' },
-                { icon: '🍻', name: 'Matchday Gang', desc: 'Watch party crew' },
-                { icon: '📱', name: 'WhatsApp Group', desc: 'Your chat, ranked' },
+                { icon: '🏢', name: 'Office League', desc: 'Beat your colleagues every matchweek' },
+                { icon: '👨‍👩‍👧‍👦', name: 'Family League', desc: 'Who knows football best at home?' },
+                { icon: '🎓', name: 'University League', desc: 'Campus bragging rights all season' },
+                { icon: '🏆', name: 'Friends League', desc: 'Settle it once and for all' },
+                { icon: '🌍', name: 'Country League', desc: 'Represent your nation together' },
+                { icon: '⚽', name: 'Football Club Fan League', desc: 'Best predictor in your fan group' },
               ].map(({ icon, name, desc }) => (
                 <button key={name} onClick={() => { setNewGroupName(name); setShowCreate(true); }}
                   style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', textAlign: 'left' }}
