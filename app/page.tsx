@@ -167,21 +167,27 @@ function LiveScoreCard() {
                     const isSub = ev.type === 'subst';
                     const isPenalty = ev.detail === 'Penalty';
                     const isOwnGoal = ev.detail === 'Own Goal';
-                    const icon = isGoal ? '⚽' : isYellow ? '🟨' : isRed ? '🟥' : '🔄';
-                    const color = isGoal ? '#2E9E5E' : isYellow ? '#F59E0B' : isRed ? '#EF4444' : '#6B7280';
-                    const playerName = ev.player?.name || '';
-                    const assistName = ev.assist?.name || '';
-                    const teamName = ev.team?.name || '';
-                    const suffix = isPenalty ? ' (pen)' : isOwnGoal ? ' (og)' : '';
+                    const isMissedPen = ev.detail === 'Missed Penalty';
+                    const icon = isGoal ? '⚽' : isYellow ? '🟨' : isRed ? '🟥' : isSub ? '🔄' : '📣';
+                    const color = isGoal ? '#2E9E5E' : isYellow ? '#F59E0B' : isRed ? '#EF4444' : isSub ? '#8B5CF6' : '#6B7280';
+                    const player = ev.player?.name?.split(' ').pop() || '';
+                    const assist = ev.assist?.name?.split(' ').pop() || '';
+                    const team = ev.team?.name || '';
+                    // Generate short commentary text
                     let text = '';
-                    if (isGoal) text = playerName + suffix + ' — ' + teamName;
-                    else if (isSub) text = playerName + ' on / ' + assistName + ' off';
-                    else text = playerName + ' (' + ev.detail + ')';
+                    if (isGoal && isPenalty) text = `GOAL! ${player} converts from the spot — ${team}`;
+                    else if (isGoal && isOwnGoal) text = `Own goal by ${player} — ${team}`;
+                    else if (isGoal) text = `GOAL! ${player}${assist ? ' (assist: ' + assist + ')' : ''} — ${team}`;
+                    else if (isMissedPen) text = `${player} misses the penalty — ${team}`;
+                    else if (isRed) text = `${player} is sent off — ${team}`;
+                    else if (isYellow) text = `${player} booked — ${team}`;
+                    else if (isSub) text = `${player} on${assist ? ' for ' + assist : ''} — ${team}`;
+                    else text = `${player} — ${ev.detail}`;
                     return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
                         <span style={{ fontSize: '10px', color: '#8895A3', minWidth: '28px', fontWeight: 'bold' }}>{ev.time?.elapsed}&apos;</span>
                         <span style={{ fontSize: '14px' }}>{icon}</span>
-                        <span style={{ fontSize: '12px', color, fontWeight: isGoal ? 'bold' : 'normal' }}>{text}</span>
+                        <span style={{ fontSize: '12px', color, fontWeight: isGoal ? 'bold' : 'normal', lineHeight: 1.4 }}>{text}</span>
                       </div>
                     );
                   })}
