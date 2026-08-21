@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-
 export const runtime = 'edge'
 
-// In-memory cache for edge runtime (resets per cold start, but effective
-// within a warm instance — reduces API-Football hits by ~90% during live matches
-// when the homepage polls every 60s across multiple concurrent visitors)
 let cachedData: any = null
 let cacheExpiry = 0
-const CACHE_TTL_MS = 60 * 1000 // 60 seconds — matches frontend poll interval
+const CACHE_TTL_MS = 60 * 1000
 
-// Simple in-memory rate limit for edge (per-isolate, not global)
-// Prevents a single IP from hammering the endpoint within one edge instance
 const rateLimitMap = new Map<string, { count: number; reset: number }>()
 const RATE_LIMIT_REQUESTS = 10
-const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 10 requests per minute per IP
+const RATE_LIMIT_WINDOW_MS = 60 * 1000
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
@@ -29,25 +23,16 @@ function checkRateLimit(ip: string): boolean {
 
 export async function GET(request: NextRequest) {
   try {
-    // ── Rate limit by IP ──
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       || request.headers.get('x-real-ip')
       || 'unknown'
-
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
         { live: [], error: 'Too many requests' },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': '60',
-            'Cache-Control': 'no-store',
-          }
-        }
+        { status: 429, headers: { 'Retry-After': '60', 'Cache-Control': 'no-store' } }
       )
     }
 
-    // ── Serve from cache if still fresh ──
     const now = Date.now()
     if (cachedData && now < cacheExpiry) {
       return NextResponse.json(cachedData, {
@@ -58,11 +43,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // ── Fetch fresh data from API-Football ──
     const apiKey = process.env.API_FOOTBALL_KEY
-    if (!apiKey) {
-      return NextResponse.json({ live: [] })
-    }
+    if (!apiKey) return NextResponse.json({ live: [] })
 
     const res = await fetch('https://v3.football.api-sports.io/fixtures?live=all', {
       headers: { 'x-apisports-key': apiKey },
@@ -70,36 +52,33 @@ export async function GET(request: NextRequest) {
     })
 
     if (!res.ok) {
-      // Return stale cache on API error rather than empty response
-      if (cachedData) return NextResponse.json(cachedData, {
-        headers: { 'X-Cache': 'STALE' }
-      })
+      if (cachedData) return NextResponse.json(cachedData, { headers: { 'X-Cache': 'STALE' } })
       return NextResponse.json({ live: [] })
     }
 
     const data = await res.json()
     const fixtures = data?.response || []
 
-    const WORLD_CUP_2026_IDS = [1]
+    // ── Active competitions on Flipseer ──
+    // EPL = league 39, season 2026
+    // UCL = league 2, season 2026 (group stage Sep 17+)
+    // World Cup = league 1, season 2026 (completed but keep for safety)
+    const ACTIVE_LEAGUES = [
+      { id: 39, season: 2026, name: 'EPL 2026/27' },       // Premier League
+      { id: 2,  season: 2026, name: 'UCL 2026/27' },       // Champions League
+      { id: 1,  season: 2026, name: 'World Cup 2026' },    // World Cup (completed)
+    ]
+
     const live = fixtures
       .filter((f: any) => {
         const leagueId = f.league?.id
         const season = f.league?.season
-        const leagueName: string = f.league?.name || ''
-        if (WORLD_CUP_2026_IDS.includes(leagueId) && season === 2026) return true
-        if (
-          leagueName.includes('2026') &&
-          (leagueName.includes('World Cup') || leagueName.includes('FIFA')) &&
-          !leagueName.toLowerCase().includes('women') &&
-          !leagueName.toLowerCase().includes('u20') &&
-          !leagueName.toLowerCase().includes('u17') &&
-          !leagueName.toLowerCase().includes('youth') &&
-          !leagueName.toLowerCase().includes('friendly')
-        ) return true
-        return false
+        // Match against active league IDs
+        return ACTIVE_LEAGUES.some(l => l.id === leagueId && l.season === season)
       })
       .map((f: any) => ({
         id: f.fixture?.id,
+        api_id: f.fixture?.id,
         status: f.fixture?.status?.short,
         elapsed: f.fixture?.status?.elapsed,
         home: f.teams?.home?.name,
@@ -108,11 +87,10 @@ export async function GET(request: NextRequest) {
         away_score: f.goals?.away ?? 0,
         league: f.league?.name,
         round: f.league?.round,
+        competition: ACTIVE_LEAGUES.find(l => l.id === f.league?.id)?.name || f.league?.name,
       }))
 
     const response = { live }
-
-    // ── Update cache ──
     cachedData = response
     cacheExpiry = now + CACHE_TTL_MS
 
@@ -122,12 +100,8 @@ export async function GET(request: NextRequest) {
         'X-Cache': 'MISS',
       }
     })
-
   } catch (err) {
-    // Return stale cache on any error
-    if (cachedData) return NextResponse.json(cachedData, {
-      headers: { 'X-Cache': 'STALE-ERROR' }
-    })
+    if (cachedData) return NextResponse.json(cachedData, { headers: { 'X-Cache': 'STALE-ERROR' } })
     return NextResponse.json({ live: [] })
   }
 }
