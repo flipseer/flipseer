@@ -50,7 +50,7 @@ const UPCOMING_COMPETITIONS = [
   { name: 'UCL 2026/27', icon: '&#x2B50;', date: 'Sep 17', color: '#A78BFA' },
   { name: 'Liga 1 2026/27', icon: '&#x1F1EE;&#x1F1E9;', date: 'Sep 4', color: '#EF4444' },
   { name: 'Ghana PL 2026/27', icon: '&#x1F1EC;&#x1F1ED;', date: 'Sep 4', color: '#F59E0B' },
-  { name: 'NPFL 2026/27', icon: '&#x1F1F3;&#x1F1EC;', date: 'LIVE', color: '#2E9E5E' },
+  { name: 'NPFL 2026/27', icon: '&#x1F1F3;&#x1F1EC;', date: 'Jan 2027', color: '#2E9E5E' },
   { name: 'ISL 2026/27', icon: '&#x1F1EE;&#x1F1F3;', date: 'Oct 10', color: '#F59E0B' },
 ];
 const BADGE_COLORS: { [key: string]: string } = {
