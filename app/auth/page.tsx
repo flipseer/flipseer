@@ -134,6 +134,8 @@ export default function Auth() {
   const [message, setMessage] = useState('');
   const [detectedNation, setDetectedNation] = useState('');
 
+  const [joinCode, setJoinCode] = useState('');
+
   useEffect(() => {
     try {
       const nation = localStorage.getItem('flipseer_detected_nation');
@@ -143,6 +145,10 @@ export default function Auth() {
         if (code) setCountry(code);
       }
     } catch (e) {}
+    // Check for join code in URL
+    const params = new URLSearchParams(window.location.search);
+    const jc = params.get('join');
+    if (jc) setJoinCode(jc.toUpperCase());
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -192,7 +198,11 @@ export default function Auth() {
         // Ensure profile exists on every login — catches missed signups
         const fallbackUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '') + '_' + data.user.id.slice(-4);
         await ensureProfile(data.user.id, email, fallbackUsername, null);
-        window.location.href = '/predict';
+        if (joinCode) {
+          window.location.href = '/groups?join=' + joinCode;
+        } else {
+          window.location.href = '/predict';
+        }
       }
     } else {
       if (!username.trim()) { setMessage('Username is required'); setLoading(false); return; }
@@ -216,7 +226,11 @@ export default function Auth() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username, country }),
         }).catch(() => {});
-        window.location.href = '/predict?welcome=1';
+        if (joinCode) {
+          window.location.href = '/groups?join=' + joinCode;
+        } else {
+          window.location.href = '/predict?welcome=1';
+        }
       }
     }
     setLoading(false);
@@ -264,10 +278,13 @@ export default function Auth() {
       {/* BANNER */}
       <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-          🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27 starts August 21 —{' '}
+          {joinCode
+            ? `🏆 Sign in to join the league — Code: ${joinCode}`
+            : <>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27 starts August 21 —{' '}
           {detectedNation
             ? `Represent ${detectedNation}. Predict every match free.`
             : 'Predict every match. Represent your nation. Free forever.'
+          }</>
           }
         </span>
       </div>
