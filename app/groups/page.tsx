@@ -31,14 +31,27 @@ export default function GroupsPage() {
   const [joining, setJoining] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDesc, setNewGroupDesc] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const [inviteCode, setInviteCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('join') || sessionStorage.getItem('flipseer_join_code') || '';
+      if (code) return code.toUpperCase();
+    }
+    return '';
+  });
   const [activeGroup, setActiveGroup] = useState<any>(null);
   const [groupLeaders, setGroupLeaders] = useState<any[]>([]);
   const [loadingLeaders, setLoadingLeaders] = useState(false);
   const [toast, setToast] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showCreate, setShowCreate] = useState(false);
-  const [showJoin, setShowJoin] = useState(false);
+  const [showJoin, setShowJoin] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return !!params.get('join') || !!sessionStorage.getItem('flipseer_join_code');
+    }
+    return false;
+  });
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast(msg); setToastType(type);
     setTimeout(() => setToast(''), 3500);
@@ -210,7 +223,7 @@ export default function GroupsPage() {
             style={{ backgroundColor: '#8B5CF6', color: 'white', border: 'none', padding: '13px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
             + Create Group
           </button>
-          <button onClick={() => { setShowJoin(true); setShowCreate(false); }}
+          <button onClick={() => { setShowJoin(true); setShowCreate(false); window.scrollTo({top: 0, behavior: 'smooth'}); }}
             style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #2D1B69', padding: '13px 28px', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>
             Join with Code
           </button>
@@ -414,7 +427,7 @@ export default function GroupsPage() {
                   style={{ flex: 1, backgroundColor: '#8B5CF6', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', minWidth: '140px' }}>
                   + Create Your League
                 </button>
-                <button onClick={() => setShowJoin(true)}
+                <button onClick={() => { setShowJoin(true); window.scrollTo({top: 0, behavior: 'smooth'}); }}
                   style={{ flex: 1, backgroundColor: 'transparent', color: '#8B5CF6', border: '1px solid #8B5CF6', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', minWidth: '140px' }}>
                   Join with Code
                 </button>
