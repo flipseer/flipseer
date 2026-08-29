@@ -49,9 +49,24 @@ export default function GroupsPage() {
     if (joinCode) { setInviteCode(joinCode.toUpperCase()); setShowJoin(true); }
     const isWelcome = params.get('welcome') === '1';
     if (isWelcome) { setShowCreate(true); showToast('Welcome! Create your first league →'); }
+    // Check for stored join code from auth redirect
+    const storedCode = sessionStorage.getItem('flipseer_join_code');
+    if (storedCode && !joinCode) { setInviteCode(storedCode); setShowJoin(true); sessionStorage.removeItem('flipseer_join_code'); }
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { window.location.href = '/auth'; return; }
+      if (!session) {
+        // Guest with join code — store code and redirect to auth
+        const params = new URLSearchParams(window.location.search);
+        const joinCode = params.get('join');
+        if (joinCode) {
+          // Store join code so auth page can redirect back
+          sessionStorage.setItem('flipseer_join_code', joinCode.toUpperCase());
+          window.location.href = '/auth?join=' + joinCode.toUpperCase();
+        } else {
+          window.location.href = '/auth';
+        }
+        return;
+      }
       setUserId(session.user.id);
       const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
       if (profile?.username) setUsername(profile.username);
