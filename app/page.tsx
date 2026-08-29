@@ -794,21 +794,21 @@ export default function Home() {
               </div>
             </a>
             <a href="/ghana" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(255,215,0,0.2)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative', opacity: 0.8 }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span></div>
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>🇬🇭</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Ghana Premier</div>
-                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6 }}>GPL</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Coming Jan 2027</div>
+                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>GPL 2026/27</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>306 matches<br/>Starts Sep 5</div>
               </div>
             </a>
             <a href="/indonesia" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(206,17,38,0.2)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative', opacity: 0.8 }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span></div>
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(206,17,38,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#CE1126', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>🇮🇩</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Indonesia Liga 1</div>
-                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6 }}>Liga 1</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Coming Jan 2027</div>
+                <div style={{ fontSize: 10, color: '#CE1126', fontWeight: 700, marginBottom: 6 }}>Liga 1 2026/27</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>306 matches<br/>Starts Sep 4</div>
               </div>
             </a>
           </div>
