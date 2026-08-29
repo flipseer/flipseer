@@ -46,12 +46,16 @@ export default function GroupsPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const joinCode = params.get('join');
-    if (joinCode) { setInviteCode(joinCode.toUpperCase()); setShowJoin(true); }
     const isWelcome = params.get('welcome') === '1';
     if (isWelcome) { setShowCreate(true); showToast('Welcome! Create your first league →'); }
     // Check for stored join code from auth redirect
     const storedCode = sessionStorage.getItem('flipseer_join_code');
-    if (storedCode && !joinCode) { setInviteCode(storedCode); setShowJoin(true); sessionStorage.removeItem('flipseer_join_code'); }
+    const codeToUse = joinCode?.toUpperCase() || storedCode || '';
+    if (codeToUse) {
+      setInviteCode(codeToUse);
+      setShowJoin(true);
+      if (storedCode) sessionStorage.removeItem('flipseer_join_code');
+    }
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
