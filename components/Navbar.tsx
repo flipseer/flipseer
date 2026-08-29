@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -82,21 +82,34 @@ export default function Navbar() {
             <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '8px', height: '8px', backgroundColor: '#F59E0B', borderRadius: '50%', display: 'inline-block', animation: 'navDot 1.5s ease-in-out infinite' }} />
           </Link>
 
-          <Link href="/results" className="nav-link" style={{ color: isActive('/results') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/results') ? '#1A7A4A' : 'transparent'), fontWeight: isActive('/results') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
-            Results
-          </Link>
-
-          <Link href="/leaderboard" className="nav-link" style={{ color: isActive('/leaderboard') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/leaderboard') ? '#1A7A4A' : 'transparent'), fontWeight: isActive('/leaderboard') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
-            Rankings
-          </Link>
-
-          <Link href="/nations" className="nav-link" style={{ color: '#F59E0B', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/nations') ? '#F59E0B' : '#F59E0B40'), fontWeight: isActive('/nations') ? 'bold' : 'normal', whiteSpace: 'nowrap', backgroundColor: isActive('/nations') ? 'rgba(245,158,11,0.1)' : 'transparent' }}>
-            🌍 Nations
-          </Link>
-
-          <Link href="/groups" className="nav-link" style={{ color: isActive('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: isActive('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
-            Groups
-          </Link>
+          {/* EXPLORE DROPDOWN */}
+          {(() => {
+            const explorePages = ['/results', '/leaderboard', '/nations', '/groups'];
+            const isExplorePage = explorePages.includes(pathname);
+            const [exploreOpen, setExploreOpen] = React.useState(false);
+            return (
+              <div style={{ position: 'relative' }} onMouseEnter={() => setExploreOpen(true)} onMouseLeave={() => setExploreOpen(false)}>
+                <button style={{ color: isExplorePage ? '#2E9E5E' : '#9CA3AF', fontSize: '12px', padding: '5px 10px', borderRadius: '6px', border: '1px solid ' + (isExplorePage ? '#1A7A4A' : 'transparent'), fontWeight: isExplorePage ? 'bold' : 'normal', whiteSpace: 'nowrap', backgroundColor: isExplorePage ? 'rgba(46,158,94,0.08)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  Explore <span style={{ fontSize: '10px', opacity: 0.7 }}>▾</span>
+                </button>
+                {exploreOpen && (
+                  <div className="leagues-dropdown">
+                    {[
+                      { href: '/results',     label: '📊 Results',      desc: 'Match scores & top predictors' },
+                      { href: '/leaderboard', label: '🏅 Rankings',     desc: 'Global leaderboard' },
+                      { href: '/nations',     label: '🌍 Nation Battle', desc: 'Country vs country' },
+                      { href: '/groups',      label: '👥 Groups',        desc: 'Private leagues' },
+                    ].map(({ href, label, desc }) => (
+                      <Link key={href} href={href} className="league-item" style={{ display: 'block', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', backgroundColor: isActive(href) ? 'rgba(46,158,94,0.1)' : 'transparent', transition: 'all 0.1s' }}>
+                        <div style={{ fontSize: '13px', color: isActive(href) ? '#2E9E5E' : '#9CA3AF', fontWeight: isActive(href) ? 'bold' : 'normal' }}>{label}</div>
+                        <div style={{ fontSize: '11px', color: '#4B5563', marginTop: '2px' }}>{desc}</div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* LEAGUES DROPDOWN */}
           <div style={{ position: 'relative' }} onMouseEnter={() => setLeaguesOpen(true)} onMouseLeave={() => setLeaguesOpen(false)}>
