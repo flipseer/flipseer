@@ -5,6 +5,24 @@ const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+const ACTIVE_COMPETITIONS = [
+  'EPL 2026/27',
+  'UCL 2026/27',
+  'Liga 1 2026/27',
+  'NPFL 2026/27',
+  'Ghana PL 2026/27',
+]
+
+const COMPETITION_META: { [key: string]: { emoji: string; label: string; color: string } } = {
+  'EPL 2026/27':      { emoji: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', label: 'Premier League 2026/27',   color: '#8B5CF6' },
+  'UCL 2026/27':      { emoji: '⭐',           label: 'UEFA Champions League',    color: '#A78BFA' },
+  'Liga 1 2026/27':   { emoji: '🇮🇩',           label: 'Liga 1 Indonesia',         color: '#EF4444' },
+  'NPFL 2026/27':     { emoji: '🇳🇬',           label: 'NPFL Nigeria',             color: '#2E9E5E' },
+  'Ghana PL 2026/27': { emoji: '🇬🇭',           label: 'Ghana Premier League',     color: '#F59E0B' },
+  'World Cup 2026':   { emoji: '🏆',           label: 'FIFA World Cup 2026',      color: '#F59E0B' },
+}
+
 export async function POST(req: NextRequest) {
   try {
     const cronSecret = req.headers.get('x-cron-secret');
@@ -28,8 +46,7 @@ export async function POST(req: NextRequest) {
     if (matchError || !match) {
       return NextResponse.json({ error: 'Match not found', match_id }, { status: 404 });
     }
-    // ── Only notify for active competitions — skip UCL playoffs until Sep 17 ──
-    const ACTIVE_COMPETITIONS = ['EPL 2026/27', 'World Cup 2026'];
+    // ── Only notify for active competitions ──
     if (!ACTIVE_COMPETITIONS.includes(match.competition)) {
       return NextResponse.json({
         success: true,
@@ -37,9 +54,10 @@ export async function POST(req: NextRequest) {
         sent: 0,
       });
     }
-    const isEPL = match.competition === 'EPL 2026/27';
-    const accentColor = isEPL ? '#8B5CF6' : '#2E9E5E';
-    const headerEmoji = isEPL ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' : '🏆';
+    const meta = COMPETITION_META[match.competition] || { emoji: '⚽', label: match.competition, color: '#8B5CF6' }
+    const accentColor = meta.color
+    const headerEmoji = meta.emoji
+
     // Get predictions
     const { data: predictions, error: predError } = await supabaseAdmin
       .from('predictions')
@@ -77,6 +95,7 @@ export async function POST(req: NextRequest) {
     const matchName = match.home_team + ' vs ' + match.away_team;
     const actualScore = match.home_score + '-' + match.away_score;
     const isUpset = match.is_upset === true;
+
     for (const pred of predictions) {
       const email = emailMap[pred.user_id];
       if (!email) continue;
@@ -106,7 +125,7 @@ export async function POST(req: NextRequest) {
     <p style="color:#9CA3AF;font-size:14px;margin:0">@${username}</p>
   </div>
   <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
-    <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 8px">FULL TIME</p>
+    <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 8px">FULL TIME · ${meta.label}</p>
     <p style="color:white;font-size:18px;font-weight:bold;margin:0 0 8px">${matchName}</p>
     <p style="color:${accentColor};font-size:36px;font-weight:bold;font-family:Georgia,serif;margin:0 0 8px">${actualScore}</p>
     ${isUpset ? '<p style="color:#F59E0B;font-size:12px;font-weight:bold;margin:0">UPSET RESULT</p>' : ''}
@@ -168,6 +187,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       match: matchName,
+      competition: match.competition,
       total_predictions: predictions.length,
       emails_sent: sent,
       emails_failed: failed,
