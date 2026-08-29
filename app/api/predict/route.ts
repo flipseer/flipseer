@@ -4,7 +4,7 @@ import { rateLimit, LIMITS } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
-const DAILY_PREDICTION_LIMIT = 8
+const DAILY_LIMIT_PER_LEAGUE = 10
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,32 +62,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Confidence must be 1-100' }, { status: 400 })
     }
 
-    // ── ✅ Check daily prediction limit (5 per day) ──
-    const todayStart = new Date()
-    todayStart.setUTCHours(0, 0, 0, 0)
-
-    const { count: todayCount } = await supabase
-      .from('predictions')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', todayStart.toISOString())
-
-    if ((todayCount ?? 0) >= DAILY_PREDICTION_LIMIT) {
-      return NextResponse.json(
-        {
-          error: `Daily limit reached. You can make ${DAILY_PREDICTION_LIMIT} predictions per day. Come back tomorrow!`,
-          daily_limit: DAILY_PREDICTION_LIMIT,
-          used_today: todayCount,
-          resets_at: new Date(todayStart.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-        },
-        { status: 429 }
-      )
-    }
-
-    // ── Check match is still unlocked ──
+    // ── Check match exists and get competition ──
     const { data: match, error: matchError } = await supabase
       .from('matches')
-      .select('id, status, kickoff')
+      .select('id, status, kickoff, competition')
       .eq('id', match_id)
       .single()
 
@@ -95,19 +73,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Match not found' }, { status: 404 })
     }
 
-    // ── FIX: 'live' was missing here — without it, a match that has already
-    // kicked off (status flipped to 'live' by match-processor based on
-    // real-time API data) could still accept NEW predictions if the stored
-    // `kickoff` timestamp happens to be later than the real kickoff time
-    // (e.g. due to a seeding/timezone error). This closes that gap
-    // regardless of whether `kickoff` is accurate. ──
     if (['locked', 'live', 'completed', 'cancelled'].includes(match.status)) {
       return NextResponse.json({ error: 'Predictions are locked for this match' }, { status: 400 })
     }
 
-    // ── Check kickoff hasn't passed (secondary safeguard) ──
     if (new Date(match.kickoff) <= new Date()) {
       return NextResponse.json({ error: 'Match has already started' }, { status: 400 })
+    }
+
+    // ── Check per-league daily limit ──
+    const todayStart = new Date()
+    todayStart.setUTCHours(0, 0, 0, 0)
+
+    const { count: leagueCount } = await supabase
+      .from('predictions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', todayStart.toISOString())
+      .in('match_id',
+        // subquery: get match IDs for this competition
+        (await supabase
+          .from('matches')
+          .select('id')
+          .eq('competition', match.competition)
+          .then(r => (r.data || []).map((m: any) => m.id)))
+      )
+
+    if ((leagueCount ?? 0) >= DAILY_LIMIT_PER_LEAGUE) {
+      return NextResponse.json(
+        {
+          error: `Daily limit reached for ${match.competition}. You can make ${DAILY_LIMIT_PER_LEAGUE} predictions per league per day. Come back tomorrow!`,
+          daily_limit: DAILY_LIMIT_PER_LEAGUE,
+          competition: match.competition,
+          used_today: leagueCount,
+          resets_at: new Date(todayStart.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        },
+        { status: 429 }
+      )
     }
 
     // ── Check for duplicate prediction ──
@@ -119,10 +121,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existing) {
+      // Allow update — return existing so predict page can update it
       return NextResponse.json({ error: 'You have already predicted this match' }, { status: 400 })
     }
 
-    // ── Save prediction with server timestamp ──
+    // ── Save prediction ──
     const { data: prediction, error: predError } = await supabase
       .from('predictions')
       .insert([{
@@ -139,13 +142,14 @@ export async function POST(request: NextRequest) {
 
     if (predError) throw predError
 
-    const remainingToday = DAILY_PREDICTION_LIMIT - ((todayCount ?? 0) + 1)
+    const remainingToday = DAILY_LIMIT_PER_LEAGUE - ((leagueCount ?? 0) + 1)
 
     return NextResponse.json({
       success: true,
       prediction,
-      daily_limit: DAILY_PREDICTION_LIMIT,
-      used_today: (todayCount ?? 0) + 1,
+      competition: match.competition,
+      daily_limit: DAILY_LIMIT_PER_LEAGUE,
+      used_today: (leagueCount ?? 0) + 1,
       remaining_today: remainingToday,
       ip_remaining: limit.remaining,
     })
