@@ -417,6 +417,7 @@ export default function Predict() {
   const [loading, setLoading] = useState<{ [key: number]: boolean }>({});
   const [community, setCommunity] = useState<{ [key: number]: CommunityStats }>({});
   const [dailyUsed, setDailyUsed] = useState(0);
+  const [leagueUsed, setLeagueUsed] = useState<{ [key: string]: number }>({});
   const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
@@ -548,7 +549,10 @@ export default function Predict() {
     if (res.status === 429) { alert(data.error); return; }
     if (res.ok) {
       setSaved(prev => ({ ...prev, [matchId]: true }));
-      if (!isUpdate) setDailyUsed(prev => prev + 1);
+      if (!isUpdate) {
+        setDailyUsed(prev => prev + 1);
+        setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
+      }
       setCommunity(prev => {
         const old = prev[matchId] || { home: 0, draw: 0, away: 0, total: 0 };
         const outcome = predictions[matchId].outcome as 'home' | 'draw' | 'away';
@@ -629,13 +633,20 @@ export default function Predict() {
       {/* DAILY LIMIT — logged in only */}
       {user && activeLeagueData.active && (
         <section style={{ textAlign: 'center', padding: '0 20px 16px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: remaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(139,92,246,0.1)', border: '1px solid ' + (remaining === 0 ? '#EF4444' : '#8B5CF6'), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
-            <span style={{ fontSize: '13px', color: remaining === 0 ? '#EF4444' : '#8B5CF6', fontWeight: 'bold' }}>
-              {remaining === 0 ? 'Daily limit reached - come back tomorrow!' : 'Today: ' + dailyUsed + '/' + DAILY_LIMIT + ' predictions - ' + remaining + ' remaining'}
-            </span>
-          </div>
+          {(() => {
+            const used = leagueUsed[activeLeague] || 0;
+            const leagueRemaining = Math.max(0, 10 - used);
+            const color = activeLeagueData.color;
+            return (
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: leagueRemaining === 0 ? 'rgba(239,68,68,0.1)' : 'rgba(139,92,246,0.1)', border: '1px solid ' + (leagueRemaining === 0 ? '#EF4444' : color), borderRadius: '999px', padding: '6px 16px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', color: leagueRemaining === 0 ? '#EF4444' : color, fontWeight: 'bold' }}>
+                  {leagueRemaining === 0 ? activeLeague + ' limit reached — come back tomorrow!' : used + '/10 ' + activeLeague + ' predictions today · ' + leagueRemaining + ' remaining'}
+                </span>
+              </div>
+            );
+          })()}
           {username !== 'forecaster' && (
-            <div><a href={'/u/' + username} style={{ color: '#8B5CF6', fontSize: '13px', textDecoration: 'none' }}>View your journal →</a></div>
+            <div><a href={'/u/' + username} style={{ color: '#8B5CF6', fontSize: '13px', textDecoration: 'none' }}>View your profile →</a></div>
           )}
         </section>
       )}
