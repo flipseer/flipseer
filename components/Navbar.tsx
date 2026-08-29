@@ -84,7 +84,7 @@ export default function Navbar() {
 
           {/* EXPLORE DROPDOWN */}
           {(() => {
-            const explorePages = ['/results', '/leaderboard', '/nations', '/groups'];
+            const explorePages = ['/results', '/leaderboard', '/nations'];
             const isExplorePage = explorePages.includes(pathname);
             const [exploreOpen, setExploreOpen] = React.useState(false);
             return (
@@ -98,7 +98,6 @@ export default function Navbar() {
                       { href: '/results',     label: '📊 Results',      desc: 'Match scores & top predictors' },
                       { href: '/leaderboard', label: '🏅 Rankings',     desc: 'Global leaderboard' },
                       { href: '/nations',     label: '🌍 Nation Battle', desc: 'Country vs country' },
-                      { href: '/groups',      label: '👥 Groups',        desc: 'Private leagues' },
                     ].map(({ href, label, desc }) => (
                       <Link key={href} href={href} className="league-item" style={{ display: 'block', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', backgroundColor: isActive(href) ? 'rgba(46,158,94,0.1)' : 'transparent', transition: 'all 0.1s' }}>
                         <div style={{ fontSize: '13px', color: isActive(href) ? '#2E9E5E' : '#9CA3AF', fontWeight: isActive(href) ? 'bold' : 'normal' }}>{label}</div>
@@ -110,6 +109,10 @@ export default function Navbar() {
               </div>
             );
           })()}
+
+          <a href="/groups" className="nav-link" style={{ color: isActive('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: isActive('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
+            Groups
+          </a>
 
           {/* LEAGUES DROPDOWN */}
           <div style={{ position: 'relative' }} onMouseEnter={() => setLeaguesOpen(true)} onMouseLeave={() => setLeaguesOpen(false)}>
