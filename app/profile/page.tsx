@@ -40,13 +40,18 @@ const COMPETITION_TABS = [
   { key: 'all', label: 'All', icon: '&#x26BD;' },
   { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;' },
   { key: 'UCL 2026/27', label: 'UCL', icon: '&#x2B50;' },
+  { key: 'Liga 1 2026/27', label: 'Liga 1', icon: '&#x1F1EE;&#x1F1E9;' },
+  { key: 'NPFL 2026/27', label: 'NPFL', icon: '&#x1F1F3;&#x1F1EC;' },
+  { key: 'Ghana PL 2026/27', label: 'Ghana PL', icon: '&#x1F1EC;&#x1F1ED;' },
   { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;' },
 ];
 const UPCOMING_COMPETITIONS = [
   { name: 'EPL 2026/27', icon: '&#x1F3F4;', date: 'LIVE', color: '#8B5CF6' },
-  { name: 'UCL 2026/27', icon: '&#x2B50;', date: 'Sep 2026', color: '#A78BFA' },
-  { name: 'ISL 2026/27', icon: '&#x1F1EE;&#x1F1F3;', date: 'Nov 2026', color: '#F59E0B' },
-  { name: 'NPFL/GPL/Liga 1', icon: '&#x1F30D;', date: 'Jan 2027', color: '#6B7280' },
+  { name: 'UCL 2026/27', icon: '&#x2B50;', date: 'Sep 17', color: '#A78BFA' },
+  { name: 'Liga 1 2026/27', icon: '&#x1F1EE;&#x1F1E9;', date: 'Sep 4', color: '#EF4444' },
+  { name: 'Ghana PL 2026/27', icon: '&#x1F1EC;&#x1F1ED;', date: 'Sep 4', color: '#F59E0B' },
+  { name: 'NPFL 2026/27', icon: '&#x1F1F3;&#x1F1EC;', date: 'LIVE', color: '#2E9E5E' },
+  { name: 'ISL 2026/27', icon: '&#x1F1EE;&#x1F1F3;', date: 'Oct 10', color: '#F59E0B' },
 ];
 const BADGE_COLORS: { [key: string]: string } = {
   score_master: '#3B82F6',
