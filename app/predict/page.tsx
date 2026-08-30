@@ -564,7 +564,7 @@ export default function Predict() {
           setLastPrediction({
             match: matchData ? matchData.home_team + ' vs ' + matchData.away_team : 'this match',
             outcome: outcomeLabel || 'their pick',
-            leagueCode: userGroups?.[0]?.invite_code || '',
+            leagueCode: '',
           });
           setTimeout(() => setShowChallenge(true), 800);
         }
