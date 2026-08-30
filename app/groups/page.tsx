@@ -45,6 +45,7 @@ export default function GroupsPage() {
   const [toast, setToast] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [showCreate, setShowCreate] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [showJoin, setShowJoin] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -60,7 +61,7 @@ export default function GroupsPage() {
     const params = new URLSearchParams(window.location.search);
     const joinCode = params.get('join');
     const isWelcome = params.get('welcome') === '1';
-    if (isWelcome) { setShowCreate(true); showToast('Welcome! Create your first league →'); }
+    if (isWelcome) { setShowWelcome(true); }
     // Check for stored join code from auth redirect
     const storedCode = sessionStorage.getItem('flipseer_join_code');
     const codeToUse = joinCode?.toUpperCase() || storedCode || '';
