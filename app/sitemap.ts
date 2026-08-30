@@ -1,41 +1,50 @@
 import { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
-// Use service role key — sitemap runs server-side at build time
-// anon key may have RLS restrictions that return empty data
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 const NATION_SLUGS = [
-  'india', 'indonesia', 'nigeria', 'brazil', 'argentina',
-  'england', 'france', 'germany', 'spain', 'portugal',
-  'mexico', 'usa', 'ghana', 'morocco', 'japan',
-  'south-korea', 'australia', 'pakistan', 'bangladesh',
-  'egypt', 'senegal', 'south-africa', 'saudi-arabia',
-  'turkey', 'norway',
+  'india', 'indonesia', 'nigeria', 'ghana',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://flipseer.com'
   const now = new Date()
 
-  // Static pages
+  // Static pages — only pages that actually exist and don't redirect
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/nations`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/leaderboard`, lastModified: now, changeFrequency: 'hourly', priority: 0.9 },
-    { url: `${baseUrl}/epl`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${baseUrl}/epl/matchweek-1`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/world-cup-2026`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/how-to-play`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/how-to-predict-football`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/football-reputation`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
-    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: baseUrl,                                    lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/predict`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/nations`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/leaderboard`,                   lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
+    { url: `${baseUrl}/results`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/groups`,                        lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${baseUrl}/epl`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/ucl`,                           lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${baseUrl}/world-cup-2026`,                lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/how-to-play`,                   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/how-to-predict-football`,       lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/football-reputation`,           lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/faq`,                           lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/about`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${baseUrl}/privacy`,                       lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/terms`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    // League landing pages
+    { url: `${baseUrl}/leagues/office`,                lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/leagues/family`,                lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/leagues/university`,            lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/leagues/friends`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/leagues/country`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/leagues/football-club-fan`,     lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/epl`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/ucl`,                           lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
+    { url: `${baseUrl}/ghana`,                         lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/indonesia`,                     lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/nigeria`,                       lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${baseUrl}/india`,                         lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
   ]
 
   // Nation SEO pages
@@ -46,29 +55,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  // Match SEO pages
+  // World Cup match pages — completed only (stable URLs, no redirects)
   let matchSeoPages: MetadataRoute.Sitemap = []
   try {
     const { data: matches, error } = await supabase
       .from('matches')
       .select('home_team, away_team, kickoff, status')
       .eq('competition', 'World Cup 2026')
+      .eq('status', 'completed')
       .not('home_team', 'is', null)
       .not('away_team', 'is', null)
       .order('kickoff', { ascending: true })
 
-    if (error) {
-      console.error('Sitemap match fetch error:', error.message)
-    } else {
-      matchSeoPages = (matches ?? [])
-        .filter(m => 
-          m.home_team && 
-          m.away_team && 
+    if (!error && matches) {
+      matchSeoPages = matches
+        .filter(m =>
+          m.home_team &&
+          m.away_team &&
           m.home_team !== 'World Cup Team' &&
           m.away_team !== 'World Cup Team'
         )
         .map((m) => {
-          // Strip ALL special chars — & ' . etc — only keep a-z 0-9 and hyphens
           const cleanTeam = (name: string) => name
             .toLowerCase()
             .replace(/&/g, 'and')
@@ -80,8 +87,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           return {
             url: `${baseUrl}/matches/${slug}`,
             lastModified: new Date(m.kickoff),
-            changeFrequency: m.status === 'completed' ? 'monthly' as const : 'daily' as const,
-            priority: m.status === 'upcoming' ? 0.9 : 0.7,
+            changeFrequency: 'monthly' as const,
+            priority: 0.6,
           }
         })
     }
@@ -89,7 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Sitemap match fetch exception:', e)
   }
 
-  // Public profile pages — only active users with predictions
+  // Public profile pages — active users only
   let profilePages: MetadataRoute.Sitemap = []
   try {
     const { data: profiles, error } = await supabase
@@ -98,12 +105,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .not('username', 'is', null)
       .gt('prediction_count', 2)
       .order('prediction_count', { ascending: false })
-      .limit(500) // cap at 500 to keep sitemap manageable
+      .limit(500)
 
-    if (error) {
-      console.error('Sitemap profile fetch error:', error.message)
-    } else {
-      profilePages = (profiles ?? [])
+    if (!error && profiles) {
+      profilePages = profiles
         .filter(p => p.username && p.username.length > 0)
         .map((p) => ({
           url: `${baseUrl}/u/${p.username}`,
