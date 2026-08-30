@@ -561,12 +561,12 @@ export default function Home() {
         <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
           {(() => {
             const staticItems = [
-              { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL 2026/27 · Liga 1 · Ghana PL — all live now' },
-              { icon: '🌍', text: 'India vs Indonesia vs Nigeria — the Nation Battle is on' },
-              { icon: '⚽', text: 'Predict exact scores for up to 108 pts per match — no betting ever' },
-              { icon: '🔒', text: 'Your predictions lock at kick-off — permanent proof of your football intelligence' },
-              { icon: '🏆', text: 'Represent your nation — every correct call earns points for your country' },
-              { icon: '🆓', text: 'Build your permanent football reputation — free forever — no card required' },
+              { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL 2026/27 · Liga 1 · Ghana PL — all live now', isUser: false, color: '#6B7280' },
+              { icon: '🌍', text: 'India vs Indonesia vs Nigeria — the Nation Battle is on', isUser: false, color: '#6B7280' },
+              { icon: '⚽', text: 'Predict exact scores for up to 108 pts per match — no betting ever', isUser: false, color: '#6B7280' },
+              { icon: '🔒', text: 'Your predictions lock at kick-off — permanent proof of your football intelligence', isUser: false, color: '#6B7280' },
+              { icon: '🏆', text: 'Represent your nation — every correct call earns points for your country', isUser: false, color: '#6B7280' },
+              { icon: '🆓', text: 'Build your permanent football reputation — free forever — no card required', isUser: false, color: '#6B7280' },
             ];
             const userItems = topUsers.map(u => ({
               icon: u.rank_icon || '⚽',
