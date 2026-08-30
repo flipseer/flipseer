@@ -1,3 +1,17 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Ghana Premier League 2026/27 Predictions | Flipseer',
+  description: 'Predict Ghana Premier League 2026/27 matches. Asante Kotoko, Hearts of Oak, Medeama and 15 more clubs. Build your permanent football reputation. Free forever.',
+  keywords: 'Ghana Premier League predictions, GPL 2026, Ghana football, Kotoko, Hearts of Oak, football prediction Ghana',
+  alternates: { canonical: 'https://flipseer.com/ghana' },
+  openGraph: {
+    title: 'Ghana Premier League 2026/27 | Flipseer',
+    description: 'Predict every GPL match. Build your permanent football reputation. Free forever.',
+    url: 'https://flipseer.com/ghana',
+  },
+}
+
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
