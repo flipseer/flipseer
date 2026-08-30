@@ -1,0 +1,177 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase-browser';
+const supabase = createClient();
+
+const GHANA_CLUBS = [
+  'Asante Kotoko', 'Hearts of Oak', 'Medeama', 'Dreams FC',
+  'Bibiani Gold Stars', 'Bechem United', 'Aduana Stars', 'Berekum Chelsea',
+  'Samartex', 'Nations FC', 'Young Apostles', 'Vision FC',
+  'Karela United', 'Accra Lions', 'Holy Stars', 'Debibi United',
+  'Nsoatreman', 'Bofoakwa Tano',
+];
+
+export default function GhanaClient() {
+  const [mounted, setMounted] = useState(false);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [username, setUsername] = useState('');
+  const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
+  const [totalMatches, setTotalMatches] = useState(306);
+
+  useEffect(() => {
+    setMounted(true);
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: profile } = await supabase.from('profiles').select('username, total_points').eq('id', session.user.id).single();
+          if (profile) {
+            setUsername(profile.username);
+            const { data: all } = await supabase.from('profiles').select('total_points').gt('total_points', 0).order('total_points', { ascending: false });
+            const rank = (all || []).findIndex((p: any) => p.total_points <= profile.total_points) + 1;
+            if (rank > 0) setUserRank(rank);
+          }
+        }
+        const { data: matches } = await supabase.from('matches')
+          .select('id, home_team, away_team, kickoff, status, round')
+          .eq('competition', 'Ghana PL 2026/27')
+          .in('status', ['upcoming', 'live'])
+          .order('kickoff', { ascending: true })
+          .limit(8);
+        setUpcomingMatches(matches || []);
+        const { count } = await supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', 'Ghana PL 2026/27');
+        if (count) setTotalMatches(count);
+      } catch (e) {}
+    };
+    init();
+  }, []);
+
+  const formatKickoff = (kickoff: string) => {
+    const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
+    const date = new Date(utc);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return date.toLocaleString('en-GB', { timeZone: tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  const getCountdown = () => {
+    const start = new Date('2026-09-05T15:00:00Z');
+    const diff = start.getTime() - Date.now();
+    if (diff <= 0) return null;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+  };
+
+  const countdown = mounted ? getCountdown() : null;
+
+  return (
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: "-apple-system,'Segoe UI',Arial,sans-serif", color: 'white', paddingBottom: 80 }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}} @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}} .match-row:hover{background:rgba(245,158,11,0.08)!important} .match-row{transition:background 0.1s}`}</style>
+
+      {/* HERO */}
+      <section style={{ textAlign: 'center', padding: 'clamp(48px,10vw,88px) 20px clamp(40px,8vw,72px)', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg,#1A0A00 0%,#0D1F0F 100%)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '80%', height: '100%', background: 'radial-gradient(ellipse,rgba(245,158,11,0.07) 0%,transparent 70%)', pointerEvents: 'none' }}/>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: 999, padding: '6px 20px', marginBottom: 24 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#F59E0B', display: 'inline-block', animation: 'pulse 1.5s infinite' }}/>
+          <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 700, letterSpacing: '2px' }}>GHANA PREMIER LEAGUE 2026/27</span>
+        </div>
+        <div style={{ fontSize: 'clamp(48px,12vw,80px)', marginBottom: 16 }}>🇬🇭</div>
+        <h1 style={{ fontSize: 'clamp(32px,8vw,64px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, marginBottom: 16 }}>
+          Ghana Premier League<br/><span style={{ color: '#F59E0B' }}>2026/27</span>
+        </h1>
+        <p style={{ fontSize: 'clamp(15px,2.5vw,18px)', color: '#9CA3AF', lineHeight: 1.7, maxWidth: 540, margin: '0 auto 32px' }}>
+          {userRank && username
+            ? <>You're ranked <strong style={{ color: '#F59E0B' }}>#{userRank} globally</strong>. Every Ghana PL prediction builds your permanent Football Reputation.</>
+            : <>Asante Kotoko. Hearts of Oak. The biggest clubs in West African football. Predict every match. Build your permanent Football Reputation.</>}
+        </p>
+        {countdown && (
+          <div style={{ marginBottom: 24, animation: 'fadeUp 0.4s ease both' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, backgroundColor: '#0D2B14', border: '1px solid #F59E0B', borderRadius: 12, padding: '12px 24px' }}>
+              <span style={{ fontSize: 13, color: '#9CA3AF' }}>Season starts in</span>
+              <span style={{ fontSize: 24, fontWeight: 900, color: '#F59E0B', fontFamily: 'Georgia, serif' }}>{countdown}</span>
+            </div>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+          {[{ label: totalMatches + '+', sub: 'Fixtures' }, { label: '18', sub: 'Clubs' }, { label: '34', sub: 'Matchdays' }].map(({ label, sub }) => (
+            <div key={sub} style={{ textAlign: 'center', minWidth: 80 }}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: '#F59E0B', fontFamily: 'Georgia, serif' }}>{label}</div>
+              <div style={{ fontSize: 11, color: '#6B7280' }}>{sub}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="/predict" style={{ backgroundColor: '#F59E0B', color: 'black', border: 'none', borderRadius: 12, padding: 'clamp(12px,3vw,16px) clamp(24px,6vw,40px)', fontSize: 'clamp(14px,2.5vw,16px)', fontWeight: 700, textDecoration: 'none', boxShadow: '0 0 32px rgba(245,158,11,0.35)' }}>
+            🇬🇭 Predict Ghana PL →
+          </a>
+          <a href="/nations" style={{ backgroundColor: 'transparent', color: '#9CA3AF', padding: 'clamp(12px,3vw,16px) clamp(16px,4vw,24px)', borderRadius: 12, textDecoration: 'none', fontSize: 'clamp(13px,2vw,15px)', border: '1px solid #1A3A1A' }}>
+            🌍 Nation Battle →
+          </a>
+        </div>
+        <p style={{ fontSize: 11, color: '#4B5563', marginTop: 12 }}>Free forever · No betting · No card required</p>
+      </section>
+
+      {/* UPCOMING MATCHES */}
+      {upcomingMatches.length > 0 && (
+        <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
+          <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: '#F59E0B', fontWeight: 700, letterSpacing: '3px' }}>UPCOMING FIXTURES</p>
+              <a href="/predict" style={{ fontSize: 12, color: '#6B7280', textDecoration: 'none', fontWeight: 600 }}>Predict all →</a>
+            </div>
+            <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 14, overflow: 'hidden' }}>
+              {upcomingMatches.map((match, i) => (
+                <div key={match.id} className="match-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px', borderTop: i === 0 ? 'none' : '1px solid #1A3A1A' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 2 }}>
+                      {match.home_team} <span style={{ color: '#4B5563', fontWeight: 400 }}>vs</span> {match.away_team}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#6B7280' }}>{match.round?.replace('Regular Season - ', 'MD')} · {formatKickoff(match.kickoff)}</div>
+                  </div>
+                  <a href="/predict" style={{ fontSize: 11, color: '#F59E0B', fontWeight: 700, backgroundColor: 'rgba(245,158,11,0.1)', padding: '4px 10px', borderRadius: 999, flexShrink: 0, textDecoration: 'none' }}>
+                    Predict →
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CLUBS */}
+      <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <p style={{ fontSize: 11, color: '#F59E0B', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>18 CLUBS · 2026/27 SEASON</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8 }}>
+            {GHANA_CLUBS.map(club => (
+              <div key={club} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#9CA3AF', textAlign: 'center' }}>
+                {club}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* REPUTATION CTA */}
+      <section style={{ padding: '48px 20px' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🇬🇭</div>
+          <h2 style={{ fontSize: 'clamp(22px,4vw,32px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 12 }}>
+            Represent Ghana.<br/><span style={{ color: '#F59E0B' }}>Build your Football Reputation.</span>
+          </h2>
+          <p style={{ color: '#9CA3AF', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
+            Every Ghana PL prediction adds to your global reputation. EPL + Ghana PL + UCL — one permanent record. Forever.
+          </p>
+          <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#F59E0B', color: 'black', padding: '14px 32px', borderRadius: 10, textDecoration: 'none', fontSize: 15, fontWeight: 700, boxShadow: '0 0 24px rgba(245,158,11,0.3)', marginBottom: 16 }}>
+            🇬🇭 Start Predicting Ghana PL →
+          </a>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[{ href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL' }, { href: '/ucl', label: '⭐ UCL' }, { href: '/nations', label: '🌍 Nations' }, { href: '/leaderboard', label: '🏆 Leaderboard' }].map(({ href, label }) => (
+              <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 8, padding: '6px 14px', textDecoration: 'none', fontSize: 12, color: '#8895A3' }}>{label}</a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
