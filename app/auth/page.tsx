@@ -229,7 +229,7 @@ export default function Auth() {
         if (joinCode) {
           window.location.href = '/groups?join=' + joinCode;
         } else {
-          window.location.href = '/predict?welcome=1';
+          window.location.href = '/groups?welcome=1';
         }
       }
     }
