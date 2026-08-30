@@ -419,6 +419,8 @@ export default function Predict() {
   const [dailyUsed, setDailyUsed] = useState(0);
   const [leagueUsed, setLeagueUsed] = useState<{ [key: string]: number }>({});
   const [lifetimePredictionCount, setLifetimePredictionCount] = useState<number | null>(null);
+  const [showChallenge, setShowChallenge] = useState(false);
+  const [lastPrediction, setLastPrediction] = useState<{ match: string; outcome: string; leagueCode: string } | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -552,6 +554,20 @@ export default function Predict() {
       if (!isUpdate) {
         setDailyUsed(prev => prev + 1);
         setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
+        // Show challenge modal after every 3rd prediction
+        const totalPreds = (lifetimePredictionCount || 0) + 1;
+        setLifetimePredictionCount(totalPreds);
+        if (totalPreds % 3 === 0 || totalPreds === 1) {
+          const matchData = matches.find((m: any) => m.id === matchId);
+          const outcomeLabel = predictions[matchId]?.outcome === 'home' ? matchData?.home_team
+            : predictions[matchId]?.outcome === 'away' ? matchData?.away_team : 'Draw';
+          setLastPrediction({
+            match: matchData ? matchData.home_team + ' vs ' + matchData.away_team : 'this match',
+            outcome: outcomeLabel || 'their pick',
+            leagueCode: userGroups?.[0]?.invite_code || '',
+          });
+          setTimeout(() => setShowChallenge(true), 800);
+        }
       }
       setCommunity(prev => {
         const old = prev[matchId] || { home: 0, draw: 0, away: 0, total: 0 };
@@ -571,6 +587,10 @@ export default function Predict() {
 
   const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
   const activeLeagueData = LEAGUES.find(l => l.key === activeLeague) || LEAGUES[0];
+
+  const challengeText = lastPrediction
+    ? `⚽ I just predicted ${lastPrediction.outcome} in ${lastPrediction.match} on Flipseer.\n\nThink you can beat me? 😏\n\nJoin my private league and let's find out.\n🏆 Free to play\n🔒 Predictions lock at kick-off\n🌍 Build your football reputation\n\n👉 ${lastPrediction.leagueCode ? 'flipseer.com/groups?join=' + lastPrediction.leagueCode : 'flipseer.com/groups'}`
+    : '';
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
