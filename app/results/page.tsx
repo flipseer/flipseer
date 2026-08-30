@@ -11,9 +11,11 @@ export default function ResultsPage() {
   const [stats, setStats] = useState({ total: 0, completed: 0, live: 0, upcoming: 0 });
   const [activeCompetition, setActiveCompetition] = useState('EPL 2026/27');
   const COMPETITIONS = [
-    { key: 'EPL 2026/27', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL', color: '#8B5CF6' },
-    { key: 'UCL 2026/27', label: '⭐ UCL', color: '#A78BFA' },
-    { key: 'World Cup 2026', label: '🏆 World Cup', color: '#F59E0B' },
+    { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
+    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
+    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
+    { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
   ];
   useEffect(() => {
     const load = async () => {
@@ -160,7 +162,11 @@ export default function ResultsPage() {
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
             <h3 style={{ fontFamily: 'Georgia, serif', color: activeComp.color, marginBottom: '8px' }}>No results yet</h3>
             <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>
-              {activeCompetition === 'EPL 2026/27' ? 'EPL Matchweek 1 starts August 21.' : activeCompetition === 'UCL 2026/27' ? 'UCL Group Stage starts September 17.' : 'Match results will appear here after kick-off'}
+              {activeCompetition === 'EPL 2026/27' ? 'EPL Matchweek 1 starts August 21.'
+                : activeCompetition === 'UCL 2026/27' ? 'UCL Group Stage starts September 17.'
+                : activeCompetition === 'Liga 1 2026/27' ? 'Liga 1 started September 4 — results coming soon.'
+                : activeCompetition === 'Ghana PL 2026/27' ? 'Ghana PL started September 5 — results coming soon.'
+                : 'Match results will appear here after kick-off'}
             </p>
             <a href="/predict" style={{ backgroundColor: activeComp.color, color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
               Predict Upcoming Matches →
