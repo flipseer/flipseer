@@ -1,25 +1,12 @@
-// app/api/cron/weekly-report/route.ts
-// Sends personalised weekly matchweek report to all active users
-// Run every Monday at 09:00 UTC after matchweek results are processed
-// vercel.json: { "path": "/api/cron/weekly-report", "schedule": "0 9 * * 1" }
+// app/api/cron/weekly-reengage/route.ts
+// Every Monday 10:00 UTC — emails users who did NOT predict last matchweek
+// Different from one-time reengage — this runs every week all season
+// vercel.json: { "path": "/api/cron/weekly-reengage", "schedule": "0 10 * * 1" }
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 export const maxDuration = 60
-
-function buildNationRows(nations: any[]) {
-  return nations.slice(0, 5).map((n: any, i: number) => {
-    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-    return `
-      <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #1A3A1A;font-size:13px;color:#6B7280;width:30px">${medals[i]}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #1A3A1A;font-size:18px;width:30px">${n.flag}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #1A3A1A;font-size:14px;color:white;font-weight:bold">${n.name}</td>
-        <td style="padding:8px 0;border-bottom:1px solid #1A3A1A;font-size:14px;color:#8B5CF6;font-weight:bold;text-align:right">${n.points} pts</td>
-      </tr>`;
-  }).join('');
-}
 
 const FLAG: Record<string, string> = {
   'IN':'🇮🇳','ID':'🇮🇩','NG':'🇳🇬','BR':'🇧🇷','AR':'🇦🇷',
@@ -41,6 +28,7 @@ export async function GET(request: NextRequest) {
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -49,170 +37,194 @@ export async function GET(request: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
-    // Determine last matchweek (matches completed in last 7 days)
+    // Get last week's completed matches
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: recentMatches } = await supabase
-      .from('matches').select('id, home_team, away_team, home_score, away_score, round, kickoff')
-      .eq('status', 'completed').eq('competition', 'EPL 2026/27')
-      .gte('kickoff', weekAgo).order('kickoff', { ascending: true })
+    const { data: lastWeekMatches } = await supabase
+      .from('matches')
+      .select('id, home_team, away_team, round, kickoff')
+      .eq('status', 'completed')
+      .eq('competition', 'EPL 2026/27')
+      .gte('kickoff', weekAgo)
 
-    if (!recentMatches || recentMatches.length === 0) {
-      return NextResponse.json({ sent: 0, message: 'No completed matches this week' })
+    if (!lastWeekMatches || lastWeekMatches.length === 0) {
+      return NextResponse.json({ sent: 0, message: 'No matches last week to reference' })
     }
 
-    // Get matchweek number from round string
-    const matchweek = recentMatches[0]?.round?.replace('Regular Season - ', 'MW') || 'MW1'
-    const nextMatchweek = (parseInt(matchweek.replace('MW', '')) + 1).toString()
-    const weekDates = new Date(recentMatches[0].kickoff).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-      + ' – ' + new Date(recentMatches[recentMatches.length - 1].kickoff).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    const matchweek = lastWeekMatches[0]?.round?.replace('Regular Season - ', '') || '1'
+    const nextMatchweek = (parseInt(matchweek) + 1).toString()
+    const lastMatchIds = lastWeekMatches.map((m: any) => m.id)
 
-    // Nation leaderboard
-    const { data: allProfiles } = await supabase.from('profiles').select('country, total_points')
-    const nationMap: Record<string, number> = {}
-    allProfiles?.forEach((p: any) => {
-      if (!p.country) return
-      nationMap[p.country] = (nationMap[p.country] || 0) + (p.total_points || 0)
-    })
-    const nationLeaderboard = Object.entries(nationMap)
-      .map(([code, points]) => ({ code, name: COUNTRY[code] || code, flag: FLAG[code] || '🌍', points }))
-      .sort((a, b) => b.points - a.points)
+    // Get next matchweek fixtures
+    const { data: nextMatches } = await supabase
+      .from('matches')
+      .select('home_team, away_team, kickoff')
+      .eq('competition', 'EPL 2026/27')
+      .eq('round', `Regular Season - ${nextMatchweek}`)
+      .in('status', ['upcoming', 'locked'])
+      .order('kickoff', { ascending: true })
+      .limit(4)
 
-    // All users with predictions this week
-    const matchIds = recentMatches.map((m: any) => m.id)
-    const { data: weekPredictions } = await supabase
-      .from('predictions').select('user_id, match_id, points_earned, base_points, exact_bonus, upset_bonus, predicted_outcome, confidence_pct, prediction_processed')
-      .in('match_id', matchIds).eq('prediction_processed', true)
+    // Users who DID predict last week
+    const { data: activePredictors } = await supabase
+      .from('predictions')
+      .select('user_id')
+      .in('match_id', lastMatchIds)
+    const activeIds = new Set((activePredictors || []).map((p: any) => p.user_id))
 
-    // All profiles
-    const { data: profiles } = await supabase.from('profiles')
-      .select('id, username, country, total_points, prediction_count, correct_count')
-      .gt('prediction_count', 0).order('total_points', { ascending: false })
+    // All registered users
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username, country, total_points, prediction_count')
+    
+    // Users who did NOT predict last week but are registered
+    const inactiveProfiles = (profiles || []).filter(
+      (p: any) => !activeIds.has(p.id)
+    )
 
+    if (inactiveProfiles.length === 0) {
+      return NextResponse.json({ sent: 0, message: 'Everyone predicted this week!' })
+    }
+
+    // Get emails
     const { data: authUsers } = await supabase.auth.admin.listUsers()
     const emailMap: Record<string, string> = {}
     authUsers?.users?.forEach((u: any) => { if (u.email) emailMap[u.id] = u.email })
 
+    // Nation leaderboard for context
+    const nationMap: Record<string, number> = {}
+    profiles?.forEach((p: any) => {
+      if (!p.country) return
+      nationMap[p.country] = (nationMap[p.country] || 0) + (p.total_points || 0)
+    })
+    const topNation = Object.entries(nationMap).sort((a, b) => b[1] - a[1])[0]
+    const topNationName = topNation ? (COUNTRY[topNation[0]] || topNation[0]) : 'Indonesia'
+    const topNationFlag = topNation ? (FLAG[topNation[0]] || '🌍') : '🇮🇩'
+    const topNationPts = topNation?.[1] || 0
+
+    // Next fixtures preview HTML
+    const fixturesHtml = (nextMatches || []).map((m: any) => {
+      const kickoff = new Date(m.kickoff.endsWith('Z') ? m.kickoff : m.kickoff.replace(' ', 'T') + 'Z')
+      const dateStr = kickoff.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+      return `
+        <tr>
+          <td style="padding:8px 0;border-bottom:1px solid #1A3A1A">
+            <table width="100%" cellpadding="0" cellspacing="0"><tr>
+              <td style="font-size:13px;font-weight:bold;color:white">${m.home_team} vs ${m.away_team}</td>
+              <td style="font-size:11px;color:#6B7280;text-align:right">${dateStr}</td>
+            </tr></table>
+          </td>
+        </tr>`
+    }).join('')
+
     let sent = 0
     const results = []
 
-    for (const profile of (profiles || [])) {
+    for (const profile of inactiveProfiles) {
       const email = emailMap[profile.id]
       if (!email) continue
 
-      // User's week stats
-      const userPreds = (weekPredictions || []).filter((p: any) => p.user_id === profile.id)
-      if (userPreds.length === 0) continue // Skip if didn't predict this week
+      const flag = FLAG[profile.country] || '🌍'
+      const nationName = COUNTRY[profile.country] || 'your nation'
+      const hasNation = !!profile.country && !!FLAG[profile.country]
 
-      const weekPoints = userPreds.reduce((sum: number, p: any) => sum + (p.points_earned || 0), 0)
-      const weekCorrect = userPreds.filter((p: any) => (p.base_points || 0) > 0).length
-      const globalRank = (profiles || []).findIndex((p: any) => p.id === profile.id) + 1
+      // Personalise message based on whether they've ever predicted
+      const isNewUser = (profile.prediction_count || 0) === 0
+      const subject = isNewUser
+        ? `🏴󠁧󠁢󠁥󠁮󠁧󠁿 @${profile.username} — Matchweek ${nextMatchweek} is open. Your record is still empty.`
+        : `🏴󠁧󠁢󠁥󠁮󠁧󠁿 @${profile.username} — You missed Matchweek ${matchweek}. Matchweek ${nextMatchweek} is open now.`
 
-      // Best prediction this week
-      const bestPred = userPreds.sort((a: any, b: any) => (b.points_earned || 0) - (a.points_earned || 0))[0]
-      const bestMatch = recentMatches.find((m: any) => m.id === bestPred?.match_id)
-      const bestMatchName = bestMatch ? `${bestMatch.home_team} vs ${bestMatch.away_team}` : 'N/A'
-      const bestPick = bestPred?.predicted_outcome === 'home' ? bestMatch?.home_team
-        : bestPred?.predicted_outcome === 'away' ? bestMatch?.away_team : 'Draw'
-      const bestBadges = [
-        bestPred?.exact_bonus > 0 ? '<span style="font-size:11px;background:rgba(245,158,11,0.2);color:#F59E0B;padding:2px 8px;border-radius:999px;margin-left:8px">EXACT SCORE</span>' : '',
-        bestPred?.upset_bonus > 0 ? '<span style="font-size:11px;background:rgba(139,92,246,0.2);color:#8B5CF6;padding:2px 8px;border-radius:999px;margin-left:4px">UPSET</span>' : '',
-      ].join('')
-
-      // Nation message
-      const userNationRank = nationLeaderboard.findIndex(n => n.code === profile.country) + 1
-      const userNationName = COUNTRY[profile.country] || profile.country
-      const nationMsg = userNationRank > 0
-        ? `${FLAG[profile.country] || '🌍'} ${userNationName} is ranked #${userNationRank} in the Nation Battle. Your predictions this week earned ${weekPoints} pts for your nation.`
-        : 'Set your country on your profile to represent your nation in the Nation Battle.'
-
-      // Next matchweek fixtures count
-      const { count: nextFixtures } = await supabase.from('matches')
-        .select('*', { count: 'exact', head: true })
-        .eq('competition', 'EPL 2026/27')
-        .eq('round', `Regular Season - ${nextMatchweek}`)
-        .in('status', ['upcoming', 'locked'])
+      const heroMessage = isNewUser
+        ? `You signed up for Flipseer but haven't made your first prediction yet. <strong style="color:white">Matchweek ${nextMatchweek} is open right now.</strong>`
+        : `You didn't predict in Matchweek ${matchweek}. Those matches are locked forever — but <strong style="color:white">Matchweek ${nextMatchweek} is open right now.</strong>`
 
       try {
         await resend.emails.send({
           from: 'Flipseer <noreply@flipseer.com>',
           to: email,
-          subject: `🏴󠁧󠁢󠁥󠁮󠁧󠁿 @${profile.username} — Your Matchweek ${matchweek.replace('MW', '')} Report`,
+          subject,
           html: `
 <!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#0D1F0F;font-family:Arial,sans-serif">
 <div style="max-width:600px;margin:0 auto;background:#0D1F0F;color:white">
+
+  <!-- HEADER -->
   <div style="background:linear-gradient(135deg,#4C1D95,#1A0B2E);padding:28px 32px;text-align:center">
-    <div style="font-size:11px;color:#C4B5FD;font-weight:bold;letter-spacing:3px;margin-bottom:8px">🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER · WEEKLY REPORT</div>
-    <h1 style="font-family:Georgia,serif;font-size:26px;margin:0;color:white">Matchweek ${matchweek.replace('MW', '')} — Your Report</h1>
-    <p style="font-size:13px;color:#C4B5FD;margin:8px 0 0">${weekDates}</p>
+    <div style="font-size:11px;color:#C4B5FD;font-weight:bold;letter-spacing:3px;margin-bottom:8px">🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER · EPL 2026/27</div>
+    <h1 style="font-family:Georgia,serif;font-size:26px;margin:0;color:white">
+      Matchweek ${nextMatchweek} is open.
+    </h1>
+    <p style="font-size:14px;color:#C4B5FD;margin:8px 0 0">Predictions lock at kick-off. No second chances.</p>
   </div>
+
+  <!-- HERO -->
   <div style="padding:28px 32px;border-bottom:1px solid #2D1B69">
-    <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin:0 0 16px">YOUR WEEK · @${profile.username}</p>
-    <table width="100%" cellpadding="0" cellspacing="0"><tr>
-      <td style="text-align:center;padding:16px;background:#0D2B14;border-radius:12px;border:1px solid #2D1B69">
-        <div style="font-size:28px;font-weight:bold;color:#8B5CF6;font-family:Georgia,serif">${weekPoints}</div>
-        <div style="font-size:10px;color:#6B7280;margin-top:4px">PTS THIS WEEK</div>
-      </td>
-      <td style="width:8px"></td>
-      <td style="text-align:center;padding:16px;background:#0D2B14;border-radius:12px;border:1px solid #2D1B69">
-        <div style="font-size:28px;font-weight:bold;color:#F59E0B;font-family:Georgia,serif">${weekCorrect}/${userPreds.length}</div>
-        <div style="font-size:10px;color:#6B7280;margin-top:4px">CORRECT</div>
-      </td>
-      <td style="width:8px"></td>
-      <td style="text-align:center;padding:16px;background:#0D2B14;border-radius:12px;border:1px solid #2D1B69">
-        <div style="font-size:28px;font-weight:bold;color:#2E9E5E;font-family:Georgia,serif">${profile.total_points}</div>
-        <div style="font-size:10px;color:#6B7280;margin-top:4px">TOTAL PTS</div>
-      </td>
-      <td style="width:8px"></td>
-      <td style="text-align:center;padding:16px;background:#0D2B14;border-radius:12px;border:1px solid #2D1B69">
-        <div style="font-size:28px;font-weight:bold;color:#EF4444;font-family:Georgia,serif">#${globalRank}</div>
-        <div style="font-size:10px;color:#6B7280;margin-top:4px">GLOBAL RANK</div>
-      </td>
-    </tr></table>
-  </div>
-  <div style="padding:28px 32px;border-bottom:1px solid #2D1B69">
-    <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin:0 0 16px">NATION BATTLE</p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
-      ${buildNationRows(nationLeaderboard)}
-    </table>
-    <div style="padding:12px 16px;background:rgba(139,92,246,0.1);border:1px solid #8B5CF6;border-radius:10px">
-      <p style="font-size:13px;color:#C4B5FD;margin:0">${nationMsg}</p>
+    <p style="font-size:15px;color:#9CA3AF;line-height:1.8;margin:0 0 20px">
+      Hi @${profile.username} 👋<br/><br/>
+      ${heroMessage}
+    </p>
+    ${hasNation ? `
+    <div style="background:rgba(139,92,246,0.1);border:1px solid #8B5CF6;border-radius:10px;padding:14px 16px;margin-bottom:20px">
+      <p style="font-size:13px;color:#C4B5FD;margin:0">
+        ${flag} <strong>${nationName}</strong> needs your predictions to climb the Nation Battle.
+        ${topNationFlag} <strong>${topNationName}</strong> leads with ${topNationPts} pts.
+      </p>
+    </div>` : ''}
+    <div style="text-align:center">
+      <a href="https://flipseer.com/predict?utm_source=email&utm_medium=weekly_reengage&utm_campaign=mw${nextMatchweek}"
+        style="display:inline-block;background:#8B5CF6;color:white;padding:16px 40px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;box-shadow:0 0 24px rgba(139,92,246,0.3)">
+        🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict Matchweek ${nextMatchweek} Now →
+      </a>
+      <p style="font-size:11px;color:#4B5563;margin-top:10px">Free forever · No betting · No card required</p>
     </div>
   </div>
-  ${bestPred && bestPred.points_earned > 0 ? `
+
+  <!-- NEXT FIXTURES -->
+  ${nextMatches && nextMatches.length > 0 ? `
   <div style="padding:28px 32px;border-bottom:1px solid #2D1B69">
-    <p style="font-size:11px;color:#F59E0B;font-weight:bold;letter-spacing:3px;margin:0 0 16px">YOUR BEST CALL THIS WEEK</p>
-    <div style="background:#0D2B14;border:1px solid #2D1B69;border-radius:12px;padding:20px">
-      <div style="font-size:16px;font-weight:bold;color:white;margin-bottom:8px">${bestMatchName}</div>
-      <div style="font-size:13px;color:#9CA3AF;margin-bottom:10px">Pick: <strong style="color:#8B5CF6">${bestPick}</strong> · Confidence: <strong style="color:#8B5CF6">${bestPred.confidence_pct}%</strong></div>
-      <div style="text-align:center;padding:10px;background:rgba(139,92,246,0.15);border-radius:8px">
-        <span style="font-size:18px;font-weight:bold;color:#8B5CF6">+${bestPred.points_earned} pts</span>${bestBadges}
-      </div>
+    <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin:0 0 16px">MATCHWEEK ${nextMatchweek} — UPCOMING FIXTURES</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      ${fixturesHtml}
+    </table>
+    <div style="text-align:center;margin-top:16px">
+      <a href="https://flipseer.com/predict" style="font-size:13px;color:#8B5CF6;text-decoration:none;font-weight:bold">View all fixtures →</a>
     </div>
   </div>` : ''}
+
+  <!-- PERMANENT RECORD REMINDER -->
   <div style="padding:28px 32px;border-bottom:1px solid #2D1B69;text-align:center">
-    <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin:0 0 12px">MATCHWEEK ${nextMatchweek} — OPEN NOW</p>
-    <p style="font-size:14px;color:#9CA3AF;margin:0 0 20px">${nextFixtures || 10} fixtures open. Predict before kick-off.</p>
-    <a href="https://flipseer.com/predict?utm_source=email&utm_medium=weekly&utm_campaign=mw${nextMatchweek}"
-      style="display:inline-block;background:#8B5CF6;color:white;padding:14px 36px;border-radius:10px;text-decoration:none;font-size:15px;font-weight:bold">
-      🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict Matchweek ${nextMatchweek} →
-    </a>
+    <div style="font-size:32px;margin-bottom:12px">📖</div>
+    <h2 style="font-family:Georgia,serif;font-size:20px;margin:0 0 10px">Every match is permanent.</h2>
+    <p style="font-size:14px;color:#9CA3AF;line-height:1.7;margin:0">
+      Flipseer builds your permanent Football Reputation — every prediction you make stays on your record forever.
+      Miss a matchweek and those calls are gone from your record permanently.
+    </p>
   </div>
+
+  <!-- FOOTER -->
   <div style="padding:24px 32px;text-align:center">
     <div style="font-size:18px;font-weight:bold;color:#8B5CF6;margin-bottom:12px">🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER</div>
     <p style="font-size:12px;color:#4B5563;margin:0 0 8px">Free forever · No betting · Pure football intelligence</p>
-    <p style="font-size:11px;color:#2E4A2E;margin:0">© 2026 Flipseer · <a href="https://flipseer.com/unsubscribe?email=${email}" style="color:#4B5563;text-decoration:none">Unsubscribe</a></p>
+    <p style="font-size:11px;color:#2E4A2E;margin:0">
+      © 2026 Flipseer · <a href="https://flipseer.com/unsubscribe?email=${email}" style="color:#4B5563;text-decoration:none">Unsubscribe</a>
+    </p>
   </div>
+
 </div></body></html>`,
         })
         sent++
-        results.push({ username: profile.username, weekPoints, weekCorrect, status: 'sent' })
+        results.push({ username: profile.username, isNewUser, status: 'sent' })
       } catch (err: any) {
         results.push({ username: profile.username, status: 'failed', error: err.message })
       }
     }
 
-    return NextResponse.json({ sent, total: profiles?.length || 0, matchweek, results })
+    return NextResponse.json({
+      sent,
+      total_inactive: inactiveProfiles.length,
+      matchweek,
+      next_matchweek: nextMatchweek,
+      results,
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
