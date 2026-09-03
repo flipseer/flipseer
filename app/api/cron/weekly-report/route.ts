@@ -10,7 +10,7 @@ const FLAG: Record<string, string> = {
   'IN':'🇮🇳','ID':'🇮🇩','NG':'🇳🇬','BR':'🇧🇷','AR':'🇦🇷',
   'GB':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','FR':'🇫🇷','DE':'🇩🇪','ES':'🇪🇸','PT':'🇵🇹',
   'GH':'🇬🇭','MA':'🇲🇦','JP':'🇯🇵','KR':'🇰🇷','PK':'🇵🇰',
-  'BD':'🇧🇩','NG':'🇳🇬','EG':'🇪🇬','ZA':'🇿🇦','TR':'🇹🇷',
+  'BD':'🇧🇩','EG':'🇪🇬','ZA':'🇿🇦','TR':'🇹🇷',
 }
 const COUNTRY: Record<string, string> = {
   'IN':'India','ID':'Indonesia','NG':'Nigeria','BR':'Brazil','AR':'Argentina',
