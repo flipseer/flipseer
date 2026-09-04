@@ -936,6 +936,93 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* FAQ SECTION */}
+      <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderTop: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 8, textAlign: 'center' }}>EVERYTHING YOU NEED TO KNOW</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px,5vw,36px)', textAlign: 'center', marginBottom: 48, fontWeight: 800 }}>Common Questions</h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: 24 }}>
+
+            {/* FAQ 1 — Football Reputation */}
+            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 16, padding: '28px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: 28 }}>⚽</span>
+                <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#8B5CF6', margin: 0 }}>
+                  What is Football Reputation?
+                </h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  ['⚽', 'Prove your football knowledge — your predictions become your evidence.'],
+                  ['🏆', 'Build a lasting record — grows with every prediction, every competition.'],
+                  ['📈', 'Climb the rankings — see how you compare with fans globally.'],
+                  ['👥', 'Challenge friends — turn football debates into real competition.'],
+                  ['🏟️', 'Stand out in Private Leagues — prove who really knows football.'],
+                  ['🔒', 'Permanent record — predictions are locked before kick-off. No edits.'],
+                  ['🔄', 'Keep improving — learn from every prediction, make the next one better.'],
+                ].map(([icon, text]) => (
+                  <div key={text as string} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                    <span style={{ fontSize: 13, color: '#9CA3AF', lineHeight: 1.6 }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 20, padding: '12px 16px', backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 10 }}>
+                <p style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700, margin: 0, textAlign: 'center' }}>
+                  🎯 Don't just say you know football. Prove it.
+                </p>
+                <p style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0', textAlign: 'center' }}>Predict. Prove. Repeat.</p>
+              </div>
+            </div>
+
+            {/* FAQ 2 — Nation Battle */}
+            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 16, padding: '28px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                <span style={{ fontSize: 28 }}>🌍</span>
+                <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#F59E0B', margin: 0 }}>
+                  What is Nation Battle?
+                </h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  ['🌍', 'Represent your country through your football predictions.'],
+                  ['🇮🇳🇮🇩🇬🇭🇳🇬', 'Choose your nation — compete with fans from every country.'],
+                  ['⚽', 'Your predictions contribute to your nation's global performance.'],
+                  ['🏆', 'Climb the global Nation Battle rankings with your country.'],
+                  ['👥', 'Compete individually while contributing to something bigger.'],
+                ].map(([icon, text]) => (
+                  <div key={text as string} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                    <span style={{ fontSize: 13, color: '#9CA3AF', lineHeight: 1.6 }}>{text}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 20, padding: '12px 16px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10 }}>
+                <p style={{ fontSize: 13, color: '#F59E0B', fontWeight: 700, margin: 0, textAlign: 'center' }}>
+                  🔥 Your prediction. Your reputation. Your nation.
+                </p>
+                <p style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0', textAlign: 'center' }}>Predict for yourself. Compete for your country.</p>
+              </div>
+              <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <a href="/nations" style={{ fontSize: 13, color: '#F59E0B', textDecoration: 'none', fontWeight: 700 }}>
+                  View Nation Battle standings →
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom CTA */}
+          <div style={{ textAlign: 'center', marginTop: 48 }}>
+            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '16px 48px', borderRadius: 12, textDecoration: 'none', fontSize: 16, fontWeight: 700, boxShadow: '0 0 40px rgba(139,92,246,0.3)', marginBottom: 12 }}>
+              ⚽ Start Predicting Free →
+            </a>
+            <p style={{ fontSize: 12, color: '#4B5563', margin: 0 }}>Free forever · No betting · No card required</p>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
