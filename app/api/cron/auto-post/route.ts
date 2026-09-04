@@ -1,6 +1,5 @@
 // app/api/cron/auto-post/route.ts
-// Runs every 30 min — finds recently completed matches and posts to X + Facebook
-// Posts once per match — tracks posted matches in a simple DB flag
+// Called by match processor after each match completes — posts result to X + Facebook
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
@@ -27,20 +26,34 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   const secretParam = request.nextUrl.searchParams.get('secret')
   const isVercelCron = request.headers.get('x-vercel-cron-signature') !== null
+    || request.headers.get('user-agent')?.includes('vercel')
   const isAuthorized = authHeader === `Bearer ${process.env.CRON_SECRET}`
     || secretParam === process.env.CRON_SECRET
     || isVercelCron
-  if (!isAuthorized) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!isAuthorized) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
+  // Env var check
+  const xApiKey = process.env.X_API_KEY || ''
+  const xApiSecret = process.env.X_API_SECRET || ''
+  const xAccessToken = process.env.X_ACCESS_TOKEN || ''
+  const xAccessSecret = process.env.X_ACCESS_SECRET || ''
+  const hasX = !!(xApiKey && xApiSecret && xAccessToken && xAccessSecret)
+
+  const envCheck = {
+    has_api_key: !!xApiKey,
+    has_api_secret: !!xApiSecret,
+    has_access_token: !!xAccessToken,
+    has_access_secret: !!xAccessSecret,
+    api_key_prefix: xApiKey.substring(0, 6),
+    access_token_prefix: xAccessToken.substring(0, 6),
+  }
+
   try {
-    // Accept specific match_id from match processor OR find recent unposted matches
     const matchId = request.nextUrl.searchParams.get('match_id')
     let query = supabase
       .from('matches')
@@ -58,16 +71,15 @@ export async function GET(request: NextRequest) {
     const { data: matches } = await query
 
     if (!matches || matches.length === 0) {
-      return NextResponse.json({ posted: 0, message: 'No new matches to post' })
+      return NextResponse.json({ posted: 0, message: 'No new matches to post', env_check: envCheck })
     }
 
     const posted = []
 
     for (const match of matches) {
-      // Get top predictor for this match
       const { data: topPred } = await supabase
         .from('predictions')
-        .select('user_id, points_earned, predicted_home_score, predicted_away_score')
+        .select('user_id, points_earned')
         .eq('match_id', match.id)
         .eq('prediction_processed', true)
         .order('points_earned', { ascending: false })
@@ -84,7 +96,6 @@ export async function GET(request: NextRequest) {
         topUsername = profile?.username || ''
       }
 
-      // Get total predictions for this match
       const { count: predCount } = await supabase
         .from('predictions')
         .select('*', { count: 'exact', head: true })
@@ -95,64 +106,64 @@ export async function GET(request: NextRequest) {
       const score = `${match.home_score}-${match.away_score}`
       const upset = match.is_upset ? '\n🚨 UPSET RESULT!' : ''
 
-      // Build post text
-      const postText = `${emoji} FULL TIME
-${match.home_team} ${score} ${match.away_team}${upset}
-
-${topUsername ? `🎯 Top predictor: @${topUsername} (+${topPred?.points_earned} pts)` : ''}
-👥 ${predCount || 0} predictions made
-
-Predict next → flipseer.com/predict
-${hashtags}`
+      const postText = `${emoji} FULL TIME\n${match.home_team} ${score} ${match.away_team}${upset}\n\n${topUsername ? `🎯 Top predictor: @${topUsername} (+${topPred?.points_earned} pts)\n` : ''}👥 ${predCount || 0} predictions made\n\nPredict next → flipseer.com/predict\n${hashtags}`
 
       let xPosted = false
+      let xError = ''
       let fbPosted = false
 
-      // POST TO X (Twitter)
-      if (process.env.X_BEARER_TOKEN && process.env.X_API_KEY && process.env.X_API_SECRET && process.env.X_ACCESS_TOKEN && process.env.X_ACCESS_SECRET) {
+      // POST TO X using OAuth 1.0a
+      if (hasX) {
         try {
-          // Twitter OAuth 1.0a signing
           const crypto = await import('crypto')
+          const baseUrl = 'https://api.twitter.com/2/tweets'
           const timestamp = Math.floor(Date.now() / 1000).toString()
           const nonce = crypto.randomBytes(16).toString('hex')
 
           const oauthParams: Record<string, string> = {
-            oauth_consumer_key: process.env.X_API_KEY,
+            oauth_consumer_key: xApiKey,
             oauth_nonce: nonce,
             oauth_signature_method: 'HMAC-SHA1',
             oauth_timestamp: timestamp,
-            oauth_token: process.env.X_ACCESS_TOKEN,
+            oauth_token: xAccessToken,
             oauth_version: '1.0',
           }
 
-          const body = JSON.stringify({ text: postText })
-          const baseUrl = 'https://api.twitter.com/2/tweets'
           const paramStr = Object.keys(oauthParams).sort()
             .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(oauthParams[k])}`)
             .join('&')
-          const sigBase = `POST&${encodeURIComponent(baseUrl)}&${encodeURIComponent(paramStr)}`
-          const sigKey = `${encodeURIComponent(process.env.X_API_SECRET)}&${encodeURIComponent(process.env.X_ACCESS_SECRET)}`
-          const signature = crypto.createHmac('sha1', sigKey).update(sigBase).digest('base64')
 
+          const sigBase = [
+            'POST',
+            encodeURIComponent(baseUrl),
+            encodeURIComponent(paramStr),
+          ].join('&')
+
+          const sigKey = `${encodeURIComponent(xApiSecret)}&${encodeURIComponent(xAccessSecret)}`
+          const signature = crypto.createHmac('sha1', sigKey).update(sigBase).digest('base64')
           oauthParams['oauth_signature'] = signature
-          const authHeader = 'OAuth ' + Object.keys(oauthParams).sort()
+
+          const oauthHeader = 'OAuth ' + Object.keys(oauthParams).sort()
             .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauthParams[k])}"`)
             .join(', ')
 
           const xRes = await fetch(baseUrl, {
             method: 'POST',
-            headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
-            body,
+            headers: {
+              'Authorization': oauthHeader,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: postText }),
           })
-          const xBody = await xRes.text()
+
+          const xResponseText = await xRes.text()
           xPosted = xRes.ok
           if (!xRes.ok) {
-            console.error('X post error:', xRes.status, xBody)
-            posted.push({ match: `${match.home_team} ${score} ${match.away_team}`, x: false, facebook: false, x_status: xRes.status, x_error: xBody })
-            await supabase.from('matches').update({ social_posted: true }).eq('id', match.id)
-            return NextResponse.json({ posted: 0, results: posted })
+            xError = `${xRes.status}: ${xResponseText}`
           }
-        } catch (e) { console.error('X post failed:', e) }
+        } catch (e: any) {
+          xError = `Exception: ${e.message}`
+        }
       }
 
       // POST TO FACEBOOK
@@ -170,24 +181,22 @@ ${hashtags}`
             }
           )
           fbPosted = fbRes.ok
-        } catch (e) { console.error('Facebook post failed:', e) }
+        } catch (e) {}
       }
 
-      // Mark as posted
-      await supabase
-        .from('matches')
-        .update({ social_posted: true })
-        .eq('id', match.id)
+      await supabase.from('matches').update({ social_posted: true }).eq('id', match.id)
 
       posted.push({
         match: `${match.home_team} ${score} ${match.away_team}`,
         x: xPosted,
+        x_error: xError || undefined,
         facebook: fbPosted,
       })
     }
 
-    return NextResponse.json({ posted: posted.length, results: posted })
+    return NextResponse.json({ posted: posted.length, results: posted, env_check: envCheck })
+
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err.message, env_check: envCheck }, { status: 500 })
   }
 }
