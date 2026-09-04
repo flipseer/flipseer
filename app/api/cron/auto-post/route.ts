@@ -42,7 +42,8 @@ export async function GET(request: NextRequest) {
   const xApiSecret = process.env.X_API_SECRET || ''
   const xAccessToken = process.env.X_ACCESS_TOKEN || ''
   const xAccessSecret = process.env.X_ACCESS_SECRET || ''
-  const hasX = !!(xApiKey && xApiSecret && xAccessToken && xAccessSecret)
+  const xOauth2Token = process.env.X_OAUTH2_TOKEN || ''
+  const hasX = !!(xOauth2Token || (xApiKey && xApiSecret && xAccessToken && xAccessSecret))
 
   const envCheck = {
     has_api_key: !!xApiKey,
