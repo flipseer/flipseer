@@ -628,7 +628,7 @@ export default function Home() {
               border: '1px solid ' + (live ? color + '80' : '#1A3A1A'),
               borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0,
               animation: live ? 'bannerGlow 2s ease-in-out infinite' : 'none',
-              boxShadow: live ? `0 0 8px ${color}30` : 'none',
+              boxShadow: live ? '0 0 8px rgba(0,0,0,0.2)' : 'none',
               transition: 'all 0.2s ease',
             }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
