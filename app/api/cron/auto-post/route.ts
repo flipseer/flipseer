@@ -129,6 +129,7 @@ export async function GET(request: NextRequest) {
           xPosted = xRes.ok
           if (!xRes.ok) {
             xError = `${xRes.status}: ${xResponseText}`
+
           }
         } catch (e: any) {
           xError = `Exception: ${e.message}`
@@ -154,6 +155,26 @@ export async function GET(request: NextRequest) {
       }
 
       await supabase.from('matches').update({ social_posted: true }).eq('id', match.id)
+
+      // Email admin with post text — ready to share
+      try {
+        const { Resend } = await import('resend')
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        await resend.emails.send({
+          from: 'Flipseer <noreply@flipseer.com>',
+          to: 'contact@flipseer.com',
+          subject: `⚽ ${match.home_team} ${score} ${match.away_team} — Share Now`,
+          html: `<div style="font-family:Arial;padding:24px;background:#0D1F0F;color:white;max-width:600px">
+            <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin-bottom:8px">FLIPSEER · MATCH RESULT</p>
+            <h2 style="font-family:Georgia,serif;font-size:22px;margin:0 0 20px;color:white">${match.home_team} ${score} ${match.away_team}</h2>
+            <div style="background:#0D2B14;padding:18px;border-radius:10px;white-space:pre-wrap;font-size:14px;color:white;border:1px solid #2E9E5E;line-height:1.7">
+              ${postText.replace(/
+/g, '<br/>')}
+            </div>
+            <p style="color:#4B5563;font-size:11px;margin-top:16px;text-align:center">flipseer.com · contact@flipseer.com</p>
+          </div>`,
+        })
+      } catch (emailErr) {}
 
       posted.push({
         match: `${match.home_team} ${score} ${match.away_team}`,
