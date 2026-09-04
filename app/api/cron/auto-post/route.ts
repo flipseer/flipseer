@@ -25,8 +25,12 @@ const COMP_EMOJI: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
+  const secretParam = request.nextUrl.searchParams.get('secret')
   const isVercelCron = request.headers.get('x-vercel-cron-signature') !== null
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && !isVercelCron) {
+  const isAuthorized = authHeader === `Bearer ${process.env.CRON_SECRET}`
+    || secretParam === process.env.CRON_SECRET
+    || isVercelCron
+  if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
