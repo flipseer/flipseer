@@ -112,50 +112,18 @@ export async function GET(request: NextRequest) {
       let xError = ''
       let fbPosted = false
 
-      // POST TO X using OAuth 1.0a
+      // POST TO X using OAuth 2.0 user access token
       if (hasX) {
         try {
-          const crypto = await import('crypto')
-          const baseUrl = 'https://api.twitter.com/2/tweets'
-          const timestamp = Math.floor(Date.now() / 1000).toString()
-          const nonce = crypto.randomBytes(16).toString('hex')
-
-          const oauthParams: Record<string, string> = {
-            oauth_consumer_key: xApiKey,
-            oauth_nonce: nonce,
-            oauth_signature_method: 'HMAC-SHA1',
-            oauth_timestamp: timestamp,
-            oauth_token: xAccessToken,
-            oauth_version: '1.0',
-          }
-
-          const paramStr = Object.keys(oauthParams).sort()
-            .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(oauthParams[k])}`)
-            .join('&')
-
-          const sigBase = [
-            'POST',
-            encodeURIComponent(baseUrl),
-            encodeURIComponent(paramStr),
-          ].join('&')
-
-          const sigKey = `${encodeURIComponent(xApiSecret)}&${encodeURIComponent(xAccessSecret)}`
-          const signature = crypto.createHmac('sha1', sigKey).update(sigBase).digest('base64')
-          oauthParams['oauth_signature'] = signature
-
-          const oauthHeader = 'OAuth ' + Object.keys(oauthParams).sort()
-            .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauthParams[k])}"`)
-            .join(', ')
-
-          const xRes = await fetch(baseUrl, {
+          const token = xOauth2Token || xAccessToken
+          const xRes = await fetch('https://api.twitter.com/2/tweets', {
             method: 'POST',
             headers: {
-              'Authorization': oauthHeader,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ text: postText }),
           })
-
           const xResponseText = await xRes.text()
           xPosted = xRes.ok
           if (!xRes.ok) {
