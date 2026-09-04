@@ -555,6 +555,9 @@ export default function Home() {
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.8; } 94% { opacity: 1; } }
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes bannerPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes liveBadgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.95); } }
+        @keyframes ctaPulse { 0%, 100% { box-shadow: 0 0 12px rgba(46,158,94,0.3); } 50% { box-shadow: 0 0 24px rgba(46,158,94,0.6); } }
       `}</style>
       {/* TICKER */}
       <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0' }}>
@@ -624,7 +627,7 @@ export default function Home() {
               backgroundColor: live ? color + '18' : 'transparent',
               border: '1px solid ' + (live ? color + '80' : '#1A3A1A'),
               borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0,
-              animation: live ? `bannerGlow 2s ease-in-out ${i * 0.3}s infinite` : 'none',
+              animation: live ? 'bannerGlow 2s ease-in-out infinite' : 'none',
               boxShadow: live ? `0 0 8px ${color}30` : 'none',
               transition: 'all 0.2s ease',
             }}>
