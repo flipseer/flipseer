@@ -144,7 +144,14 @@ ${hashtags}`
             headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
             body,
           })
+          const xBody = await xRes.text()
           xPosted = xRes.ok
+          if (!xRes.ok) {
+            console.error('X post error:', xRes.status, xBody)
+            posted.push({ match: `${match.home_team} ${score} ${match.away_team}`, x: false, facebook: false, x_status: xRes.status, x_error: xBody })
+            await supabase.from('matches').update({ social_posted: true }).eq('id', match.id)
+            return NextResponse.json({ posted: 0, results: posted })
+          }
         } catch (e) { console.error('X post failed:', e) }
       }
 
