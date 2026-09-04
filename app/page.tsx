@@ -508,16 +508,16 @@ export default function Home() {
             'DE': 'Germany', 'ES': 'Spain', 'PT': 'Portugal', 'MX': 'Mexico',
             'US': 'USA', 'MA': 'Morocco', 'JP': 'Japan', 'KR': 'South Korea',
           };
-          const sorted = Object.entries(nationMap)
+          const nationsSorted = Object.entries(nationMap)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5)
-            .map(([code, pts], i) => ({
-              rank: i + 1,
+            .map(([code, pts], idx) => ({
+              rank: idx + 1,
               flag: FLAGS[code] || '🌍',
               name: NAMES[code] || code,
               pts,
             }));
-          setTopNations(sorted);
+          setTopNations(nationsSorted);
         }
 
         const { data: nextMatch } = await supabase.from('matches').select('kickoff').eq('competition', 'EPL 2026/27').in('status', ['upcoming', 'locked']).order('kickoff', { ascending: true }).limit(1).single();
