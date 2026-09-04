@@ -611,23 +611,45 @@ export default function Home() {
       {/* LIVE COMPETITIONS PREDICT BANNER */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '10px 20px', overflowX: 'auto' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', minWidth: 'max-content' }}>
-          <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', flexShrink: 0 }}>PREDICT TODAY:</span>
+          <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', flexShrink: 0, animation: 'bannerPulse 2s ease-in-out infinite' }}>⚡ PREDICT TODAY:</span>
           {[
             { href: '/predict', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6', live: true },
             { href: '/predict', flag: '🇮🇩', name: 'Liga 1', color: '#CE1126', live: true },
             { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
             { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: false, soon: 'Sep 17' },
             { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: false, soon: 'Oct 10' },
-          ].map(({ href, flag, name, color, live, soon }) => (
-            <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '15' : 'transparent', border: '1px solid ' + (live ? color + '60' : '#1A3A1A'), borderRadius: '999px', padding: '4px 12px', textDecoration: 'none', flexShrink: 0 }}>
+          ].map(({ href, flag, name, color, live, soon }, i) => (
+            <a key={name} href={href} style={{
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              backgroundColor: live ? color + '18' : 'transparent',
+              border: '1px solid ' + (live ? color + '80' : '#1A3A1A'),
+              borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0,
+              animation: live ? `bannerGlow 2s ease-in-out ${i * 0.3}s infinite` : 'none',
+              boxShadow: live ? `0 0 8px ${color}30` : 'none',
+              transition: 'all 0.2s ease',
+            }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
-              <span style={{ fontSize: '11px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
+              <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
               {live
-                ? <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '1px 5px', borderRadius: '999px', fontWeight: 'bold' }}>10/day</span>
-                : <span style={{ fontSize: '9px', color: '#4B5563' }}>{soon}</span>
+                ? <span style={{
+                    fontSize: '9px', backgroundColor: color, color: 'white',
+                    padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold',
+                    animation: 'liveBadgePulse 1.5s ease-in-out infinite',
+                  }}>10/day</span>
+                : <span style={{ fontSize: '9px', color: '#4B5563', fontStyle: 'italic' }}>{soon}</span>
               }
             </a>
           ))}
+          <a href="/predict" style={{
+            display: 'inline-flex', alignItems: 'center', gap: '4px',
+            backgroundColor: '#2E9E5E', color: 'white',
+            borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0,
+            fontSize: '11px', fontWeight: 'bold',
+            animation: 'ctaPulse 1.5s ease-in-out infinite',
+            boxShadow: '0 0 16px rgba(46,158,94,0.4)',
+          }}>
+            Predict Now →
+          </a>
         </div>
       </div>
 
