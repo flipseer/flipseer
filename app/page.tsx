@@ -1013,7 +1013,7 @@ export default function Home() {
                 {[
                   ['🌍', 'Represent your country through your football predictions.'],
                   ['🇮🇳🇮🇩🇬🇭🇳🇬', 'Choose your nation — compete with fans from every country.'],
-                  ['⚽', 'Your predictions contribute to your nation's global performance.'],
+                  ['⚽', 'Your predictions contribute to your nation&apos;s global performance.'],
                   ['🏆', 'Climb the global Nation Battle rankings with your country.'],
                   ['👥', 'Compete individually while contributing to something bigger.'],
                 ].map(([icon, text]) => (
