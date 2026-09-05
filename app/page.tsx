@@ -215,7 +215,7 @@ function UpcomingMatches() {
       const { data } = await supabase
         .from('matches')
         .select('id, home_team, away_team, kickoff, status, league, competition')
-        .eq('competition', 'EPL 2026/27')
+        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
         .limit(5);
@@ -299,7 +299,7 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>View all EPL Matchweek 1 fixtures →</a>
+          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · Liga 1 · Ghana PL →</a>
         </div>
       </div>
     </section>
@@ -355,7 +355,7 @@ function ClaimModal() {
             </div>
           </div>
           <button onClick={() => window.location.href = '/auth'} style={{ width: '100%', padding: '13px', backgroundColor: '#8B5CF6', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 0 20px rgba(139,92,246,0.3)' }}>
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL Free →
+            ⚽ Predict Free →
           </button>
           <button onClick={() => setShow(false)} style={{ width: '100%', padding: '9px', backgroundColor: 'transparent', color: '#6B7280', border: 'none', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>
             Maybe Later
@@ -660,7 +660,7 @@ export default function Home() {
       <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27 starts August 21 — Earn the EPL Founding Forecaster badge — Free forever
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free — Build your Football Reputation forever
           </span>
           <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Predict Now →
@@ -687,7 +687,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>EPL 2026/27 · STARTS AUGUST 21</span>
+          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · LIVE NOW</span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           {heroNation && nationRank > 0 ? (
@@ -705,7 +705,7 @@ export default function Home() {
           )}
         </h1>
         <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 28px', fontFamily: 'Georgia, serif' }}>
-          Predict EPL matches before kick-off. Build a permanent Football Reputation.{' '}
+          Predict EPL, Liga 1 and Ghana PL matches before kick-off. Build a permanent Football Reputation.{' '}
           <span style={{ color: '#8B5CF6' }}>Represent your country.</span>
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
@@ -720,7 +720,7 @@ export default function Home() {
           Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
         </p>
         <p style={{ fontSize: '13px', color: '#6B7280' }}>
-          Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private EPL league</a> with your WhatsApp group.
+          Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
         </p>
         {mounted && (nationForecasters > 0 || nextMatchCountdown) && (
           <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69' }}>
