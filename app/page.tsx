@@ -308,100 +308,55 @@ function UpcomingMatches() {
 // ── CLAIM MODAL ──
 function ClaimModal() {
   const [show, setShow] = useState(false);
-  const [forecasters, setForecasters] = useState(52);
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) return;
-      const seen = sessionStorage.getItem('flipseer_claim_modal');
+      const seen = sessionStorage.getItem('flipseer_welcome_modal');
       if (seen) return;
-      const fetchData = async () => {
-        try {
-          const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).gt('prediction_count', 0);
-          if (count) setForecasters(count);
-        } catch (e) {}
-        setTimeout(() => { setShow(true); sessionStorage.setItem('flipseer_claim_modal', '1'); }, 10000);
-      };
-      fetchData();
+      setTimeout(() => { setShow(true); sessionStorage.setItem('flipseer_welcome_modal', '1'); }, 3000);
     });
   }, []);
+
   if (!mounted || !show) return null;
+
   return (
-    <>
-      <style>{`
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(40px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes backdropFade { from { opacity: 0; } to { opacity: 1; } }
-        .claim-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; animation: backdropFade 0.3s ease forwards; }
-        .claim-box { background: #0D2B14; border: 1px solid #8B5CF6; border-radius: 20px; padding: 28px 24px; max-width: 360px; width: 100%; box-shadow: 0 0 60px rgba(139,92,246,0.25); animation: modalSlideUp 0.4s ease forwards; position: relative; font-family: Arial, sans-serif; }
-      `}</style>
-      <div className="claim-backdrop" onClick={() => setShow(false)}>
-        <div className="claim-box" onClick={e => e.stopPropagation()}>
-          <button onClick={() => setShow(false)} style={{ position: 'absolute', top: '12px', right: '14px', background: 'transparent', border: 'none', color: '#8895A3', fontSize: '20px', cursor: 'pointer' }}>×</button>
-          <div style={{ marginBottom: '16px' }}>
-            <span style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27 · STARTS AUGUST 21</span>
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }} onClick={() => setShow(false)}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '380px', backgroundColor: '#0D1F0F', border: '2px solid #8B5CF6', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px rgba(139,92,246,0.4)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#4C1D95,#8B5CF6)', padding: '24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚽</div>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>3 Leagues. Live Now.</h2>
+          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>Build your permanent Football Reputation</p>
+        </div>
+        <div style={{ padding: '20px 24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            {[
+              { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', color: '#8B5CF6' },
+              { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', color: '#CE1126' },
+              { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', color: '#F59E0B' },
+              { flag: '⭐', name: 'UCL 2026/27', status: 'SEP 17', color: '#A78BFA' },
+            ].map(({ flag, name, status, color }) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 12px' }}>
+                <span style={{ fontSize: '14px' }}>{flag} <span style={{ color: 'white', fontSize: '13px' }}>{name}</span></span>
+                <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>{status}</span>
+              </div>
+            ))}
           </div>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '21px', color: 'white', marginBottom: '14px', lineHeight: '1.3' }}>
-            <span style={{ color: '#8B5CF6' }}>Earn the EPL Founding</span><br />
-            Forecaster badge.<br />
-            <span style={{ fontSize: '15px', color: '#9CA3AF' }}>Available Matchweek 1 only.</span>
-          </h2>
-          <div style={{ backgroundColor: '#050E05', border: '1px solid #2D1B69', borderRadius: '10px', padding: '12px 14px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>{forecasters} forecasters</span> already building their reputation
-            </div>
-            <div style={{ fontSize: '11px', color: '#8895A3', fontStyle: 'italic', marginTop: '8px', borderTop: '1px solid #1A3A1A', paddingTop: '8px' }}>
-              Predict before Aug 24. Badge awarded permanently. 🔒
-            </div>
-          </div>
-          <button onClick={() => window.location.href = '/auth'} style={{ width: '100%', padding: '13px', backgroundColor: '#8B5CF6', color: 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 0 20px rgba(139,92,246,0.3)' }}>
-            ⚽ Predict Free →
-          </button>
-          <button onClick={() => setShow(false)} style={{ width: '100%', padding: '9px', backgroundColor: 'transparent', color: '#6B7280', border: 'none', borderRadius: '10px', fontSize: '12px', cursor: 'pointer' }}>
+          <a href="/predict" style={{ display: 'block', backgroundColor: '#8B5CF6', color: 'white', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+            ⚽ Start Predicting Free →
+          </a>
+          <button onClick={() => setShow(false)} style={{ width: '100%', backgroundColor: 'transparent', border: 'none', color: '#4B5563', padding: '8px', cursor: 'pointer', fontSize: '13px' }}>
             Maybe Later
           </button>
-          <p style={{ fontSize: '10px', color: '#8895A3', textAlign: 'center', marginTop: '8px' }}>Free forever · No betting · No card required</p>
+          <p style={{ fontSize: '11px', color: '#4B5563', textAlign: 'center', margin: '8px 0 0' }}>Free forever · No betting · No card required</p>
         </div>
       </div>
-    </>
-  );
-}
-// ── WELCOME CONFETTI ──
-const PARTICLES = [
-  { id: 0, left: 5, delay: 0.0, dur: 3.0, icon: '&#x1F3F4;', size: 24 },
-  { id: 1, left: 20, delay: 0.3, dur: 2.8, icon: '&#x1F3C6;', size: 18 },
-  { id: 2, left: 35, delay: 0.1, dur: 3.2, icon: '&#x2B50;', size: 20 },
-  { id: 3, left: 50, delay: 0.5, dur: 2.6, icon: '&#x1F3F4;', size: 28 },
-  { id: 4, left: 65, delay: 0.2, dur: 3.5, icon: '&#x1F3C6;', size: 22 },
-  { id: 5, left: 80, delay: 0.4, dur: 2.9, icon: '&#x1F3F4;', size: 16 },
-  { id: 6, left: 92, delay: 0.1, dur: 3.1, icon: '&#x2B50;', size: 26 },
-];
-function WelcomeConfetti() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const seen = sessionStorage.getItem('flipseer_welcome');
-    if (!seen) { setShow(true); sessionStorage.setItem('flipseer_welcome', '1'); setTimeout(() => setShow(false), 4500); }
-  }, []);
-  if (!show) return null;
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 999, overflow: 'hidden' }}>
-      <style>{`
-        @keyframes fall { 0% { transform: translateY(-60px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
-        @keyframes fadeWelcome { 0% { opacity: 0; transform: translate(-50%,-50%) scale(0.8); } 20% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(0.9); } }
-      `}</style>
-      <div style={{ position: 'fixed', top: '50%', left: '50%', textAlign: 'center', animation: 'fadeWelcome 4s forwards', zIndex: 1000, pointerEvents: 'none', backgroundColor: 'rgba(13,31,15,0.92)', border: '2px solid #8B5CF6', borderRadius: '20px', padding: '28px 40px', boxShadow: '0 0 60px rgba(139,92,246,0.4)' }}>
-        <div style={{ fontSize: '48px', marginBottom: '10px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
-        <div style={{ fontSize: '13px', color: '#8B5CF6', marginTop: '6px' }}>Build your permanent football legacy</div>
-        <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '4px' }}>EPL 2026/27 · Starts Aug 21</div>
-      </div>
-      {PARTICLES.map((p) => (
-        <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
-          style={{ position: 'absolute', left: p.left + '%', top: '-60px', fontSize: p.size + 'px', animation: 'fall ' + p.dur + 's ' + p.delay + 's ease-in forwards' }} />
-      ))}
     </div>
   );
 }
+
 // ── MAIN HOME PAGE ──
 export default function Home() {
   const [mounted, setMounted] = useState(false);
