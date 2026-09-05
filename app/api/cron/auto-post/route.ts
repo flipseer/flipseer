@@ -168,8 +168,7 @@ export async function GET(request: NextRequest) {
             <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin-bottom:8px">FLIPSEER · MATCH RESULT</p>
             <h2 style="font-family:Georgia,serif;font-size:22px;margin:0 0 20px;color:white">${match.home_team} ${score} ${match.away_team}</h2>
             <div style="background:#0D2B14;padding:18px;border-radius:10px;white-space:pre-wrap;font-size:14px;color:white;border:1px solid #2E9E5E;line-height:1.7">
-              ${postText.replace(/
-/g, '<br/>')}
+              ${postText.split('\n').join('<br/>')}
             </div>
             <p style="color:#4B5563;font-size:11px;margin-top:16px;text-align:center">flipseer.com · contact@flipseer.com</p>
           </div>`,
