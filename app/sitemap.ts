@@ -6,25 +6,27 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// Only pages that actually exist
 const NATION_SLUGS = [
-  'india', 'indonesia', 'nigeria', 'ghana',
+  'india', 'indonesia', 'nigeria', 'ghana', 'morocco', 'egypt',
 ]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://flipseer.com'
   const now = new Date()
 
-  // Static pages — only pages that actually exist and don't redirect
   const staticPages: MetadataRoute.Sitemap = [
     { url: baseUrl,                                    lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/predict`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/nations`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/leaderboard`,                   lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
-    { url: `${baseUrl}/results`,                       lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/groups`,                        lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${baseUrl}/epl`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/ucl`,                           lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/world-cup-2026`,                lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/ghana`,                         lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/indonesia`,                     lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/nigeria`,                       lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${baseUrl}/india`,                         lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${baseUrl}/morocco`,                       lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
+    { url: `${baseUrl}/egypt`,                         lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${baseUrl}/how-to-play`,                   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/how-to-predict-football`,       lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/football-reputation`,           lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -32,74 +34,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/about`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${baseUrl}/privacy`,                       lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
     { url: `${baseUrl}/terms`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
-    // League landing pages
-    { url: `${baseUrl}/leagues/office`,                lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/leagues/family`,                lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/leagues/university`,            lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/leagues/friends`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/leagues/country`,               lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/leagues/football-club-fan`,     lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/epl`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${baseUrl}/ucl`,                           lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/ghana`,                         lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/indonesia`,                     lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/nigeria`,                       lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
-    { url: `${baseUrl}/india`,                         lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
   ]
 
-  // Nation SEO pages
-  const nationPages: MetadataRoute.Sitemap = NATION_SLUGS.map(slug => ({
-    url: `${baseUrl}/${slug}`,
-    lastModified: now,
-    changeFrequency: 'daily' as const,
-    priority: 0.8,
-  }))
-
-  // World Cup match pages — completed only (stable URLs, no redirects)
+  // Match SEO pages — World Cup only (completed matches)
   let matchSeoPages: MetadataRoute.Sitemap = []
   try {
-    const { data: matches, error } = await supabase
+    const { data: matches } = await supabase
       .from('matches')
       .select('home_team, away_team, kickoff, status')
       .eq('competition', 'World Cup 2026')
-      .eq('status', 'completed')
       .not('home_team', 'is', null)
       .not('away_team', 'is', null)
       .order('kickoff', { ascending: true })
 
-    if (!error && matches) {
-      matchSeoPages = matches
-        .filter(m =>
-          m.home_team &&
-          m.away_team &&
-          m.home_team !== 'World Cup Team' &&
-          m.away_team !== 'World Cup Team'
-        )
-        .map((m) => {
-          const cleanTeam = (name: string) => name
-            .toLowerCase()
-            .replace(/&/g, 'and')
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '')
-          const slug = `${cleanTeam(m.home_team)}-vs-${cleanTeam(m.away_team)}`
-          return {
-            url: `${baseUrl}/matches/${slug}`,
-            lastModified: new Date(m.kickoff),
-            changeFrequency: 'monthly' as const,
-            priority: 0.6,
-          }
-        })
-    }
+    matchSeoPages = (matches ?? []).map((m) => {
+      const cleanTeam = (name: string) => name
+        .toLowerCase()
+        .replace(/&/g, 'and')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+      const slug = `${cleanTeam(m.home_team)}-vs-${cleanTeam(m.away_team)}`
+      return {
+        url: `${baseUrl}/matches/${slug}`,
+        lastModified: new Date(m.kickoff),
+        changeFrequency: m.status === 'completed' ? 'monthly' as const : 'daily' as const,
+        priority: m.status === 'upcoming' ? 0.9 : 0.7,
+      }
+    })
   } catch (e) {
-    console.error('Sitemap match fetch exception:', e)
+    console.error('Sitemap match fetch error:', e)
   }
 
-  // Public profile pages — active users only
+  // Public profile pages — only active predictors
   let profilePages: MetadataRoute.Sitemap = []
   try {
-    const { data: profiles, error } = await supabase
+    const { data: profiles } = await supabase
       .from('profiles')
       .select('username, prediction_count')
       .not('username', 'is', null)
@@ -107,23 +78,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order('prediction_count', { ascending: false })
       .limit(500)
 
-    if (!error && profiles) {
-      profilePages = profiles
-        .filter(p => p.username && p.username.length > 0)
-        .map((p) => ({
-          url: `${baseUrl}/u/${p.username}`,
-          lastModified: now,
-          changeFrequency: 'weekly' as const,
-          priority: 0.6,
-        }))
-    }
+    profilePages = (profiles ?? [])
+      .filter(p => p.username && p.username.length > 0)
+      .map((p) => ({
+        url: `${baseUrl}/u/${p.username}`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
   } catch (e) {
-    console.error('Sitemap profile fetch exception:', e)
+    console.error('Sitemap profile fetch error:', e)
   }
 
   return [
     ...staticPages,
-    ...nationPages,
     ...matchSeoPages,
     ...profilePages,
   ]
