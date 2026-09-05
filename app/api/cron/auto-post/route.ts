@@ -97,17 +97,12 @@ export async function GET(request: NextRequest) {
         topUsername = profile?.username || ''
       }
 
-      const { count: predCount } = await supabase
-        .from('predictions')
-        .select('*', { count: 'exact', head: true })
-        .eq('match_id', match.id)
-
       const emoji = COMP_EMOJI[match.competition] || '⚽'
       const hashtags = COMP_HASHTAGS[match.competition] || '#Flipseer'
       const score = `${match.home_score}-${match.away_score}`
       const upset = match.is_upset ? '\n🚨 UPSET RESULT!' : ''
 
-      const postText = `${emoji} FULL TIME\n${match.home_team} ${score} ${match.away_team}${upset}\n\n${topUsername ? `🎯 Top predictor: @${topUsername} (+${topPred?.points_earned} pts)\n` : ''}👥 ${predCount || 0} predictions made\n\nPredict next → flipseer.com/predict\n${hashtags}`
+      const postText = `${emoji} FULL TIME\n${match.home_team} ${score} ${match.away_team}${upset}\n\n${topUsername ? `🎯 Top predictor: @${topUsername} (+${topPred?.points_earned} pts)\n` : ''}\nPredict next → flipseer.com/predict\n${hashtags}`
 
       let xPosted = false
       let xError = ''
