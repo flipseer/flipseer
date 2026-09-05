@@ -327,8 +327,8 @@ function ClaimModal() {
       <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '380px', backgroundColor: '#0D1F0F', border: '2px solid #8B5CF6', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px rgba(139,92,246,0.4)' }}>
         <div style={{ background: 'linear-gradient(135deg,#4C1D95,#8B5CF6)', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚽</div>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>3 Leagues. Live Now.</h2>
-          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>Build your permanent Football Reputation</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>Predict. Prove. Repeat.</h2>
+          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · Liga 1 · Ghana PL live now. UCL Sep 17.</p>
         </div>
         <div style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
@@ -347,9 +347,7 @@ function ClaimModal() {
           <a href="/predict" style={{ display: 'block', backgroundColor: '#8B5CF6', color: 'white', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
             ⚽ Start Predicting Free →
           </a>
-          <button onClick={() => setShow(false)} style={{ width: '100%', backgroundColor: 'transparent', border: 'none', color: '#4B5563', padding: '8px', cursor: 'pointer', fontSize: '13px' }}>
-            Maybe Later
-          </button>
+
           <p style={{ fontSize: '11px', color: '#4B5563', textAlign: 'center', margin: '8px 0 0' }}>Free forever · No betting · No card required</p>
         </div>
       </div>
