@@ -451,7 +451,7 @@ export default function Profile() {
       <div style={{ background: 'linear-gradient(180deg, #1A0B2E 0%, #0A1A0C 100%)', borderTop: '1px solid #2D1B69', borderBottom: '1px solid #2D1B69', padding: '20px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
           {[
-            { value: profile?.total_points ?? 0, label: 'TOTAL PTS', color: '#8B5CF6', big: true },
+            { value: profile?.total_points ?? 0, label: 'TOTAL REP', color: '#8B5CF6', big: true },
             { value: profile?.prediction_count ?? 0, label: 'PREDICTIONS', color: '#9CA3AF', big: false },
             { value: (profile?.accuracy_pct ?? 0) + '%', label: 'ACCURACY', color: '#F59E0B', big: false },
             { value: profile?.streak ?? 0, label: 'STREAK 🔥', color: '#EF4444', big: false },
@@ -528,7 +528,7 @@ export default function Profile() {
                     <span style={{ fontSize: '13px', color: active ? '#8B5CF6' : '#6B7280', fontWeight: active ? 'bold' : 'normal' }}>
                       {icon} {rank}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#6B7280' }}>{min}-{max === 9999 ? 'above' : max} pts</span>
+                    <span style={{ fontSize: '11px', color: '#6B7280' }}>{min}-{max === 9999 ? 'above' : max} rep</span>
                     {active && <span style={{ fontSize: '11px', backgroundColor: '#4C1D95', color: '#C4B5FD', padding: '2px 10px', borderRadius: '999px', fontWeight: 'bold' }}>YOU ✓</span>}
                   </div>
                 );
