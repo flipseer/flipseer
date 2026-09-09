@@ -217,7 +217,7 @@ export default function LeaderboardClient({ initialLeaders = [] }: { initialLead
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(32px, 7vw, 56px)', letterSpacing: '-1px', marginBottom: '8px', lineHeight: '1' }}>
           WHO LEADS THE<br />
-          <span style={{ color: activeComp.color }}>{activeCompetition ? activeComp.label.replace(/\p{Emoji}/u, '').trim() : 'GLOBAL FORECAST'}?</span>
+          <span style={{ color: activeComp.color }}>{activeCompetition ? activeComp.label.replace(/[^\x00-\x7F]/g, '').trim() : 'GLOBAL FORECAST'}?</span>
         </h1>
         <p style={{ color: '#4B5563', fontSize: '14px', marginTop: '12px' }}>
           {activeCompetition ? `Ranked by reputation earned predicting ${activeCompetition} matches` : 'Ranked by total points across all competitions'}
