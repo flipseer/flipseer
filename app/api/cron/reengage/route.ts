@@ -25,7 +25,8 @@ const COUNTRY: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const isVercelCron = request.headers.get('x-vercel-cron-signature') !== null
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -41,9 +42,9 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
     const { data: lastWeekMatches } = await supabase
       .from('matches')
-      .select('id, home_team, away_team, round, kickoff')
+      .select('id, home_team, away_team, round, kickoff, competition')
       .eq('status', 'completed')
-      .eq('competition', 'EPL 2026/27')
+      .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27'])
       .gte('kickoff', weekAgo)
 
     if (!lastWeekMatches || lastWeekMatches.length === 0) {
@@ -57,10 +58,10 @@ export async function GET(request: NextRequest) {
     // Get next matchweek fixtures
     const { data: nextMatches } = await supabase
       .from('matches')
-      .select('home_team, away_team, kickoff')
-      .eq('competition', 'EPL 2026/27')
-      .eq('round', `Regular Season - ${nextMatchweek}`)
+      .select('home_team, away_team, kickoff, competition')
+      .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27'])
       .in('status', ['upcoming', 'locked'])
+      .gte('kickoff', new Date().toISOString())
       .order('kickoff', { ascending: true })
       .limit(4)
 
@@ -130,8 +131,8 @@ export async function GET(request: NextRequest) {
       // Personalise message based on whether they've ever predicted
       const isNewUser = (profile.prediction_count || 0) === 0
       const subject = isNewUser
-        ? `🏴󠁧󠁢󠁥󠁮󠁧󠁿 @${profile.username} — Matchweek ${nextMatchweek} is open. Your record is still empty.`
-        : `🏴󠁧󠁢󠁥󠁮󠁧󠁿 @${profile.username} — You missed Matchweek ${matchweek}. Matchweek ${nextMatchweek} is open now.`
+        ? `⚽ @${profile.username} — New matches are open. Your record is still empty.`
+        : `⚽ @${profile.username} — You missed last week. New matches are open now.`
 
       const heroMessage = isNewUser
         ? `You signed up for Flipseer but haven't made your first prediction yet. <strong style="color:white">Matchweek ${nextMatchweek} is open right now.</strong>`
@@ -149,7 +150,7 @@ export async function GET(request: NextRequest) {
 
   <!-- HEADER -->
   <div style="background:linear-gradient(135deg,#4C1D95,#1A0B2E);padding:28px 32px;text-align:center">
-    <div style="font-size:11px;color:#C4B5FD;font-weight:bold;letter-spacing:3px;margin-bottom:8px">🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER · EPL 2026/27</div>
+    <div style="font-size:11px;color:#C4B5FD;font-weight:bold;letter-spacing:3px;margin-bottom:8px">⚽ FLIPSEER · EPL · LIGA 1 · GHANA PL</div>
     <h1 style="font-family:Georgia,serif;font-size:26px;margin:0;color:white">
       Matchweek ${nextMatchweek} is open.
     </h1>
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
     <div style="text-align:center">
       <a href="https://flipseer.com/predict?utm_source=email&utm_medium=weekly_reengage&utm_campaign=mw${nextMatchweek}"
         style="display:inline-block;background:#8B5CF6;color:white;padding:16px 40px;border-radius:10px;text-decoration:none;font-size:16px;font-weight:bold;box-shadow:0 0 24px rgba(139,92,246,0.3)">
-        🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict Matchweek ${nextMatchweek} Now →
+        ⚽ Predict Now →
       </a>
       <p style="font-size:11px;color:#4B5563;margin-top:10px">Free forever · No betting · No card required</p>
     </div>
@@ -202,7 +203,7 @@ export async function GET(request: NextRequest) {
 
   <!-- FOOTER -->
   <div style="padding:24px 32px;text-align:center">
-    <div style="font-size:18px;font-weight:bold;color:#8B5CF6;margin-bottom:12px">🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER</div>
+    <div style="font-size:18px;font-weight:bold;color:#8B5CF6;margin-bottom:12px">⚽ FLIPSEER</div>
     <p style="font-size:12px;color:#4B5563;margin:0 0 8px">Free forever · No betting · Pure football intelligence</p>
     <p style="font-size:11px;color:#2E4A2E;margin:0">
       © 2026 Flipseer · <a href="https://flipseer.com/unsubscribe?email=${email}" style="color:#4B5563;text-decoration:none">Unsubscribe</a>
