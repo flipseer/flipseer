@@ -526,13 +526,13 @@ export default function Home() {
             ];
             const userItems = topUsers.map(u => ({
               icon: u.rank_icon || '⚽',
-              text: '@' + u.username + ' · ' + u.total_points + ' pts',
+              text: '@' + u.username + ' · ' + u.total_points + ' rep',
               isUser: true,
               color: '#8B5CF6',
             }));
             const nationItems = topNations.map(n => ({
               icon: n.flag,
-              text: '#' + n.rank + ' ' + n.name + ' · ' + n.pts + ' pts',
+              text: '#' + n.rank + ' ' + n.name + ' · ' + n.pts + ' rep',
               isUser: true,
               color: '#F59E0B',
             }));
