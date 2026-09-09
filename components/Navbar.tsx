@@ -182,7 +182,8 @@ export default function Navbar() {
           </div>
 
           <div style={{ borderTop: '1px solid #1A3A1A', marginTop: '8px', paddingTop: '8px' }}>
-            {user ? (
+            <a href="/about" style={mobileLink(isActive('/about'))}>ℹ️ About</a>
+          {user ? (
               <a href="/profile" style={{ ...mobileLink(isActive('/profile')), color: '#2E9E5E', fontWeight: 'bold' }}>👤 My Profile</a>
             ) : (
               <a href="/auth" style={{ ...mobileLink(false), color: '#2E9E5E', fontWeight: 'bold' }}>Sign In</a>
