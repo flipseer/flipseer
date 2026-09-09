@@ -131,7 +131,7 @@ export default function ResultPage() {
                 <div style={{ fontSize: '52px', fontWeight: 'bold', color: won ? accentColor : '#EF4444', fontFamily: 'Georgia, serif', lineHeight: 1 }}>
                   {won ? '+' + points : '0'}
                 </div>
-                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>points earned</div>
+                <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>reputation earned</div>
                 {breakdown.length > 0 && (
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '12px' }}>
                     {breakdown.map((b, i) => (
@@ -145,7 +145,7 @@ export default function ResultPage() {
               {revealed && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', animation: 'slideUp 0.4s ease forwards' }}>
                   {[
-                    { label: 'TOTAL PTS', value: profile?.total_points || 0 },
+                    { label: 'TOTAL REP', value: profile?.total_points || 0 },
                     { label: 'ACCURACY', value: (profile?.accuracy_pct || 0) + '%' },
                     { label: 'STREAK', value: profile?.streak || 0 },
                   ].map(({ label, value }) => (
