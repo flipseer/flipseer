@@ -1007,6 +1007,7 @@ export default function Home() {
           <div style={{ fontSize: 20, fontWeight: 800, color: '#8B5CF6', marginBottom: 16, letterSpacing: '-0.5px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
             {[
+              { href: '/about', label: 'About' },
               { href: '/how-to-play', label: 'How to Play' },
               { href: '/how-to-predict-football', label: 'Prediction Guide' },
               { href: '/football-reputation', label: 'Football Reputation' },
