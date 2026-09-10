@@ -38,6 +38,7 @@ async function callClaude(prompt: string, system: string): Promise<string> {
     }),
   });
   const data = await res.json();
+  if (data.error) throw new Error(data.error);
   return data.content?.[0]?.text || '';
 }
 
@@ -131,7 +132,7 @@ export default function AgentPage() {
         'You evaluate football creators for Flipseer acquisition (free prediction platform, no betting). Respond ONLY in valid JSON, no markdown.'
       );
       setRResult(JSON.parse(text.replace(/```json|```/g, '').trim()));
-    } catch { setRError('Analysis failed — try again'); }
+    } catch(e: any) { setRError('Error: ' + (e.message || 'Analysis failed — try again')); }
     setRLoading(false);
   }
 
