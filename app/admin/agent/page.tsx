@@ -141,16 +141,15 @@ export default function AgentPage() {
     setOLoading(true); setOResult(null);
     const mkt = MARKETS.find(m => m.code === oMarket)!;
     const slug = oHandle.replace('@', '').toLowerCase().replace(/\s+/g, '_');
+    const mktSlugs: Record<string, string> = { NG:'nigeria',GH:'ghana',IN:'india',ID:'indonesia',MA:'morocco',EG:'egypt',GB:'epl',KE:'leaderboard' };
+    const refLink = 'flipseer.com/' + (mktSlugs[oMarket] || 'predict') + '?ref=' + slug;
+    const prompt = `Write personalised outreach for Flipseer:\nHandle: ${oHandle}\nPlatform: ${oPlatform}\nType: ${oType}\nMarket: ${mkt.name} (${mkt.league})\nFollowers: ${oFollowers || 'unknown'}\nDescription: ${oDesc || 'Football content creator'}\n\nReturn JSON only:\n{"dm_message":"max 280 chars","whatsapp_message":"3-4 lines with flipseer.com link","email_subject":"subject","email_body":"4-5 short paragraphs","suggested_league_name":"league name","referral_link":"${refLink}","best_channel":"DM|WhatsApp|Email","hook":"one thing that will make them care"}`;
     try {
-      const text = await callClaude(
-        `Write personalised outreach for Flipseer:\nHandle: ${oHandle}\nPlatform: ${oPlatform}\nType: ${oType}\nMarket: ${mkt.name} (${mkt.league})\nFollowers: ${oFollowers || 'unknown'}\nDescription: ${oDesc || 'Football content creator'}\n\nReturn JSON only:\n{"dm_message":"max 280 chars","whatsapp_message":"3-4 lines with flipseer.com link","email_subject":"subject","email_body":"4-5 short paragraphs","suggested_league_name":"league name","referral_link":"${refLink}","best_channel":"DM|WhatsApp|Email","hook":"one thing that will make them care"}`,
-        'You write outreach for Flipseer (free football prediction reputation platform, no betting). Direct, human tone. Respond ONLY in valid JSON.'
-      );
+      const text = await callClaude(prompt, 'You write outreach for Flipseer (free football prediction reputation platform, no betting). Direct, human tone. Respond ONLY in valid JSON.');
       setOResult(JSON.parse(text.replace(/```json|```/g, '').trim()));
-    } catch { setOResult({ error: 'Generation failed — try again' }); }
+    } catch(e: any) { setOResult({ error: 'Generation failed — ' + e.message }); }
     setOLoading(false);
   }
-
   async function runBatch() {
     if (!bText.trim()) return;
     setBLoading(true); setBResult(null);
