@@ -143,7 +143,7 @@ export default function AgentPage() {
     const slug = oHandle.replace('@', '').toLowerCase().replace(/\s+/g, '_');
     try {
       const text = await callClaude(
-        `Write personalised outreach for Flipseer:\nHandle: ${oHandle}\nPlatform: ${oPlatform}\nType: ${oType}\nMarket: ${mkt.name} (${mkt.league})\nFollowers: ${oFollowers || 'unknown'}\nDescription: ${oDesc || 'Football content creator'}\n\nReturn JSON only:\n{"dm_message":"max 280 chars","whatsapp_message":"3-4 lines with flipseer.com link","email_subject":"subject","email_body":"4-5 short paragraphs","suggested_league_name":"league name","referral_link":"flipseer.com/${oMarket.toLowerCase()}?ref=${slug}","best_channel":"DM|WhatsApp|Email","hook":"one thing that will make them care"}`,
+        `Write personalised outreach for Flipseer:\nHandle: ${oHandle}\nPlatform: ${oPlatform}\nType: ${oType}\nMarket: ${mkt.name} (${mkt.league})\nFollowers: ${oFollowers || 'unknown'}\nDescription: ${oDesc || 'Football content creator'}\n\nReturn JSON only:\n{"dm_message":"max 280 chars","whatsapp_message":"3-4 lines with flipseer.com link","email_subject":"subject","email_body":"4-5 short paragraphs","suggested_league_name":"league name","referral_link":"flipseer.com/${pageSlug}?ref=${slug}","best_channel":"DM|WhatsApp|Email","hook":"one thing that will make them care"}`,
         'You write outreach for Flipseer (free football prediction reputation platform, no betting). Direct, human tone. Respond ONLY in valid JSON.'
       );
       setOResult(JSON.parse(text.replace(/```json|```/g, '').trim()));
