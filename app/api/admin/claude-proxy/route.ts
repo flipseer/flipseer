@@ -13,6 +13,11 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
 
+  const apiKey = process.env.ANTHROPIC_API_KEY || ''
+  if (!apiKey) {
+    return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set', content: [] }, { status: 500 })
+  }
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -29,5 +34,9 @@ export async function POST(request: NextRequest) {
   })
 
   const data = await res.json()
+  if (!res.ok) {
+    console.error('Anthropic error:', data)
+    return NextResponse.json({ error: data.error?.message || 'Anthropic API error', content: [], status: res.status }, { status: res.status })
+  }
   return NextResponse.json(data)
 }
