@@ -26,17 +26,13 @@ const GREY = '#9CA3AF';
 const DIM = '#4B5563';
 
 async function callClaude(prompt: string, system: string): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/api/admin/claude-proxy', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || '',
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
+      'x-admin-secret': 'flipseer2026',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
       system,
       messages: [{ role: 'user', content: prompt }],
     }),
