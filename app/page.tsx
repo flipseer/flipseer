@@ -747,3 +747,7 @@ export default function Home() {
           <p style={{ fontSize: '11px', color: '#4B5563', marginTop: '12px' }}>Free forever · No betting · No card required</p>
         </div>
       </section>
+      </div>
+    </main>
+  );
+}
