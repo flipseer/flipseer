@@ -215,7 +215,7 @@ function UpcomingMatches() {
       const { data } = await supabase
         .from('matches')
         .select('id, home_team, away_team, kickoff, status, league, competition')
-        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27'])
+        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
         .limit(5);
@@ -262,7 +262,7 @@ function UpcomingMatches() {
   return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 PREMIER LEAGUE 2026/27</p>
+        <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>⚽ LIVE COMPETITIONS</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '6px' }}>Upcoming Matches</h2>
         <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', marginBottom: '24px' }}>Predict before kick-off. Your call is locked forever.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
@@ -299,7 +299,7 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · Liga 1 · Ghana PL →</a>
+          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL →</a>
         </div>
       </div>
     </section>
@@ -328,7 +328,7 @@ function ClaimModal() {
         <div style={{ background: 'linear-gradient(135deg,#4C1D95,#8B5CF6)', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚽</div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>Predict. Prove. Repeat.</h2>
-          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · Liga 1 · Ghana PL live now. UCL Sep 17.</p>
+          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · Liga 1 · Ghana PL · UCL all live now.</p>
         </div>
         <div style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
@@ -336,7 +336,7 @@ function ClaimModal() {
               { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', color: '#8B5CF6' },
               { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', color: '#CE1126' },
               { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', color: '#F59E0B' },
-              { flag: '⭐', name: 'UCL 2026/27', status: 'SEP 17', color: '#A78BFA' },
+              { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', color: '#A78BFA' },
             ].map(({ flag, name, status, color }) => (
               <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 12px' }}>
                 <span style={{ fontSize: '14px' }}>{flag} <span style={{ color: 'white', fontSize: '13px' }}>{name}</span></span>
@@ -613,7 +613,7 @@ export default function Home() {
       <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free — Build your Football Reputation forever
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free forever
           </span>
           <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Predict Now →
@@ -640,7 +640,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · LIVE NOW</span>
+          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · ⭐ UCL · LIVE NOW</span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           {heroNation && nationRank > 0 ? (
@@ -658,12 +658,12 @@ export default function Home() {
           )}
         </h1>
         <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 28px', fontFamily: 'Georgia, serif' }}>
-          Predict EPL, Liga 1 and Ghana PL matches before kick-off. Build a permanent Football Reputation.{' '}
+          Predict EPL, UCL, Liga 1 and Ghana PL matches before kick-off. Build a permanent Football Reputation.{' '}
           <span style={{ color: '#8B5CF6' }}>Represent your country.</span>
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL Free →
+            ⚽ Predict Free →
           </a>
           <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
             🏆 Challenge Friends
@@ -719,314 +719,31 @@ export default function Home() {
       {/* EPL FOUNDING FORECASTER BADGE SECTION */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '64px', marginBottom: '16px' }}>🏅</div>
-          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>LIMITED BADGE · MATCHWEEK 1 ONLY</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px,5vw,36px)', marginBottom: '12px' }}>
-            EPL <span style={{ color: '#8B5CF6' }}>Founding Forecaster</span>
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: '12px' }}>4 COMPETITIONS · LIVE NOW</div>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(22px,5vw,32px)', marginBottom: '12px', fontWeight: 800 }}>
+            One reputation.<br /><span style={{ color: '#8B5CF6' }}>Every competition.</span>
           </h2>
-          <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', marginBottom: '24px' }}>
-            Predict any EPL match before August 24 and earn the Founding Forecaster badge permanently on your profile. Never available again after Matchweek 1.
+          <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>
+            EPL · UCL · Liga 1 · Ghana PL — your predictions across all competitions build one permanent Football Reputation. Forever.
           </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '12px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', marginBottom: '4px' }}>📅</div>
-              <div style={{ fontSize: '11px', color: '#6B7280' }}>Available until</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>Aug 24, 2026</div>
-            </div>
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '12px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', marginBottom: '4px' }}>🔒</div>
-              <div style={{ fontSize: '11px', color: '#6B7280' }}>Badge type</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>Permanent</div>
-            </div>
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '12px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', marginBottom: '4px' }}>🆓</div>
-              <div style={{ fontSize: '11px', color: '#6B7280' }}>Cost</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: 'white' }}>Free forever</div>
-            </div>
-          </div>
-          <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
-            Claim Your Badge →
-          </a>
-        </div>
-      </section>
-      {/* UPCOMING MATCHES */}
-      <UpcomingMatches />
-      {/* NATION BATTLE */}
-      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE · LIVE</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>
-            {heroNation ? <>Can <span style={{ color: '#8B5CF6' }}>{heroNation}</span> top the world?</> : 'Which nation leads the world?'}
-          </h2>
-          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '32px' }}>
-            Every EPL prediction earns points for your country. The rivalry is real.
-          </p>
-          {isRealLeaderboard ? (
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', overflow: 'hidden', maxWidth: '520px', margin: '0 auto 24px' }}>
-              <div style={{ backgroundColor: '#050E05', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-                <span>RANK · NATION</span>
-                <span style={{ color: '#8B5CF6' }}>LIVE · FORECASTERS · POINTS</span>
-              </div>
-              {realLeaderboard.map(({ rank, flag, country, forecasters, points }) => (
-                <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '12px 20px', borderTop: '1px solid #1A3A1A' }}>
-                  <span style={{ fontSize: '13px', color: rank === 1 ? '#F59E0B' : '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
-                  <span style={{ fontSize: '18px', marginRight: '10px' }} dangerouslySetInnerHTML={{ __html: flag }} />
-                  <span style={{ flex: 1, fontSize: '14px', color: 'white', textAlign: 'left' }}>{country}</span>
-                  <span style={{ fontSize: '11px', color: '#6B7280', marginRight: '12px' }}>{forecasters} forecasters</span>
-                  <span style={{ fontSize: '13px', color: rank === 1 ? '#F59E0B' : '#8B5CF6', fontWeight: 'bold' }}>{points} pts</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', maxWidth: '520px', margin: '0 auto 24px', padding: '32px 24px', textAlign: 'center' }}>
-              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌍</div>
-              <p style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>Your nation needs you.</p>
-              <p style={{ fontSize: '13px', color: '#9CA3AF', marginBottom: '16px' }}>Predict EPL matches to earn points for your country.</p>
-              <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>View Nation Battle →</a>
-            </div>
-          )}
-          <a href="/nations" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>
-            Full Nation Battle standings →
-          </a>
-        </div>
-      </section>
-      {/* COMPETITIONS HUB */}
-      <section style={{ backgroundColor: '#050E05', padding: '56px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '8px', textAlign: 'center' }}>ONE RECORD. EVERY COMPETITION.</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(22px,4vw,30px)', marginBottom: '8px', textAlign: 'center', fontWeight: 'bold' }}>Sign up once. Predict forever.</h2>
-          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '32px', textAlign: 'center' }}>Your reputation grows across every competition. Never resets.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: '10px', marginBottom: '28px' }}>
-            <a href="/epl" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '2px solid #8B5CF6', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative', boxShadow: '0 0 20px rgba(139,92,246,0.2)' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#8B5CF6', fontWeight: 700, backgroundColor: 'rgba(139,92,246,0.15)', padding: '2px 6px', borderRadius: 999, animation: 'pulse 1.5s infinite' }}>NEXT</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Premier League</div>
-                <div style={{ fontSize: 10, color: '#8B5CF6', fontWeight: 700, marginBottom: 6 }}>2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>380 matches<br/>Starts Aug 21</div>
-              </div>
-            </a>
-            <a href="/world-cup-2026" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700 }}>✓ DONE</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🏆</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>World Cup 2026</div>
-                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>COMPLETE</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>🇪🇸 Spain Champions<br/>104 matches</div>
-              </div>
-            </a>
-            <a href="/predict" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(167,139,250,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#A78BFA', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>⭐</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Champions League</div>
-                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>234 matches<br/>League Stage live</div>
-              </div>
-            </a>
-            <a href="/india" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative', opacity: 0.85 }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>NOV</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🇮🇳</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Indian Super League</div>
-                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6 }}>2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>India's top league<br/>Nov 2026</div>
-              </div>
-            </a>
-            <a href="/nigeria" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(0,128,0,0.25)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative', opacity: 0.8 }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#6B7280', fontWeight: 700, backgroundColor: '#1A3A1A', padding: '2px 6px', borderRadius: 999 }}>2027</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🇳🇬</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Nigeria Premier</div>
-                <div style={{ fontSize: 10, color: '#6B7280', fontWeight: 700, marginBottom: 6 }}>NPFL</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Coming Jan 2027</div>
-              </div>
-            </a>
-            <a href="/ghana" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🇬🇭</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Ghana Premier</div>
-                <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>GPL 2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>306 matches<br/>Starts Sep 5</div>
-              </div>
-            </a>
-            <a href="/indonesia" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(206,17,38,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#CE1126', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
-                <div style={{ fontSize: 30, marginBottom: 8 }}>🇮🇩</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Indonesia Liga 1</div>
-                <div style={{ fontSize: 10, color: '#CE1126', fontWeight: 700, marginBottom: 6 }}>Liga 1 2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>306 matches<br/>Starts Sep 4</div>
-              </div>
-            </a>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '13px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold', boxShadow: '0 0 24px rgba(139,92,246,0.25)' }}>
-              🏴󠁧󠁢󠁥󠁮󠁧󠁿 Start Your Record Now →
-            </a>
-            <p style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px' }}>Free forever. No card. No betting.</p>
-          </div>
-        </div>
-      </section>
-      {/* HOW IT WORKS + FINAL CTA */}
-      <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>HOW IT WORKS</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '32px', textAlign: 'center' }}>From prediction to legend.</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '48px' }}>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
             {[
-              { step: '01', icon: '🎯', title: 'Call the match', desc: 'Pick the winner. Predict the exact score. Set your confidence before kick-off.' },
-              { step: '02', icon: '🔒', title: 'It locks forever', desc: 'Once the whistle blows, your call is sealed. No edits. No excuses. Pure record.' },
-              { step: '03', icon: '⚡', title: 'Earn reputation', desc: 'Correct calls earn points for you and your nation. Upsets earn glory.' },
-              { step: '04', icon: '👑', title: 'Build your legacy', desc: 'EPL → UCL → ISL → NPFL. One permanent record. Forever.' },
-            ].map(({ step, icon, title, desc }) => (
-              <div key={step} style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '22px 20px' }}>
-                <div style={{ fontSize: '10px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>STEP {step}</div>
-                <div style={{ fontSize: '32px', marginBottom: '10px' }}>{icon}</div>
-                <h3 style={{ fontSize: '15px', color: '#8B5CF6', marginBottom: '6px', fontFamily: 'Georgia, serif' }}>{title}</h3>
-                <p style={{ color: '#6B7280', fontSize: '12px', lineHeight: '1.7' }}>{desc}</p>
+              { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6' },
+              { flag: '⭐', name: 'UCL', color: '#A78BFA' },
+              { flag: '🇮🇩', name: 'Liga 1', color: '#CE1126' },
+              { flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B' },
+            ].map(({ flag, name, color }) => (
+              <div key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: color + '15', border: '1px solid ' + color + '50', borderRadius: '999px', padding: '5px 14px' }}>
+                <span>{flag}</span>
+                <span style={{ fontSize: '12px', color, fontWeight: 700 }}>{name}</span>
+                <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '1px 6px', borderRadius: '999px', fontWeight: 700 }}>LIVE</span>
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '28px', flexWrap: 'wrap', marginBottom: '48px' }}>
-            {[{ icon: '🚫', text: 'No Betting. Ever.' }, { icon: '📖', text: 'Permanent Record.' }, { icon: '🌍', text: 'Global Rankings.' }, { icon: '🆓', text: 'Always Free.' }].map(({ icon, text }) => (
-              <div key={text} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '24px', marginBottom: '4px' }}>{icon}</div>
-                <div style={{ fontSize: '12px', color: '#9CA3AF', fontWeight: 'bold' }}>{text}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '12px', lineHeight: '1.2' }}>
-              {heroNation
-                ? <>{heroNation}&apos;s #1 football mind<br /><span style={{ color: '#8B5CF6' }}>could be you.</span></>
-                : <>EPL 2026/27 starts August 21.<br /><span style={{ color: '#8B5CF6' }}>Your record starts now.</span></>
-              }
-            </h2>
-            <p style={{ color: '#6B7280', marginBottom: '28px', fontSize: '16px' }}>
-              380 EPL matches. One permanent record. Free forever.
-            </p>
-            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '18px 52px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 50px rgba(139,92,246,0.4)' }}>
-              🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL Matches Free →
-            </a>
-            <p style={{ color: '#8895A3', fontSize: '12px', marginTop: '12px' }}>Free. No betting. No risk. Pure football reputation.</p>
-          </div>
+          <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 700, boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
+            ⚽ Start Predicting Free →
+          </a>
+          <p style={{ fontSize: '11px', color: '#4B5563', marginTop: '12px' }}>Free forever · No betting · No card required</p>
         </div>
       </section>
-      {/* FAQ SECTION */}
-      <section style={{ backgroundColor: '#050E05', padding: '64px 20px', borderTop: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p style={{ fontSize: 11, color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: 8, textAlign: 'center' }}>EVERYTHING YOU NEED TO KNOW</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px,5vw,36px)', textAlign: 'center', marginBottom: 48, fontWeight: 800 }}>Common Questions</h2>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))', gap: 24 }}>
-
-            {/* FAQ 1 — Football Reputation */}
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 16, padding: '28px 24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 28 }}>⚽</span>
-                <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#8B5CF6', margin: 0 }}>
-                  What is Football Reputation?
-                </h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  ['⚽', 'Prove your football knowledge — your predictions become your evidence.'],
-                  ['🏆', 'Build a lasting record — grows with every prediction, every competition.'],
-                  ['📈', 'Climb the rankings — see how you compare with fans globally.'],
-                  ['👥', 'Challenge friends — turn football debates into real competition.'],
-                  ['🏟️', 'Stand out in Private Leagues — prove who really knows football.'],
-                  ['🔒', 'Permanent record — predictions are locked before kick-off. No edits.'],
-                  ['🔄', 'Keep improving — learn from every prediction, make the next one better.'],
-                ].map(([icon, text]) => (
-                  <div key={text as string} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
-                    <span style={{ fontSize: 13, color: '#9CA3AF', lineHeight: 1.6 }}>{text}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 20, padding: '12px 16px', backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 10 }}>
-                <p style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700, margin: 0, textAlign: 'center' }}>
-                  🎯 Don't just say you know football. Prove it.
-                </p>
-                <p style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0', textAlign: 'center' }}>Predict. Prove. Repeat.</p>
-              </div>
-            </div>
-
-            {/* FAQ 2 — Nation Battle */}
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 16, padding: '28px 24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: 28 }}>🌍</span>
-                <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#F59E0B', margin: 0 }}>
-                  What is Nation Battle?
-                </h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  ['🌍', 'Represent your country through your football predictions.'],
-                  ['🇮🇳🇮🇩🇬🇭🇳🇬', 'Choose your nation — compete with fans from every country.'],
-                  ['⚽', 'Your predictions contribute to your nation&apos;s global performance.'],
-                  ['🏆', 'Climb the global Nation Battle rankings with your country.'],
-                  ['👥', 'Compete individually while contributing to something bigger.'],
-                ].map(([icon, text]) => (
-                  <div key={text as string} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
-                    <span style={{ fontSize: 13, color: '#9CA3AF', lineHeight: 1.6 }}>{text}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 20, padding: '12px 16px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: 10 }}>
-                <p style={{ fontSize: 13, color: '#F59E0B', fontWeight: 700, margin: 0, textAlign: 'center' }}>
-                  🔥 Your prediction. Your reputation. Your nation.
-                </p>
-                <p style={{ fontSize: 12, color: '#6B7280', margin: '4px 0 0', textAlign: 'center' }}>Predict for yourself. Compete for your country.</p>
-              </div>
-              <div style={{ marginTop: 16, textAlign: 'center' }}>
-                <a href="/nations" style={{ fontSize: 13, color: '#F59E0B', textDecoration: 'none', fontWeight: 700 }}>
-                  View Nation Battle standings →
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Bottom CTA */}
-          <div style={{ textAlign: 'center', marginTop: 48 }}>
-            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '16px 48px', borderRadius: 12, textDecoration: 'none', fontSize: 16, fontWeight: 700, boxShadow: '0 0 40px rgba(139,92,246,0.3)', marginBottom: 12 }}>
-              ⚽ Start Predicting Free →
-            </a>
-            <p style={{ fontSize: 12, color: '#4B5563', margin: 0 }}>Free forever · No betting · No card required</p>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#8B5CF6', marginBottom: 16, letterSpacing: '-0.5px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 FLIPSEER</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
-            {[
-              { href: '/about', label: 'About' },
-              { href: '/how-to-play', label: 'How to Play' },
-              { href: '/how-to-predict-football', label: 'Prediction Guide' },
-              { href: '/football-reputation', label: 'Football Reputation' },
-              { href: '/epl', label: 'EPL 2026/27' },
-              { href: '/world-cup-2026', label: 'World Cup 2026' },
-              { href: '/privacy', label: 'Privacy Policy' },
-              { href: '/terms', label: 'Terms of Service' },
-            ].map(({ href, label }) => (
-              <a key={href} href={href} style={{ color: '#6B7280', fontSize: 13, textDecoration: 'none' }}
-                onMouseOver={e => { (e.currentTarget as HTMLElement).style.color = '#8B5CF6'; }}
-                onMouseOut={e => { (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}>
-                {label}
-              </a>
-            ))}
-          </div>
-          <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>Free forever · No betting · No gambling · Pure football intelligence</p>
-          <p style={{ color: '#2E4A2E', fontSize: 11 }}>© 2026 Flipseer · Global Football Reputation Network</p>
-        </div>
-      </footer>
-    </main>
-  );
-}
