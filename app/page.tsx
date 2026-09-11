@@ -572,7 +572,7 @@ export default function Home() {
             { href: '/predict', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6', live: true },
             { href: '/predict', flag: '🇮🇩', name: 'Liga 1', color: '#CE1126', live: true },
             { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
-            { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: false, soon: 'Sep 17' },
+            { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
             { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: false, soon: 'Oct 10' },
           ].map(({ href, flag, name, color, live, soon }, i) => (
             <a key={name} href={href} style={{
@@ -816,12 +816,12 @@ export default function Home() {
               </div>
             </a>
             <a href="/predict" style={{ textDecoration: 'none' }}>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
-                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#F59E0B', fontWeight: 700 }}>SEP</span></div>
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(167,139,250,0.6)', borderRadius: '14px', padding: '18px 14px', textAlign: 'center', position: 'relative' }}>
+                <div style={{ position: 'absolute', top: 8, right: 8 }}><span style={{ fontSize: 8, color: '#A78BFA', fontWeight: 700, animation: 'pulse 1.5s infinite' }}>LIVE</span></div>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>⭐</div>
                 <div style={{ fontSize: 13, fontWeight: 800, color: 'white', marginBottom: 3 }}>Champions League</div>
                 <div style={{ fontSize: 10, color: '#F59E0B', fontWeight: 700, marginBottom: 6 }}>2026/27</div>
-                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>Europe's best<br/>Starts Sep 2026</div>
+                <div style={{ fontSize: 10, color: '#6B7280', lineHeight: 1.5 }}>234 matches<br/>League Stage live</div>
               </div>
             </a>
             <a href="/india" style={{ textDecoration: 'none' }}>
