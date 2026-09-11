@@ -714,6 +714,38 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {/* NATION BATTLE */}
+      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE · LIVE</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>Which nation leads the world?</h2>
+          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '24px' }}>Every prediction earns points for your country. The rivalry is real.</p>
+          <div style={{ textAlign: 'center' }}>
+            <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>View Nation Battle →</a>
+          </div>
+        </div>
+      </section>
+      {/* FOOTER */}
+      <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#8B5CF6', marginBottom: 16, letterSpacing: '-0.5px' }}>⚽ FLIPSEER</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
+            {[
+              { href: '/about', label: 'About' },
+              { href: '/how-to-play', label: 'How to Play' },
+              { href: '/football-reputation', label: 'Football Reputation' },
+              { href: '/nations', label: 'Nation Battle' },
+              { href: '/leaderboard', label: 'Leaderboard' },
+              { href: '/privacy', label: 'Privacy Policy' },
+              { href: '/terms', label: 'Terms of Service' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{ color: '#6B7280', fontSize: 13, textDecoration: 'none' }}>{label}</a>
+            ))}
+          </div>
+          <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>Free forever · No betting · No gambling · Pure football intelligence</p>
+          <p style={{ color: '#2E4A2E', fontSize: 11 }}>© 2026 Flipseer · Global Football Reputation Network</p>
+        </div>
+      </footer>
     </main>
   );
 }
