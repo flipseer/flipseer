@@ -17,6 +17,7 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Old world cup pages
       {
         source: '/world-cup-2026/:country',
         destination: '/nations',
