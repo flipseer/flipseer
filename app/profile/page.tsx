@@ -463,6 +463,24 @@ export default function Profile() {
           ))}
         </div>
       </div>
+      {/* SHARE + CHALLENGE BUTTONS */}
+      <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button onClick={() => {
+          const url = 'https://flipseer.com/u/' + (profile?.username || '');
+          const text = 'My Football Reputation on Flipseer — ' + (profile?.total_points ?? 0) + ' REP · ' + (profile?.accuracy_pct ?? 0) + '% accuracy';
+          if (typeof navigator !== 'undefined' && (navigator as any).share) {
+            (navigator as any).share({ title: 'My Football Reputation — Flipseer', text, url });
+          } else {
+            navigator.clipboard.writeText(url);
+            alert('Profile link copied!');
+          }
+        }} style={{ backgroundColor: '#2E9E5E', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit' }}>
+          📤 Share My Football Reputation
+        </button>
+        <a href="/groups" style={{ backgroundColor: 'transparent', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.4)', padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none', display: 'inline-block' }}>
+          👥 Challenge a Friend
+        </a>
+      </div>
       {/* COUNTRY REMINDER */}
       {!profile?.country && (
         <div style={{ maxWidth: '600px', margin: '16px auto 0', padding: '0 20px' }}>
