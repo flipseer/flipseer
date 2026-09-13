@@ -599,6 +599,8 @@ export default function Home() {
       {/* LIVE SCORES + ACTIVITY */}
       <LiveScoreCard />
       <LiveActivity />
+      {/* UPCOMING MATCHES */}
+      <UpcomingMatches />
       {/* HERO */}
       <section style={{ textAlign: 'center', padding: '80px 20px 64px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -627,10 +629,10 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
-            ⚽ Predict Free →
+            ⚽ Make Your First Prediction →
           </a>
           <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
-            🏆 Challenge Friends
+            👥 Challenge a Friend
           </a>
         </div>
         <p style={{ fontSize: '13px', color: '#8895A3', letterSpacing: '0.5px', marginBottom: '6px' }}>
@@ -662,11 +664,12 @@ export default function Home() {
       {/* THREE STEPS */}
       <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12 }}>
             {[
-              { num: '1', icon: '🎯', title: 'Predict', desc: 'Choose a match before kick-off. Set your confidence level.' },
-              { num: '2', icon: '🔒', title: 'Prove', desc: 'Your call locks forever. No edits. No excuses. Pure record.' },
-              { num: '3', icon: '🔁', title: 'Repeat', desc: 'Every match builds your permanent Football Reputation. Forever.' },
+              { num: '1', icon: '🎯', title: 'Predict', desc: 'Pick the outcome before kick-off. Set your confidence.' },
+              { num: '2', icon: '🔒', title: 'Lock', desc: 'Prediction locks at kick-off. No edits. Permanent record.' },
+              { num: '3', icon: '📈', title: 'Track', desc: 'See your accuracy, streak and global rank after every result.' },
+              { num: '4', icon: '🏆', title: 'Build Reputation', desc: 'Earn reputation across EPL, UCL, Liga 1 and Ghana PL. Forever.' },
             ].map(({ num, icon, title, desc }) => (
               <div key={num} style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: 12, padding: '18px 14px', textAlign: 'center' }}>
                 <div style={{ fontSize: 9, color: '#8B5CF6', fontWeight: 700, letterSpacing: '2px', marginBottom: 6 }}>STEP {num}</div>
@@ -680,8 +683,6 @@ export default function Home() {
       </section>
       {/* INVITE BANNER */}
       <InviteBanner />
-      {/* UPCOMING MATCHES */}
-      <UpcomingMatches />
       {/* 4 COMPETITIONS */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
