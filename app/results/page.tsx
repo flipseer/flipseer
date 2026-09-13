@@ -15,6 +15,7 @@ export default function ResultsPage() {
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
     { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
     { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
     { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
@@ -26,7 +27,6 @@ export default function ResultsPage() {
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', '2000-01-01')
           .order('kickoff', { ascending: false }),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition)
@@ -36,10 +36,9 @@ export default function ResultsPage() {
       ]);
 
       const completedMatches = matchRes.data || [];
-      setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
-      // Fetch prediction counts for completed matches
+      // Only show matches that have at least one prediction on Flipseer
       if (completedMatches.length > 0) {
         const matchIds = completedMatches.map((m: any) => m.id);
         const { data: predData } = await supabase
@@ -53,6 +52,12 @@ export default function ResultsPage() {
           counts[p.match_id] = (counts[p.match_id] || 0) + 1;
         });
         setPredictionCounts(counts);
+
+        // Only show matches with at least one prediction
+        const matchesWithPredictions = completedMatches.filter((m: any) => counts[m.id] > 0);
+        setMatches(matchesWithPredictions);
+      } else {
+        setMatches([]);
       }
 
       setLoading(false);
