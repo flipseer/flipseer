@@ -21,9 +21,10 @@ type CommunityStats = {
   away: number;
   total: number;
 };
+
 const LEAGUES = [
   { key: 'EPL 2026/27',      label: 'EPL',      icon: '&#x1F3F4;',           color: '#8B5CF6', active: true },
-  { key: 'UCL 2026/27',      label: 'UCL',       icon: '&#x2B50;',            color: '#A78BFA', active: false },
+  { key: 'UCL 2026/27',      label: 'UCL',       icon: '&#x2B50;',            color: '#A78BFA', active: true },
   { key: 'Liga 1 2026/27',   label: 'Liga 1',    icon: '&#x1F1EE;&#x1F1E9;', color: '#CE1126', active: true },
   { key: 'Ghana PL 2026/27', label: 'Ghana PL',  icon: '&#x1F1EC;&#x1F1ED;', color: '#F59E0B', active: true },
   { key: 'NPFL 2026/27',     label: 'NPFL',      icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
@@ -96,7 +97,6 @@ function buildShareUrl({ match, pred, username, country }: {
   return 'https://flipseer.com/predict/share?' + params.toString();
 }
 
-// ── LOGGED OUT MATCH CARD ──
 function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | undefined }) {
   const { locked, label: timeLeft } = useCountdown(match.kickoff);
   const kickoffDate = formatKickoffLocal(match.kickoff);
@@ -104,13 +104,10 @@ function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | 
   const homePct = comm ? getPct(comm.home, comm.total) : 0;
   const drawPct = comm ? getPct(comm.draw, comm.total) : 0;
   const awayPct = comm ? getPct(comm.away, comm.total) : 0;
-
   return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
-        <span style={{ fontSize: '12px', color: '#6B7280' }}>
-          {match.league} · {kickoffDate}
-        </span>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} · {kickoffDate}</span>
         {!locked && timeLeft && (
           <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
             ⏱ Locks in {timeLeft}
@@ -140,40 +137,22 @@ function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | 
           </div>
         </div>
       )}
-      {/* Locked-out predict buttons — tap to sign up */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-        {[
-          { label: match.home_team + ' Win' },
-          { label: 'Draw' },
-          { label: match.away_team + ' Win' },
-        ].map(({ label }) => (
-          <a key={label} href="/auth" style={{
-            flex: 1, padding: '10px 4px', borderRadius: '8px',
-            border: '1px solid #1A7A4A', backgroundColor: 'transparent',
-            color: '#9CA3AF', fontSize: '12px', fontWeight: 'bold',
-            textDecoration: 'none', textAlign: 'center', display: 'block',
-          }}>
+        {[{ label: match.home_team + ' Win' }, { label: 'Draw' }, { label: match.away_team + ' Win' }].map(({ label }) => (
+          <a key={label} href="/auth" style={{ flex: 1, padding: '10px 4px', borderRadius: '8px', border: '1px solid #1A7A4A', backgroundColor: 'transparent', color: '#9CA3AF', fontSize: '12px', fontWeight: 'bold', textDecoration: 'none', textAlign: 'center', display: 'block' }}>
             {label}
           </a>
         ))}
       </div>
-      <a href="/auth" style={{
-        display: 'block', width: '100%', padding: '12px',
-        backgroundColor: '#8B5CF6', color: 'white', border: 'none',
-        borderRadius: '8px', fontSize: '14px', fontWeight: 'bold',
-        cursor: 'pointer', textAlign: 'center', textDecoration: 'none',
-        boxSizing: 'border-box',
-      }}>
+      <a href="/auth" style={{ display: 'block', width: '100%', padding: '12px', backgroundColor: '#8B5CF6', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>
         Sign in free to predict →
       </a>
     </div>
   );
 }
 
-// ── COMING SOON PLACEHOLDER ──
 function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
-  const launch = league.key === 'UCL 2026/27' ? 'September 17, 2026'
-    : league.key === 'ISL 2026/27' ? 'October 10, 2026'
+  const launch = league.key === 'ISL 2026/27' ? 'October 10, 2026'
     : league.key === 'NPFL 2026/27' ? 'January 2027'
     : league.key === 'World Cup 2026' ? 'Archive'
     : 'Coming soon';
@@ -187,11 +166,10 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
           <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>🇪🇸 Spain are World Champions 2026</span>
         </div>
         <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
-          The tournament is over. Spain beat France 2-0 in the Final.<br />Your World Cup predictions are permanent — locked forever.
+          The tournament is over. Spain beat France 2-0 in the Final. Your World Cup predictions are permanent — locked forever.
         </p>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/world-cup-2026" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>View All Results →</a>
-          <a href="/leaderboard" style={{ backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Final Leaderboard →</a>
+          <a href="/leaderboard" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Final Leaderboard →</a>
         </div>
       </div>
     );
@@ -207,12 +185,10 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
       <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
         Coming soon. Your prediction record continues across every competition.
       </p>
-      <a href="/epl" style={{ backgroundColor: league.color, color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Learn More →</a>
     </div>
   );
 }
 
-// ── LOGGED IN MATCH CARD ──
 function MatchCard({
   match, pred, isSaved, isLoading, comm, username, country,
   onPredict, onConfidence, onScore, onSave,
@@ -249,14 +225,10 @@ function MatchCard({
     setShared(true);
     setTimeout(() => setShared(false), 3000);
   };
-
   return (
     <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isSaved ? '#8B5CF6' : '#1A7A4A'), borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
-        <a href={`/matches/${match.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${match.away_team.toLowerCase().replace(/\s+/g, '-')}`}
-          style={{ fontSize: '12px', color: '#6B7280', textDecoration: 'none' }}>
-          {match.league} · {kickoffDate} ↗
-        </a>
+        <span style={{ fontSize: '12px', color: '#6B7280' }}>{match.league} · {kickoffDate}</span>
         <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
           {!locked && timeLeft && (
             <span style={{ fontSize: '11px', backgroundColor: '#1C3A1A', color: '#F59E0B', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
@@ -404,7 +376,6 @@ function MatchCard({
   );
 }
 
-// ── MAIN PAGE ──
 export default function Predict() {
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState('forecaster');
@@ -430,8 +401,6 @@ export default function Predict() {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setAuthChecked(true);
-
-      // Load EPL matches for everyone — logged in or not
       setMatchesLoading(true);
       const [matchRes, commRes] = await Promise.all([
         supabase.from('matches')
@@ -443,8 +412,6 @@ export default function Predict() {
       ]);
       setMatches(matchRes.data || []);
       setMatchesLoading(false);
-
-      // Community stats for everyone
       const commData = commRes.data;
       if (commData) {
         const stats: { [key: number]: CommunityStats } = {};
@@ -455,8 +422,6 @@ export default function Predict() {
         });
         setCommunity(stats);
       }
-
-      // Additional data for logged-in users only
       if (session) {
         setUser(session.user);
         const [profileRes, predRes] = await Promise.all([
@@ -509,23 +474,16 @@ export default function Predict() {
   const handlePredict = (matchId: number, outcome: string) => {
     setPredictions(prev => ({
       ...prev,
-      [matchId]: {
-        outcome,
-        confidence: prev[matchId]?.confidence || 50,
-        predicted_home_score: prev[matchId]?.predicted_home_score,
-        predicted_away_score: prev[matchId]?.predicted_away_score,
-      },
+      [matchId]: { outcome, confidence: prev[matchId]?.confidence || 50, predicted_home_score: prev[matchId]?.predicted_home_score, predicted_away_score: prev[matchId]?.predicted_away_score },
     }));
   };
   const handleConfidence = (matchId: number, confidence: number) => {
     setPredictions(prev => ({ ...prev, [matchId]: { ...prev[matchId], confidence } }));
   };
   const handleScore = (matchId: number, side: 'predicted_home_score' | 'predicted_away_score', value: number) => {
-    setPredictions(prev => ({
-      ...prev,
-      [matchId]: { ...prev[matchId], [side]: Math.max(0, Math.min(20, value)) },
-    }));
+    setPredictions(prev => ({ ...prev, [matchId]: { ...prev[matchId], [side]: Math.max(0, Math.min(20, value)) } }));
   };
+
   const handleSave = async (matchId: number) => {
     if (!user || !predictions[matchId]?.outcome) return;
     const isUpdate = saved[matchId];
@@ -554,18 +512,13 @@ export default function Predict() {
       if (!isUpdate) {
         setDailyUsed(prev => prev + 1);
         setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
-        // Show challenge modal after every 3rd prediction
         const totalPreds = (lifetimePredictionCount || 0) + 1;
         setLifetimePredictionCount(totalPreds);
         if (totalPreds % 3 === 0 || totalPreds === 1) {
           const matchData = matches.find((m: any) => m.id === matchId);
           const outcomeLabel = predictions[matchId]?.outcome === 'home' ? matchData?.home_team
             : predictions[matchId]?.outcome === 'away' ? matchData?.away_team : 'Draw';
-          setLastPrediction({
-            match: matchData ? matchData.home_team + ' vs ' + matchData.away_team : 'this match',
-            outcome: outcomeLabel || 'their pick',
-            leagueCode: '',
-          });
+          setLastPrediction({ match: matchData ? matchData.home_team + ' vs ' + matchData.away_team : 'this match', outcome: outcomeLabel || 'their pick', leagueCode: '' });
           setTimeout(() => setShowChallenge(true), 800);
         }
       }
@@ -576,49 +529,31 @@ export default function Predict() {
       });
       const match = matches.find(m => m.id === matchId);
       if (match && country && !isUpdate) {
-        setTimeout(() => {
-          setNationShare({ matchName: match.home_team + ' vs ' + match.away_team, points: 10 });
-        }, 800);
+        setTimeout(() => { setNationShare({ matchName: match.home_team + ' vs ' + match.away_team, points: 10 }); }, 800);
       }
     } else {
       alert(data.error || 'Failed to save prediction. Please try again.');
     }
   };
 
-  const remaining = Math.max(0, DAILY_LIMIT - dailyUsed);
   const activeLeagueData = LEAGUES.find(l => l.key === activeLeague) || LEAGUES[0];
-
-  const challengeText = lastPrediction
-    ? `⚽ I just predicted ${lastPrediction.outcome} in ${lastPrediction.match} on Flipseer.\n\nThink you can beat me? 😏\n\nJoin my private league and let's find out.\n🏆 Free to play\n🔒 Predictions lock at kick-off\n🌍 Build your football reputation\n\n👉 ${lastPrediction.leagueCode ? 'flipseer.com/groups?join=' + lastPrediction.leagueCode : 'flipseer.com/groups'}`
-    : '';
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-      {/* HEADER */}
       <section style={{ textAlign: 'center', padding: '32px 20px 0' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '6px' }}>
-          🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict Matches
+          ⚽ Make Your First Prediction
         </h1>
         <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '16px' }}>
           Lock in your call before kickoff. Permanent record. Free forever.
         </p>
       </section>
 
-      {/* LEAGUE TABS */}
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
           {LEAGUES.map((league) => (
             <button key={league.key} onClick={() => handleLeagueChange(league.key)}
-              style={{
-                flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px',
-                padding: '10px 16px', borderRadius: '10px',
-                border: '2px solid ' + (activeLeague === league.key ? league.color : '#1A3A1A'),
-                backgroundColor: activeLeague === league.key ? league.color + '20' : '#0D2B14',
-                color: activeLeague === league.key ? league.color : '#8895A3',
-                cursor: 'pointer', fontSize: '13px',
-                fontWeight: activeLeague === league.key ? 'bold' : 'normal',
-                transition: 'all 0.2s',
-              }}>
+              style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '10px', border: '2px solid ' + (activeLeague === league.key ? league.color : '#1A3A1A'), backgroundColor: activeLeague === league.key ? league.color + '20' : '#0D2B14', color: activeLeague === league.key ? league.color : '#8895A3', cursor: 'pointer', fontSize: '13px', fontWeight: activeLeague === league.key ? 'bold' : 'normal', transition: 'all 0.2s' }}>
               <span dangerouslySetInnerHTML={{ __html: league.icon }} />
               {league.label}
               {!league.active && (
@@ -631,16 +566,15 @@ export default function Predict() {
         </div>
       </div>
 
-      {/* GUEST SIGN UP BANNER */}
       {!user && authChecked && activeLeagueData.active && (
         <div style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 16px' }}>
           <div style={{ background: 'linear-gradient(135deg, #1A0B2E, #2D1B69)', border: '2px solid #8B5CF6', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '4px' }}>
-                🏅 EPL Founding Forecaster badge — this week only
+                ⚽ EPL · UCL · Liga 1 · Ghana PL — all live now
               </div>
               <div style={{ fontSize: '12px', color: '#9CA3AF' }}>
-                Sign in free. Predict before August 24. Badge awarded permanently.
+                Sign in free. Predict before kickoff. Build your permanent Football Reputation.
               </div>
             </div>
             <a href="/auth" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
@@ -650,7 +584,6 @@ export default function Predict() {
         </div>
       )}
 
-      {/* DAILY LIMIT — logged in only */}
       {user && activeLeagueData.active && (
         <section style={{ textAlign: 'center', padding: '0 20px 16px' }}>
           {(() => {
@@ -671,13 +604,12 @@ export default function Predict() {
         </section>
       )}
 
-      {/* CONTENT */}
       <section style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px 40px' }}>
         {!activeLeagueData.active ? (
           <ComingSoon league={activeLeagueData} />
         ) : matchesLoading ? (
           <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚽</div>
             <p>Loading {activeLeague} matches...</p>
           </div>
         ) : matches.length === 0 ? (
@@ -687,7 +619,6 @@ export default function Predict() {
             <p style={{ fontSize: '12px', color: '#8895A3' }}>Check back soon — new matches are added automatically.</p>
           </div>
         ) : !user ? (
-          // GUEST VIEW — show matches with sign-in prompt
           <>
             {matches.map((match) => (
               <GuestMatchCard key={match.id} match={match} comm={community[match.id]} />
@@ -700,7 +631,6 @@ export default function Predict() {
             </div>
           </>
         ) : (
-          // LOGGED IN VIEW
           (() => {
             const isBrandNewUser = lifetimePredictionCount === 0 && username !== 'forecaster';
             const visibleMatches = (isBrandNewUser && !showAllMatches) ? matches.slice(0, 1) : matches;
@@ -708,23 +638,12 @@ export default function Predict() {
               <>
                 {isBrandNewUser && !showAllMatches && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '10px 16px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8 }}>
-                    <span style={{ fontSize: 18 }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
-                    <span style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700 }}>YOUR FIRST EPL CALL — pick a match, your record begins</span>
+                    <span style={{ fontSize: 18 }}>⚽</span>
+                    <span style={{ fontSize: 13, color: '#8B5CF6', fontWeight: 700 }}>YOUR FIRST PREDICTION — pick a match, your record begins</span>
                   </div>
                 )}
                 {visibleMatches.map((match) => (
-                  <MatchCard
-                    key={match.id} match={match}
-                    pred={predictions[match.id]}
-                    isSaved={saved[match.id] ?? false}
-                    isLoading={loading[match.id] ?? false}
-                    comm={community[match.id]}
-                    username={username} country={country}
-                    onPredict={handlePredict}
-                    onConfidence={handleConfidence}
-                    onScore={handleScore}
-                    onSave={handleSave}
-                  />
+                  <MatchCard key={match.id} match={match} pred={predictions[match.id]} isSaved={saved[match.id] ?? false} isLoading={loading[match.id] ?? false} comm={community[match.id]} username={username} country={country} onPredict={handlePredict} onConfidence={handleConfidence} onScore={handleScore} onSave={handleSave} />
                 ))}
                 {isBrandNewUser && !showAllMatches && matches.length > 1 && (
                   <button onClick={() => setShowAllMatches(true)} style={{ width: '100%', marginTop: 8, padding: '12px', backgroundColor: 'transparent', border: '1px dashed #2D1B69', borderRadius: 10, color: '#6B7280', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>
@@ -738,12 +657,7 @@ export default function Predict() {
       </section>
 
       {nationShare && country && (
-        <NationShareCard
-          country={country}
-          pointsJustEarned={nationShare.points}
-          matchName={nationShare.matchName}
-          onClose={() => setNationShare(null)}
-        />
+        <NationShareCard country={country} pointsJustEarned={nationShare.points} matchName={nationShare.matchName} onClose={() => setNationShare(null)} />
       )}
     </main>
   );
