@@ -2,23 +2,28 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 const supabase = createClient();
+
 export default function ResultsPage() {
   const [matches, setMatches] = useState<any[]>([]);
+  const [predictionCounts, setPredictionCounts] = useState<{ [key: number]: number }>({});
   const [loading, setLoading] = useState(true);
   const [activeMatch, setActiveMatch] = useState<any>(null);
   const [topPredictors, setTopPredictors] = useState<any[]>([]);
   const [loadingPredictors, setLoadingPredictors] = useState(false);
   const [stats, setStats] = useState({ total: 0, completed: 0, live: 0, upcoming: 0 });
   const [activeCompetition, setActiveCompetition] = useState('EPL 2026/27');
+
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
     { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
     { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
-    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
     { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
   ];
+
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'completed').eq('competition', activeCompetition)
@@ -30,12 +35,32 @@ export default function ResultsPage() {
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
-      setMatches(matchRes.data || []);
+
+      const completedMatches = matchRes.data || [];
+      setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
+
+      // Fetch prediction counts for completed matches
+      if (completedMatches.length > 0) {
+        const matchIds = completedMatches.map((m: any) => m.id);
+        const { data: predData } = await supabase
+          .from('predictions')
+          .select('match_id')
+          .in('match_id', matchIds)
+          .eq('prediction_processed', true);
+
+        const counts: { [key: number]: number } = {};
+        predData?.forEach((p: any) => {
+          counts[p.match_id] = (counts[p.match_id] || 0) + 1;
+        });
+        setPredictionCounts(counts);
+      }
+
       setLoading(false);
     };
     load();
   }, [activeCompetition]);
+
   const loadTopPredictors = async (match: any) => {
     setActiveMatch(match);
     setLoadingPredictors(true);
@@ -48,24 +73,24 @@ export default function ResultsPage() {
     const { data: profiles } = await supabase.from('profiles').select('id, username, rank_icon, rank, country').in('id', userIds);
     const profileMap: { [key: string]: any } = {};
     profiles?.forEach((p: any) => { profileMap[p.id] = p; });
-    const enriched = predictions.map((p: any) => ({
-      ...p,
-      username: profileMap[p.user_id]?.username || 'Unknown',
-      rank_icon: profileMap[p.user_id]?.rank_icon || '🥉',
-    }));
+    const enriched = predictions.map((p: any) => ({ ...p, username: profileMap[p.user_id]?.username || 'Unknown', rank_icon: profileMap[p.user_id]?.rank_icon || '🥉' }));
     setTopPredictors(enriched);
     setLoadingPredictors(false);
   };
+
   const formatDate = (kickoff: string) => {
     const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     return new Date(utc).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
   };
+
   const getOutcomeLabel = (match: any, outcome: string) => {
     if (outcome === 'home') return match.home_team;
     if (outcome === 'away') return match.away_team;
     return 'Draw';
   };
+
   const activeComp = COMPETITIONS.find(c => c.key === activeCompetition) || COMPETITIONS[0];
+
   if (loading) return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
@@ -74,23 +99,22 @@ export default function ResultsPage() {
       </div>
     </main>
   );
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
-      {/* HEADER */}
+
       <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '40px 20px 24px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '8px' }}>📊 Match Results</h1>
         <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Results, scores and top predictors</p>
-        {/* Competition tabs */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
           {COMPETITIONS.map(comp => (
-            <button key={comp.key} onClick={() => { setActiveCompetition(comp.key); setActiveMatch(null); setLoading(true); }}
+            <button key={comp.key} onClick={() => { setActiveCompetition(comp.key); setActiveMatch(null); }}
               style={{ padding: '8px 20px', borderRadius: '999px', border: '2px solid ' + (activeCompetition === comp.key ? comp.color : '#1A3A1A'), backgroundColor: activeCompetition === comp.key ? comp.color + '20' : 'transparent', color: activeCompetition === comp.key ? comp.color : '#6B7280', fontWeight: 'bold', fontSize: '13px', cursor: 'pointer' }}>
               {comp.label}
             </button>
           ))}
         </div>
-        {/* Stats */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
           {[
             { label: 'Total', value: stats.total, color: '#9CA3AF' },
@@ -105,7 +129,9 @@ export default function ResultsPage() {
           ))}
         </div>
       </div>
+
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '24px 20px 0' }}>
+
         {/* TOP PREDICTORS PANEL */}
         {activeMatch && (
           <div style={{ backgroundColor: '#0D2B14', border: '2px solid ' + activeComp.color, borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
@@ -119,7 +145,10 @@ export default function ResultsPage() {
             {loadingPredictors ? (
               <p style={{ color: '#6B7280', textAlign: 'center', padding: '20px' }}>Loading...</p>
             ) : topPredictors.length === 0 ? (
-              <p style={{ color: '#6B7280', textAlign: 'center', padding: '20px' }}>No processed predictions yet.</p>
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <p style={{ color: '#6B7280', marginBottom: '8px' }}>No predictions were made for this match.</p>
+                <a href="/predict" style={{ fontSize: '13px', color: activeComp.color, fontWeight: 'bold', textDecoration: 'none' }}>Predict upcoming matches →</a>
+              </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {topPredictors.map((pred, i) => {
@@ -141,7 +170,7 @@ export default function ResultsPage() {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '16px', fontWeight: 'bold', color: won ? activeComp.color : '#6B7280' }}>
-                          {won ? '+' + pred.points_earned : '0'} pts
+                          {won ? '+' + pred.points_earned : '0'} rep
                         </div>
                         <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', marginTop: '3px' }}>
                           {pred.exact_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(245,158,11,0.2)', color: '#F59E0B', padding: '1px 6px', borderRadius: '999px' }}>EXACT</span>}
@@ -156,50 +185,54 @@ export default function ResultsPage() {
             )}
           </div>
         )}
+
         {/* MATCH LIST */}
         {matches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', borderRadius: '16px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
             <h3 style={{ fontFamily: 'Georgia, serif', color: activeComp.color, marginBottom: '8px' }}>No results yet</h3>
-            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>
-              {activeCompetition === 'EPL 2026/27' ? 'EPL Matchweek 1 starts August 21.'
-                : activeCompetition === 'UCL 2026/27' ? 'UCL Group Stage starts September 17.'
-                : activeCompetition === 'Liga 1 2026/27' ? 'Liga 1 started September 4 — results coming soon.'
-                : activeCompetition === 'Ghana PL 2026/27' ? 'Ghana PL started September 5 — results coming soon.'
-                : 'Match results will appear here after kick-off'}
-            </p>
+            <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Match results will appear here after kick-off.</p>
             <a href="/predict" style={{ backgroundColor: activeComp.color, color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
               Predict Upcoming Matches →
             </a>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {matches.map((match) => (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#6B7280' }}>{match.league} · {formatDate(match.kickoff)}</span>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {match.is_upset && <span style={{ fontSize: '10px', backgroundColor: 'rgba(139,92,246,0.2)', color: '#8B5CF6', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>UPSET</span>}
-                    <span style={{ fontSize: '10px', backgroundColor: 'rgba(46,158,94,0.2)', color: '#2E9E5E', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>FT</span>
+            {matches.map((match) => {
+              const hasPredictions = (predictionCounts[match.id] || 0) > 0;
+              return (
+                <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: '#6B7280' }}>{match.league} · {formatDate(match.kickoff)}</span>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {match.is_upset && <span style={{ fontSize: '10px', backgroundColor: 'rgba(139,92,246,0.2)', color: '#8B5CF6', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>UPSET</span>}
+                      <span style={{ fontSize: '10px', backgroundColor: 'rgba(46,158,94,0.2)', color: '#2E9E5E', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>FT</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'home' ? 'white' : '#6B7280', flex: 1 }}>{match.home_team}</span>
+                    <div style={{ textAlign: 'center', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 16px', margin: '0 12px', flexShrink: 0 }}>
+                      <span style={{ fontSize: '24px', fontWeight: 'bold', color: activeComp.color, fontFamily: 'Georgia, serif' }}>{match.home_score} – {match.away_score}</span>
+                    </div>
+                    <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'away' ? 'white' : '#6B7280', flex: 1, textAlign: 'right' }}>{match.away_team}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    {hasPredictions ? (
+                      <button onClick={() => loadTopPredictors(match)} style={{ flex: 1, padding: '8px', backgroundColor: activeComp.color, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                        🎯 Top Predictors ({predictionCounts[match.id]})
+                      </button>
+                    ) : (
+                      <div style={{ flex: 1, padding: '8px', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', fontSize: '12px', color: '#4B5563', textAlign: 'center' }}>
+                        No predictions made
+                      </div>
+                    )}
+                    <a href="/predict" style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: activeComp.color, border: '1px solid ' + activeComp.color, borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                      ⚽ Predict Next
+                    </a>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                  <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'home' ? 'white' : '#6B7280', flex: 1 }}>{match.home_team}</span>
-                  <div style={{ textAlign: 'center', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 16px', margin: '0 12px', flexShrink: 0 }}>
-                    <span style={{ fontSize: '24px', fontWeight: 'bold', color: activeComp.color, fontFamily: 'Georgia, serif' }}>{match.home_score} – {match.away_score}</span>
-                  </div>
-                  <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'away' ? 'white' : '#6B7280', flex: 1, textAlign: 'right' }}>{match.away_team}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => loadTopPredictors(match)} style={{ flex: 1, padding: '8px', backgroundColor: activeComp.color, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                    🎯 Top Predictors
-                  </button>
-                  <a href="/predict" style={{ flex: 1, padding: '8px', backgroundColor: 'transparent', color: activeComp.color, border: '1px solid ' + activeComp.color, borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
-                    ⚽ Predict Next
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
