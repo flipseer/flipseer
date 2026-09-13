@@ -15,7 +15,6 @@ export default function ResultsPage() {
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
-    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
     { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
     { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
     { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
@@ -27,11 +26,11 @@ export default function ResultsPage() {
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-09-01' : '2000-01-01')
+          .gte('kickoff', '2000-01-01')
           .order('kickoff', { ascending: false }),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-09-01' : '2000-01-01'),
+          .gte('kickoff', '2000-01-01'),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
