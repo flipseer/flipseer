@@ -22,11 +22,6 @@ export default function LeaderboardPage() {
     description: 'Top football predictors ranked by accuracy and REP points across EPL, UCL, Liga 1 and Ghana PL on Flipseer',
     numberOfItems: 0,
     itemListElement: [],
-      '@type': 'ListItem',
-      position: i + 1,
-      name: leader.username,
-      description: `${leader.total_points} REP · ${leader.accuracy_pct}% accuracy · ${leader.prediction_count} predictions`,
-      url: `https://flipseer.com/u/${leader.username}`,
   };
 
   return (
