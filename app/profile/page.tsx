@@ -2,68 +2,96 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 const supabase = createClient();
-const COUNTRIES = [
-  { code: 'IN', label: '&#x1F1EE;&#x1F1F3; India' },
-  { code: 'ID', label: '&#x1F1EE;&#x1F1E9; Indonesia' },
-  { code: 'NG', label: '&#x1F1F3;&#x1F1EC; Nigeria' },
-  { code: 'BR', label: '&#x1F1E7;&#x1F1F7; Brazil' },
-  { code: 'AR', label: '&#x1F1E6;&#x1F1F7; Argentina' },
-  { code: 'GB', label: '&#x1F3F4; England' },
-  { code: 'US', label: '&#x1F1FA;&#x1F1F8; USA' },
-  { code: 'DE', label: '&#x1F1E9;&#x1F1EA; Germany' },
-  { code: 'FR', label: '&#x1F1EB;&#x1F1F7; France' },
-  { code: 'ES', label: '&#x1F1EA;&#x1F1F8; Spain' },
-  { code: 'PT', label: '&#x1F1F5;&#x1F1F9; Portugal' },
-  { code: 'IT', label: '&#x1F1EE;&#x1F1F9; Italy' },
-  { code: 'MX', label: '&#x1F1F2;&#x1F1FD; Mexico' },
-  { code: 'NL', label: '&#x1F1F3;&#x1F1F1; Netherlands' },
-  { code: 'TR', label: '&#x1F1F9;&#x1F1F7; Turkey' },
-  { code: 'SA', label: '&#x1F1F8;&#x1F1E6; Saudi Arabia' },
-  { code: 'MA', label: '&#x1F1F2;&#x1F1E6; Morocco' },
-  { code: 'JP', label: '&#x1F1EF;&#x1F1F5; Japan' },
-  { code: 'KR', label: '&#x1F1F0;&#x1F1F7; South Korea' },
-  { code: 'CO', label: '&#x1F1E8;&#x1F1F4; Colombia' },
-  { code: 'GH', label: '&#x1F1EC;&#x1F1ED; Ghana' },
-  { code: 'ZA', label: '&#x1F1FF;&#x1F1E6; South Africa' },
-  { code: 'EG', label: '&#x1F1EA;&#x1F1EC; Egypt' },
-  { code: 'PK', label: '&#x1F1F5;&#x1F1F0; Pakistan' },
-  { code: 'BD', label: '&#x1F1E7;&#x1F1E9; Bangladesh' },
-  { code: 'AU', label: '&#x1F1E6;&#x1F1FA; Australia' },
-  { code: 'CA', label: '&#x1F1E8;&#x1F1E6; Canada' },
-  { code: 'UZ', label: '&#x1F1FA;&#x1F1FF; Uzbekistan' },
-  { code: 'HR', label: '&#x1F1ED;&#x1F1F7; Croatia' },
-  { code: 'SE', label: '&#x1F1F8;&#x1F1EA; Sweden' },
-  { code: 'NO', label: '&#x1F1F3;&#x1F1F4; Norway' },
-  { code: 'OTHER', label: '&#x1F30D; Other' },
-];
-const COMPETITION_TABS = [
-  { key: 'all', label: 'All', icon: '&#x26BD;' },
-  { key: 'EPL 2026/27', label: 'EPL', icon: '&#x1F3F4;' },
-  { key: 'UCL 2026/27', label: 'UCL', icon: '&#x2B50;' },
-  { key: 'Liga 1 2026/27', label: 'Liga 1', icon: '&#x1F1EE;&#x1F1E9;' },
-  { key: 'NPFL 2026/27', label: 'NPFL', icon: '&#x1F1F3;&#x1F1EC;' },
-  { key: 'Ghana PL 2026/27', label: 'Ghana PL', icon: '&#x1F1EC;&#x1F1ED;' },
-  { key: 'World Cup 2026', label: 'World Cup', icon: '&#x1F3C6;' },
-];
-const UPCOMING_COMPETITIONS = [
-  { name: 'EPL 2026/27', icon: '&#x1F3F4;', date: 'LIVE', color: '#8B5CF6' },
-  { name: 'UCL 2026/27', icon: '&#x2B50;', date: 'Sep 17', color: '#A78BFA' },
-  { name: 'Liga 1 2026/27', icon: '&#x1F1EE;&#x1F1E9;', date: 'Sep 4', color: '#EF4444' },
-  { name: 'Ghana PL 2026/27', icon: '&#x1F1EC;&#x1F1ED;', date: 'Sep 4', color: '#F59E0B' },
-  { name: 'NPFL 2026/27', icon: '&#x1F1F3;&#x1F1EC;', date: 'Jan 2027', color: '#2E9E5E' },
-  { name: 'ISL 2026/27', icon: '&#x1F1EE;&#x1F1F3;', date: 'Oct 10', color: '#F59E0B' },
-];
-const BADGE_COLORS: { [key: string]: string } = {
-  score_master: '#3B82F6',
-  upset_king: '#8B5CF6',
-  match_hero: '#F59E0B',
-  bold_caller: '#EF4444',
-  hot_streak_5: '#FB923C',
-  hot_streak_7: '#F59E0B',
-  hot_streak_10: '#EF4444',
-  founding_forecaster: '#F59E0B',
-  epl_founding_forecaster: '#8B5CF6',
+
+const COLORS = {
+  page: '#0B1120',
+  card: '#111A2E',
+  cardAlt: '#0D1626',
+  border: 'rgba(255,255,255,0.08)',
+  borderStrong: 'rgba(255,255,255,0.14)',
+  textPrimary: '#F3F4F6',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+  accent: '#8B5CF6',
+  accentBg: 'rgba(139,92,246,0.12)',
+  success: '#34D399',
+  successBg: 'rgba(52,211,153,0.12)',
+  danger: '#F87171',
+  dangerBg: 'rgba(248,113,113,0.12)',
+  warning: '#FBBF24',
+  warningBg: 'rgba(251,191,36,0.12)',
 };
+
+const COUNTRIES = [
+  { code: 'IN', flag: '\u{1F1EE}\u{1F1F3}', name: 'India' },
+  { code: 'ID', flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia' },
+  { code: 'NG', flag: '\u{1F1F3}\u{1F1EC}', name: 'Nigeria' },
+  { code: 'BR', flag: '\u{1F1E7}\u{1F1F7}', name: 'Brazil' },
+  { code: 'AR', flag: '\u{1F1E6}\u{1F1F7}', name: 'Argentina' },
+  { code: 'GB', flag: '\u{1F1EC}\u{1F1E7}', name: 'England' },
+  { code: 'US', flag: '\u{1F1FA}\u{1F1F8}', name: 'USA' },
+  { code: 'DE', flag: '\u{1F1E9}\u{1F1EA}', name: 'Germany' },
+  { code: 'FR', flag: '\u{1F1EB}\u{1F1F7}', name: 'France' },
+  { code: 'ES', flag: '\u{1F1EA}\u{1F1F8}', name: 'Spain' },
+  { code: 'PT', flag: '\u{1F1F5}\u{1F1F9}', name: 'Portugal' },
+  { code: 'IT', flag: '\u{1F1EE}\u{1F1F9}', name: 'Italy' },
+  { code: 'MX', flag: '\u{1F1F2}\u{1F1FD}', name: 'Mexico' },
+  { code: 'NL', flag: '\u{1F1F3}\u{1F1F1}', name: 'Netherlands' },
+  { code: 'TR', flag: '\u{1F1F9}\u{1F1F7}', name: 'Turkey' },
+  { code: 'SA', flag: '\u{1F1F8}\u{1F1E6}', name: 'Saudi Arabia' },
+  { code: 'MA', flag: '\u{1F1F2}\u{1F1E6}', name: 'Morocco' },
+  { code: 'JP', flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan' },
+  { code: 'KR', flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea' },
+  { code: 'CO', flag: '\u{1F1E8}\u{1F1F4}', name: 'Colombia' },
+  { code: 'GH', flag: '\u{1F1EC}\u{1F1ED}', name: 'Ghana' },
+  { code: 'ZA', flag: '\u{1F1FF}\u{1F1E6}', name: 'South Africa' },
+  { code: 'EG', flag: '\u{1F1EA}\u{1F1EC}', name: 'Egypt' },
+  { code: 'PK', flag: '\u{1F1F5}\u{1F1F0}', name: 'Pakistan' },
+  { code: 'BD', flag: '\u{1F1E7}\u{1F1E9}', name: 'Bangladesh' },
+  { code: 'AU', flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia' },
+  { code: 'CA', flag: '\u{1F1E8}\u{1F1E6}', name: 'Canada' },
+  { code: 'UZ', flag: '\u{1F1FA}\u{1F1FF}', name: 'Uzbekistan' },
+  { code: 'HR', flag: '\u{1F1ED}\u{1F1F7}', name: 'Croatia' },
+  { code: 'SE', flag: '\u{1F1F8}\u{1F1EA}', name: 'Sweden' },
+  { code: 'NO', flag: '\u{1F1F3}\u{1F1F4}', name: 'Norway' },
+  { code: 'OTHER', flag: '\u{1F30D}', name: 'Other' },
+];
+
+const COMPETITION_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'EPL 2026/27', label: 'EPL' },
+  { key: 'UCL 2026/27', label: 'UCL' },
+  { key: 'Liga 1 2026/27', label: 'Liga 1' },
+  { key: 'NPFL 2026/27', label: 'NPFL' },
+  { key: 'Ghana PL 2026/27', label: 'Ghana PL' },
+  { key: 'World Cup 2026', label: 'World Cup' },
+];
+
+const UPCOMING_COMPETITIONS = [
+  { name: 'EPL 2026/27', date: 'Live now' },
+  { name: 'UCL 2026/27', date: 'Live — Oct 13' },
+  { name: 'Liga 1 2026/27', date: 'Live now' },
+  { name: 'Ghana PL 2026/27', date: 'Live now' },
+  { name: 'NPFL 2026/27', date: 'Jan 2027' },
+  { name: 'ISL 2026/27', date: 'Oct 10' },
+];
+
+const RANK_LADDER = [
+  { rank: 'Rookie', min: 0, max: 49 },
+  { rank: 'Predictor', min: 50, max: 199 },
+  { rank: 'Expert', min: 200, max: 499 },
+  { rank: 'Elite', min: 500, max: 999 },
+  { rank: 'Legend', min: 1000, max: 9999 },
+];
+
+// ── shared card style ──
+const cardStyle: React.CSSProperties = {
+  backgroundColor: COLORS.card,
+  border: `0.5px solid ${COLORS.border}`,
+  borderRadius: 12,
+  padding: '18px 20px',
+};
+
 // ── SHARE CARD MODAL ──
 function ShareCard({ prediction, matchName, username, onClose }: {
   prediction: any; matchName: string; username: string; onClose: () => void;
@@ -83,58 +111,58 @@ function ShareCard({ prediction, matchName, username, onClose }: {
     : 'I just predicted ' + outcomeLabel + ' in ' + matchName + ' with ' + prediction.confidence_pct + '% confidence!\n\nSee my record: ' + profileUrl + '\n\n' + hashtag;
   const encodedText = encodeURIComponent(shareText);
   const encodedUrl = encodeURIComponent(profileUrl);
-  const accentColor = isEPL ? '#8B5CF6' : '#2E9E5E';
+
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', backgroundColor: '#0D1F0F', border: '1px solid ' + accentColor, borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px ' + accentColor + '50' }}>
-        <div style={{ background: isEPL ? 'linear-gradient(135deg, #4C1D95, #8B5CF6)' : 'linear-gradient(135deg, #1A7A4A, #2E9E5E)', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '16px', fontWeight: 'bold', color: 'white' }}>⚽ FLIPSEER</span>
-          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', backgroundColor: 'rgba(0,0,0,0.2)', padding: '3px 10px', borderRadius: '999px' }}>
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 400, backgroundColor: COLORS.card, border: `0.5px solid ${COLORS.borderStrong}`, borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: `0.5px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>Flipseer</span>
+          <span style={{ fontSize: 11, color: COLORS.textSecondary, backgroundColor: COLORS.cardAlt, padding: '3px 10px', borderRadius: 999 }}>
             {isEPL ? 'Premier League 2026/27' : 'FIFA World Cup 2026'}
           </span>
         </div>
-        <div style={{ padding: '24px' }}>
-          <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'white', marginBottom: '16px', textAlign: 'center' }}>{matchName}</div>
-          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div style={{ padding: 20 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 14, textAlign: 'center' }}>{matchName}</div>
+          <div style={{ backgroundColor: COLORS.cardAlt, borderRadius: 10, padding: 16, marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
               <div>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '3px' }}>MY PICK</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: accentColor }}>{outcomeLabel}</div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 3 }}>My pick</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: COLORS.accent }}>{outcomeLabel}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '3px' }}>CONFIDENCE</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: accentColor }}>{prediction.confidence_pct}%</div>
+                <div style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 3 }}>Confidence</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: COLORS.accent }}>{prediction.confidence_pct}%</div>
               </div>
             </div>
             {hasResult ? (
-              <div style={{ textAlign: 'center', backgroundColor: won ? 'rgba(139,92,246,0.15)' : 'rgba(127,29,29,0.15)', border: '1px solid ' + (won ? accentColor : '#7F1D1D'), borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 'bold', color: won ? '#C4B5FD' : '#FCA5A5' }}>
-                {won ? '+' + prediction.points_earned + ' pts earned' : '0 pts - Missed this one'}
+              <div style={{ textAlign: 'center', backgroundColor: won ? COLORS.successBg : COLORS.dangerBg, borderRadius: 8, padding: 8, fontSize: 13, fontWeight: 600, color: won ? COLORS.success : COLORS.danger }}>
+                {won ? '+' + prediction.points_earned + ' pts earned' : '0 pts \u00b7 missed this one'}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', backgroundColor: 'rgba(107,114,128,0.1)', border: '1px solid #374151', borderRadius: '8px', padding: '8px', fontSize: '13px', color: '#6B7280' }}>
+              <div style={{ textAlign: 'center', backgroundColor: COLORS.cardAlt, borderRadius: 8, padding: 8, fontSize: 13, color: COLORS.textMuted }}>
                 Awaiting result
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
             {[
-              { name: 'X', label: 'X', bg: '#000000', url: 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl },
-              { name: 'Facebook', label: 'f', bg: '#1877F2', url: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl + '&quote=' + encodedText },
-              { name: 'WhatsApp', label: 'W', bg: '#25D366', url: 'https://wa.me/?text=' + encodedText },
-            ].map(({ name, label, bg, url }) => (
+              { name: 'X', url: 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl },
+              { name: 'Facebook', url: 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl + '&quote=' + encodedText },
+              { name: 'WhatsApp', url: 'https://wa.me/?text=' + encodedText },
+            ].map(({ name, url }) => (
               <a key={name} href={url} target="_blank" rel="noopener noreferrer"
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', backgroundColor: bg, color: 'white', padding: '12px 8px', borderRadius: '12px', textDecoration: 'none' }}>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{label}</span>
-                <span style={{ fontSize: '10px', opacity: 0.9 }}>{name}</span>
+                style={{ flex: 1, textAlign: 'center', backgroundColor: COLORS.cardAlt, border: `0.5px solid ${COLORS.border}`, color: COLORS.textPrimary, padding: '10px 8px', borderRadius: 8, textDecoration: 'none', fontSize: 12, fontWeight: 600 }}>
+                {name}
               </a>
             ))}
           </div>
-          <button onClick={onClose} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '8px 24px', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', width: '100%' }}>Close</button>
+          <button onClick={onClose} style={{ backgroundColor: 'transparent', border: `0.5px solid ${COLORS.border}`, color: COLORS.textSecondary, padding: '9px 24px', borderRadius: 8, cursor: 'pointer', fontSize: 13, width: '100%' }}>Close</button>
         </div>
       </div>
     </div>
   );
 }
+
 // ── PREDICTION HISTORY ──
 function PredictionHistory({ userId, username, activeCompetition }: {
   userId: string; username: string; activeCompetition: string;
@@ -142,6 +170,7 @@ function PredictionHistory({ userId, username, activeCompetition }: {
   const [preds, setPreds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [shareCard, setShareCard] = useState<any>(null);
+
   useEffect(() => {
     if (!userId) return;
     const fetchPreds = async () => {
@@ -156,34 +185,37 @@ function PredictionHistory({ userId, username, activeCompetition }: {
     };
     fetchPreds();
   }, [userId]);
+
   const filtered = activeCompetition === 'all'
     ? preds
     : preds.filter(p => (p.matches?.competition || 'World Cup 2026') === activeCompetition);
-  if (loading) return <div style={{ textAlign: 'center', padding: '32px', color: '#6B7280' }}>Loading predictions...</div>;
+
+  if (loading) return <div style={{ textAlign: 'center', padding: 32, color: COLORS.textMuted, fontSize: 13 }}>Loading predictions...</div>;
+
   if (filtered.length === 0) {
     return (
-      <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
-        <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '8px' }}>No predictions yet</p>
-        <p style={{ color: '#4B5563', fontSize: '13px', marginBottom: '20px' }}>
-          {activeCompetition === 'all' ? 'Every prediction you make will live here forever.' : 'No ' + activeCompetition + ' predictions yet.'}
+      <div style={{ ...cardStyle, padding: 40, textAlign: 'center' }}>
+        <p style={{ color: COLORS.textSecondary, fontSize: 14, marginBottom: 6 }}>No predictions yet</p>
+        <p style={{ color: COLORS.textMuted, fontSize: 12, marginBottom: 18 }}>
+          {activeCompetition === 'all' ? 'Every prediction you make lives here permanently.' : 'No ' + activeCompetition + ' predictions yet.'}
         </p>
-        <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
-          Predict EPL Now →
+        <a href="/predict" style={{ display: 'inline-block', backgroundColor: COLORS.accent, color: '#fff', padding: '10px 24px', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>
+          Predict now
         </a>
       </div>
     );
   }
+
   return (
     <>
       {shareCard && (
         <ShareCard prediction={shareCard.prediction} matchName={shareCard.matchName} username={username} onClose={() => setShareCard(null)} />
       )}
-      <div style={{ marginBottom: '12px', fontSize: '12px', color: '#6B7280' }}>
+      <div style={{ marginBottom: 12, fontSize: 12, color: COLORS.textMuted }}>
         {filtered.length} prediction{filtered.length !== 1 ? 's' : ''}
         {activeCompetition !== 'all' ? ' in ' + activeCompetition : ' across all competitions'}
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {filtered.map((p) => {
           const match = p.matches;
           const homeName = match?.home_team || 'Home';
@@ -194,53 +226,51 @@ function PredictionHistory({ userId, username, activeCompetition }: {
           const hasResult = p.points_earned !== null && p.points_earned !== undefined;
           const won = p.points_earned > 0;
           const comp = match?.competition || 'World Cup 2026';
-          const isEPL = comp.includes('EPL');
-          const accentColor = isEPL ? '#8B5CF6' : '#2E9E5E';
           return (
-            <div key={p.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (hasResult ? (won ? accentColor : '#7F1D1D') : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px' }}>
+            <div key={p.id} style={cardStyle}>
               {activeCompetition === 'all' && (
-                <div style={{ marginBottom: '8px' }}>
-                  <span style={{ fontSize: '10px', color: isEPL ? '#8B5CF6' : '#F59E0B', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', padding: '2px 8px', borderRadius: '999px' }}>
-                    {isEPL ? '🏴󠁧󠁢󠁥󠁮󠁧󠁿' : '🏆'} {comp}
+                <div style={{ marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: COLORS.textMuted, backgroundColor: COLORS.cardAlt, padding: '2px 8px', borderRadius: 999 }}>
+                    {comp}
                   </span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{matchName}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>{matchName}</span>
                 {hasResult ? (
-                  <span style={{ fontSize: '12px', backgroundColor: won ? (isEPL ? '#4C1D95' : '#1A7A4A') : '#7F1D1D', color: won ? (isEPL ? '#C4B5FD' : '#6EE7B7') : '#FCA5A5', padding: '3px 12px', borderRadius: '999px', fontWeight: 'bold' }}>
-                    {won ? '+' + p.points_earned + ' pts ✅' : '0 pts ❌'}
+                  <span style={{ fontSize: 12, backgroundColor: won ? COLORS.successBg : COLORS.dangerBg, color: won ? COLORS.success : COLORS.danger, padding: '3px 10px', borderRadius: 999, fontWeight: 600 }}>
+                    {won ? '+' + p.points_earned + ' pts' : '0 pts'}
                   </span>
                 ) : (
-                  <span style={{ fontSize: '11px', backgroundColor: '#1A3A20', color: '#6B7280', padding: '3px 10px', borderRadius: '999px' }}>Pending ⏳</span>
+                  <span style={{ fontSize: 11, backgroundColor: COLORS.cardAlt, color: COLORS.textMuted, padding: '3px 10px', borderRadius: 999 }}>Pending</span>
                 )}
               </div>
               {won && (p.base_points > 0 || p.exact_bonus > 0 || p.goal_diff_bonus > 0 || p.upset_bonus > 0) && (
-                <div style={{ backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '8px 12px', marginBottom: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  {p.base_points > 0 && <span style={{ fontSize: '11px', color: '#2E9E5E' }}>✅ +{p.base_points}</span>}
-                  {p.goal_diff_bonus > 0 && <span style={{ fontSize: '11px', color: '#3B82F6' }}>📐 +{p.goal_diff_bonus}</span>}
-                  {p.exact_bonus > 0 && <span style={{ fontSize: '11px', color: '#F59E0B' }}>🎯 +{p.exact_bonus}</span>}
-                  {p.upset_bonus > 0 && <span style={{ fontSize: '11px', color: '#8B5CF6' }}>😱 +{p.upset_bonus}</span>}
-                  {p.confidence_multiplier > 1 && <span style={{ fontSize: '11px', color: '#FB923C' }}>x{p.confidence_multiplier}</span>}
+                <div style={{ backgroundColor: COLORS.cardAlt, borderRadius: 8, padding: '7px 12px', marginBottom: 10, display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 11 }}>
+                  {p.base_points > 0 && <span style={{ color: COLORS.success }}>Correct +{p.base_points}</span>}
+                  {p.goal_diff_bonus > 0 && <span style={{ color: COLORS.textSecondary }}>Margin +{p.goal_diff_bonus}</span>}
+                  {p.exact_bonus > 0 && <span style={{ color: COLORS.warning }}>Exact score +{p.exact_bonus}</span>}
+                  {p.upset_bonus > 0 && <span style={{ color: COLORS.accent }}>Upset +{p.upset_bonus}</span>}
+                  {p.confidence_multiplier > 1 && <span style={{ color: COLORS.textMuted }}>x{p.confidence_multiplier} confidence</span>}
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, fontSize: 13 }}>
                 <div>
-                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Pick: </span>
-                  <span style={{ fontSize: '14px', color: accentColor, fontWeight: 'bold' }}>{outcomeLabel}</span>
+                  <span style={{ color: COLORS.textMuted }}>Pick </span>
+                  <span style={{ color: COLORS.textPrimary, fontWeight: 600 }}>{outcomeLabel}</span>
                 </div>
                 <div>
-                  <span style={{ fontSize: '12px', color: '#9CA3AF' }}>Confidence: </span>
-                  <span style={{ fontSize: '14px', color: accentColor, fontWeight: 'bold' }}>{p.confidence_pct}%</span>
+                  <span style={{ color: COLORS.textMuted }}>Confidence </span>
+                  <span style={{ color: COLORS.textPrimary, fontWeight: 600 }}>{p.confidence_pct}%</span>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontSize: '11px', color: '#4B5563' }}>
+                <div style={{ fontSize: 11, color: COLORS.textMuted }}>
                   {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </div>
                 <button onClick={() => setShareCard({ prediction: p, matchName })}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: isEPL ? '#4C1D95' : '#1A7A4A', color: 'white', border: 'none', padding: '7px 16px', borderRadius: '999px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
-                  🔗 Share
+                  style={{ backgroundColor: 'transparent', border: `0.5px solid ${COLORS.border}`, color: COLORS.textSecondary, padding: '6px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  Share
                 </button>
               </div>
             </div>
@@ -250,10 +280,12 @@ function PredictionHistory({ userId, username, activeCompetition }: {
     </>
   );
 }
+
 // ── TOURNAMENT BREAKDOWN ──
 function TournamentBreakdown({ userId }: { userId: string }) {
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (!userId) return;
     const fetchData = async () => {
@@ -275,7 +307,6 @@ function TournamentBreakdown({ userId }: { userId: string }) {
           name, pts: stats.pts, correct: stats.correct, total: stats.total,
           accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,
         }));
-        // Sort EPL first
         result.sort((a, b) => (b.name.includes('EPL') ? 1 : 0) - (a.name.includes('EPL') ? 1 : 0));
         setTournaments(result);
       }
@@ -283,58 +314,36 @@ function TournamentBreakdown({ userId }: { userId: string }) {
     };
     fetchData();
   }, [userId]);
-  const ICONS: { [key: string]: string } = {
-    'World Cup 2026': '&#x1F3C6;',
-    'EPL 2026/27': '&#x1F3F4;',
-    'UCL 2026/27': '&#x2B50;',
-    'ISL 2026/27': '&#x1F1EE;&#x1F1F3;',
-    'NPFL 2026/27': '&#x1F1F3;&#x1F1EC;',
-    'Ghana PL 2026/27': '&#x1F1EC;&#x1F1ED;',
-    'Liga 1 2026/27': '&#x1F1EE;&#x1F1E9;',
-  };
-  const COLORS: { [key: string]: string } = {
-    'EPL 2026/27': '#8B5CF6',
-    'UCL 2026/27': '#A78BFA',
-    'World Cup 2026': '#F59E0B',
-    'ISL 2026/27': '#F59E0B',
-    'NPFL 2026/27': '#2E9E5E',
-    'Ghana PL 2026/27': '#F59E0B',
-    'Liga 1 2026/27': '#EF4444',
-  };
+
   if (loading) return null;
+
   return (
-    <section style={{ marginBottom: '20px' }}>
-      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>📊 Competition Breakdown</h2>
-      <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', overflow: 'hidden' }}>
-        {tournaments.length > 0 ? tournaments.map((t) => {
-          const color = COLORS[t.name] || '#2E9E5E';
-          return (
-            <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px', borderBottom: '1px solid #1A3A1A' }}>
-              <div style={{ fontSize: '24px' }} dangerouslySetInnerHTML={{ __html: ICONS[t.name] || '&#x26BD;' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', marginBottom: '3px' }}>{t.name}</div>
-                <div style={{ fontSize: '11px', color: '#6B7280' }}>{t.total} predictions · {t.correct} correct</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '17px', fontWeight: 'bold', color }}>{t.pts} pts</div>
-                <div style={{ fontSize: '11px', color: '#6B7280' }}>{t.accuracy}% accuracy</div>
-              </div>
+    <section style={{ marginBottom: 16 }}>
+      <h2 style={{ fontSize: 15, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 10 }}>Competition breakdown</h2>
+      <div style={{ ...cardStyle, padding: 0, overflow: 'hidden' }}>
+        {tournaments.length > 0 ? tournaments.map((t) => (
+          <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', borderBottom: `0.5px solid ${COLORS.border}` }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 3 }}>{t.name}</div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted }}>{t.total} predictions &middot; {t.correct} correct</div>
             </div>
-          );
-        }) : (
-          <div style={{ padding: '24px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>Stats appear after match results are processed.</p>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.accent }}>{t.pts} pts</div>
+              <div style={{ fontSize: 11, color: COLORS.textMuted }}>{t.accuracy}% accuracy</div>
+            </div>
+          </div>
+        )) : (
+          <div style={{ padding: 24, textAlign: 'center' }}>
+            <p style={{ color: COLORS.textMuted, fontSize: 12, margin: 0 }}>Stats appear once match results are processed.</p>
           </div>
         )}
-        <div style={{ padding: '12px 20px', backgroundColor: '#0D1F0F' }}>
-          <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', margin: '0 0 10px' }}>COMPETITIONS</p>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ padding: '12px 18px', backgroundColor: COLORS.cardAlt }}>
+          <p style={{ fontSize: 10, color: COLORS.textMuted, fontWeight: 600, letterSpacing: 0.5, margin: '0 0 10px', textTransform: 'uppercase' }}>Competitions</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {UPCOMING_COMPETITIONS.map((t) => (
-              <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid ' + t.color + '40', borderRadius: '999px', padding: '4px 12px' }}>
-                <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: t.icon }} />
-                <span style={{ fontSize: '11px', color: '#6B7280' }}>{t.name}</span>
-                <span style={{ fontSize: '10px', color: t.color, fontWeight: 'bold' }}>{t.date}</span>
+              <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 6, backgroundColor: COLORS.card, border: `0.5px solid ${COLORS.border}`, borderRadius: 999, padding: '4px 12px' }}>
+                <span style={{ fontSize: 11, color: COLORS.textSecondary }}>{t.name}</span>
+                <span style={{ fontSize: 10, color: COLORS.textMuted }}>{t.date}</span>
               </div>
             ))}
           </div>
@@ -343,18 +352,21 @@ function TournamentBreakdown({ userId }: { userId: string }) {
     </section>
   );
 }
+
 // ── MAIN PROFILE PAGE ──
 export default function Profile() {
   const [profile, setProfile] = useState<any>(null);
   const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>('');
+  const [numericRank, setNumericRank] = useState<number | null>(null);
   const [username, setUsername] = useState<string>('');
   const [savingCountry, setSavingCountry] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
   const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState('overview');
   const [activeCompetition, setActiveCompetition] = useState('all');
+
   useEffect(() => {
     const getProfile = async () => {
       try {
@@ -370,7 +382,7 @@ export default function Profile() {
             const { data: newProfile } = await supabase.from('profiles').insert([{
               id: uid, username: fallbackUsername, reputation: 0, total_points: 0,
               prediction_count: 0, correct_count: 0, streak: 0, best_streak: 0,
-              accuracy_pct: 0, rank: 'Rookie', rank_icon: '🥉',
+              accuracy_pct: 0, rank: 'Rookie', rank_icon: '\u{1F949}',
             }]).select().single();
             if (newProfile) { setProfile(newProfile); setUsername(newProfile.username); setSelectedCountry(newProfile.country || ''); }
           } else { setError(profileError.message); }
@@ -383,6 +395,17 @@ export default function Profile() {
           .from('user_badges').select('*').eq('user_id', uid)
           .order('awarded_at', { ascending: false });
         setBadges(badgeData ?? []);
+
+        // Numeric leaderboard position — separate from the `rank` tier name on
+        // `profiles`. Lives in leaderboard_snapshots since it's recomputed daily.
+        const { data: snapshot } = await supabase
+          .from('leaderboard_snapshots')
+          .select('rank_position')
+          .eq('user_id', uid)
+          .order('snapshot_date', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (snapshot?.rank_position) setNumericRank(snapshot.rank_position);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -391,186 +414,185 @@ export default function Profile() {
     };
     getProfile();
   }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
   };
+
   const handleSaveCountry = async () => {
     setSavingCountry(true);
     await supabase.from('profiles').update({ country: selectedCountry }).eq('id', userId);
     setProfile((prev: any) => ({ ...prev, country: selectedCountry }));
     setSavingCountry(false);
   };
+
   if (loading) return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: '#8B5CF6', fontFamily: 'Georgia, serif', fontSize: '20px' }}>Loading your profile...</p>
+    <main style={{ backgroundColor: COLORS.page, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: COLORS.textSecondary, fontFamily: 'Arial, sans-serif', fontSize: 14 }}>Loading your profile...</p>
     </main>
   );
+
   const tabs = [
-    { key: 'overview', label: 'Overview', icon: '&#x1F4CA;', color: '#8B5CF6' },
-    { key: 'predictions', label: 'Predictions', icon: '&#x1F3AF;', color: '#8B5CF6' },
-    { key: 'badges', label: 'Badges', icon: '&#x1F3C5;', color: '#F59E0B' },
-    { key: 'settings', label: 'Settings', icon: '&#x2699;', color: '#6B7280' },
+    { key: 'overview', label: 'Overview' },
+    { key: 'predictions', label: 'Predictions' },
+    { key: 'badges', label: 'Badges' },
+    { key: 'settings', label: 'Settings' },
   ];
+  const initials = (username || 'FS').slice(0, 2).toUpperCase();
+  const countryInfo = COUNTRIES.find(c => c.code === profile?.country);
+
   return (
-    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white' }}>
-      {/* HERO HEADER */}
-      <section style={{ textAlign: 'center', padding: '40px 20px 24px', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
-        <div style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, #8B5CF6, #4C1D95)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: '36px', boxShadow: '0 0 24px rgba(139,92,246,0.4)' }}>
-          🏴󠁧󠁢󠁥󠁮󠁧󠁿
-        </div>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '26px', marginBottom: '4px' }}>@{username}</h1>
-        <p style={{ color: '#8B5CF6', fontSize: '13px', marginBottom: '4px', fontWeight: 'bold' }}>
-          {profile?.rank_icon || '🥉'} {profile?.rank || 'Rookie'} Forecaster
-        </p>
-        {profile?.country && (
-          <p style={{ color: '#6B7280', fontSize: '12px', marginBottom: '12px' }}>
-            {COUNTRIES.find(c => c.code === profile.country)?.label?.replace(/&#x[^;]+;/g, '').trim() || profile.country}
-          </p>
-        )}
-        {error && (
-          <div style={{ backgroundColor: '#7F1D1D', border: '1px solid #EF4444', borderRadius: '8px', padding: '8px 16px', marginBottom: '12px', fontSize: '12px', color: '#FCA5A5', maxWidth: '400px', margin: '0 auto 12px' }}>
-            ⚠️ {error}
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-          {badges.length > 0 && (
-            <span style={{ backgroundColor: '#1C1A3A', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '4px 14px', fontSize: '12px', color: '#C4B5FD', fontWeight: 'bold' }}>
-              🏅 {badges.length} badge{badges.length !== 1 ? 's' : ''}
-            </span>
-          )}
-          <a href={'/u/' + username} style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '4px 14px', fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>
-            Public Profile →
-          </a>
-          <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: '1px solid #1A3A1A', color: '#6B7280', padding: '4px 14px', borderRadius: '999px', cursor: 'pointer', fontSize: '12px' }}>
-            Sign Out
-          </button>
-        </div>
-      </section>
-      {/* QUICK STATS BAR */}
-      <div style={{ background: 'linear-gradient(180deg, #1A0B2E 0%, #0A1A0C 100%)', borderTop: '1px solid #2D1B69', borderBottom: '1px solid #2D1B69', padding: '20px' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px', textAlign: 'center' }}>
-          {[
-            { value: profile?.total_points ?? 0, label: 'TOTAL REP', color: '#8B5CF6', big: true },
-            { value: profile?.prediction_count ?? 0, label: 'PREDICTIONS', color: '#9CA3AF', big: false },
-            { value: (profile?.accuracy_pct ?? 0) + '%', label: 'ACCURACY', color: '#F59E0B', big: false },
-            { value: profile?.streak ?? 0, label: 'STREAK 🔥', color: '#EF4444', big: false },
-          ].map(({ value, label, color, big }) => (
-            <div key={label} style={{ padding: '8px 4px', borderRight: '1px solid #2D1B69' }}>
-              <div style={{ fontSize: big ? '28px' : '22px', fontWeight: 'bold', color, fontFamily: 'Georgia, serif', lineHeight: 1 }}>{value}</div>
-              <div style={{ fontSize: '9px', color: '#4B5563', marginTop: '4px', letterSpacing: '0.5px' }}>{label}</div>
+    <main style={{ backgroundColor: COLORS.page, minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: COLORS.textPrimary, padding: '24px 16px 48px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+
+        {/* HEADER CARD */}
+        <div style={{ ...cardStyle, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
+            <div style={{ width: 52, height: 52, borderRadius: '50%', backgroundColor: COLORS.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 16, color: COLORS.accent, flexShrink: 0 }}>
+              {initials}
             </div>
-          ))}
-        </div>
-      </div>
-      {/* SHARE + CHALLENGE BUTTONS */}
-      <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => {
-          const url = 'https://flipseer.com/u/' + (profile?.username || '');
-          const text = 'My Football Reputation on Flipseer — ' + (profile?.total_points ?? 0) + ' REP · ' + (profile?.accuracy_pct ?? 0) + '% accuracy';
-          if (typeof navigator !== 'undefined' && (navigator as any).share) {
-            (navigator as any).share({ title: 'My Football Reputation — Flipseer', text, url });
-          } else {
-            navigator.clipboard.writeText(url);
-            alert('Profile link copied!');
-          }
-        }} style={{ backgroundColor: '#2E9E5E', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit' }}>
-          📤 Share My Football Reputation
-        </button>
-        <a href="/groups" style={{ backgroundColor: 'transparent', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.4)', padding: '10px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none', display: 'inline-block' }}>
-          👥 Challenge a Friend
-        </a>
-      </div>
-      {/* COUNTRY REMINDER */}
-      {!profile?.country && (
-        <div style={{ maxWidth: '600px', margin: '16px auto 0', padding: '0 20px' }}>
-          <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '20px' }}>🌍</span>
-              <div>
-                <div style={{ color: '#F59E0B', fontWeight: 'bold', fontSize: '14px' }}>Set your country!</div>
-                <div style={{ color: '#9CA3AF', fontSize: '12px' }}>Appear on the national leaderboard</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 17, fontWeight: 600 }}>@{username}</div>
+              <div style={{ fontSize: 12, color: COLORS.textSecondary }}>
+                {profile?.rank_icon || '\u{1F949}'} {profile?.rank || 'Rookie'} forecaster
+                {countryInfo ? ` \u00b7 ${countryInfo.flag} ${countryInfo.name}` : ''}
               </div>
             </div>
-            <button onClick={() => setActiveTab('settings')} style={{ backgroundColor: '#F59E0B', color: 'black', padding: '8px 16px', borderRadius: '8px', border: 'none', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              Set Country →
+            {numericRank && (
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: 10, color: COLORS.textMuted }}>Rank</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: COLORS.textPrimary }}>#{numericRank}</div>
+              </div>
+            )}
+            <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: `0.5px solid ${COLORS.border}`, color: COLORS.textMuted, padding: '6px 12px', borderRadius: 999, cursor: 'pointer', fontSize: 12 }}>
+              Sign out
             </button>
           </div>
+          {error && (
+            <div style={{ backgroundColor: COLORS.dangerBg, borderRadius: 8, padding: '8px 14px', marginTop: 12, fontSize: 12, color: COLORS.danger }}>
+              {error}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+            <button onClick={() => {
+              const url = 'https://flipseer.com/u/' + (profile?.username || '');
+              const text = 'My football reputation on Flipseer \u2014 ' + (profile?.total_points ?? 0) + ' points, ' + (profile?.accuracy_pct ?? 0) + '% accuracy';
+              if (typeof navigator !== 'undefined' && (navigator as any).share) {
+                (navigator as any).share({ title: 'My football reputation \u2014 Flipseer', text, url });
+              } else {
+                navigator.clipboard.writeText(url);
+                alert('Profile link copied');
+              }
+            }} style={{ flex: 1, backgroundColor: COLORS.accent, color: '#fff', border: 'none', padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              Share my reputation
+            </button>
+            <a href="/groups" style={{ flex: 1, textAlign: 'center', backgroundColor: 'transparent', color: COLORS.textSecondary, border: `0.5px solid ${COLORS.border}`, padding: '10px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+              Challenge a friend
+            </a>
+          </div>
         </div>
-      )}
-      {/* MAIN TABS */}
-      <div style={{ maxWidth: '600px', margin: '20px auto 0', padding: '0 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
-          {tabs.map(({ key, label, icon, color }) => (
+
+        {/* STAT GRID */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
+          {[
+            { value: profile?.total_points ?? 0, label: 'Points' },
+            { value: profile?.prediction_count ?? 0, label: 'Predictions' },
+            { value: (profile?.accuracy_pct ?? 0) + '%', label: 'Accuracy' },
+            { value: profile?.streak ?? 0, label: 'Streak' },
+          ].map((s) => (
+            <div key={s.label} style={{ backgroundColor: COLORS.card, border: `0.5px solid ${COLORS.border}`, borderRadius: 10, padding: '12px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 600 }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: COLORS.textMuted, marginTop: 2 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* COUNTRY REMINDER */}
+        {!profile?.country && (
+          <div style={{ ...cardStyle, borderColor: 'rgba(251,191,36,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
+            <div>
+              <div style={{ color: COLORS.warning, fontWeight: 600, fontSize: 13 }}>Set your country</div>
+              <div style={{ color: COLORS.textSecondary, fontSize: 12 }}>Appear on the national leaderboard.</div>
+            </div>
+            <button onClick={() => setActiveTab('settings')} style={{ backgroundColor: COLORS.warning, color: '#412402', padding: '8px 16px', borderRadius: 8, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              Set country
+            </button>
+          </div>
+        )}
+
+        {/* TABS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 16 }}>
+          {tabs.map(({ key, label }) => (
             <button key={key} onClick={() => setActiveTab(key)}
-              style={{ padding: '12px 4px', borderRadius: '12px', border: '2px solid ' + (activeTab === key ? color : '#1A3A1A'), backgroundColor: activeTab === key ? color + '20' : '#0D2B14', color: activeTab === key ? color : '#4B5563', cursor: 'pointer', fontSize: '10px', fontWeight: activeTab === key ? 'bold' : 'normal', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.2s ease' }}>
-              <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-              <span style={{ letterSpacing: '0.5px' }}>{label.toUpperCase()}</span>
+              style={{ padding: '10px 4px', borderRadius: 8, border: `0.5px solid ${activeTab === key ? COLORS.accent : COLORS.border}`, backgroundColor: activeTab === key ? COLORS.accentBg : 'transparent', color: activeTab === key ? COLORS.accent : COLORS.textMuted, cursor: 'pointer', fontSize: 12, fontWeight: activeTab === key ? 600 : 400 }}>
+              {label}
             </button>
           ))}
         </div>
-        {/* ── OVERVIEW TAB ── */}
+
+        {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div>
-            <div style={{ backgroundColor: '#0D2B14', border: '2px solid #8B5CF6', borderRadius: '20px', padding: '28px', textAlign: 'center', marginBottom: '16px', boxShadow: '0 0 32px rgba(139,92,246,0.2)' }}>
-              <div style={{ fontSize: '56px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif', lineHeight: 1 }}>{profile?.total_points ?? 0}</div>
-              <div style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '3px', marginTop: '8px' }}>TOTAL POINTS</div>
-              <div style={{ fontSize: '12px', color: '#4B5563', marginTop: '4px' }}>Across all competitions</div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '20px' }}>
-              {[
-                { label: 'Predictions', value: profile?.prediction_count ?? 0, icon: '🎯' },
-                { label: 'Correct', value: profile?.correct_count ?? 0, icon: '✅' },
-                { label: 'Accuracy', value: (profile?.accuracy_pct ?? 0) + '%', icon: '📊' },
-              ].map(({ label, value, icon }) => (
-                <div key={label} style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '16px 8px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '20px', marginBottom: '4px' }}>{icon}</div>
-                  <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>{value}</div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '20px', marginBottom: '20px' }}>
-              <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '16px', marginBottom: '14px' }}>🏅 Rank Progress</h3>
-              {[
-                { rank: 'Rookie', icon: '🥉', min: 0, max: 49 },
-                { rank: 'Predictor', icon: '🎯', min: 50, max: 199 },
-                { rank: 'Expert', icon: '🔥', min: 200, max: 499 },
-                { rank: 'Elite', icon: '⭐', min: 500, max: 999 },
-                { rank: 'Legend', icon: '👑', min: 1000, max: 9999 },
-              ].map(({ rank, icon, min, max }) => {
+            <div style={{ ...cardStyle, marginBottom: 16 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Rank progress</h3>
+              {RANK_LADDER.map(({ rank, min, max }) => {
                 const pts = profile?.total_points ?? 0;
                 const active = pts >= min && pts <= max;
+                const rangeLabel = min + '\u2013' + (max === 9999 ? '+' : max) + ' pts';
                 return (
-                  <div key={rank} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid #1A3A1A' }}>
-                    <span style={{ fontSize: '13px', color: active ? '#8B5CF6' : '#6B7280', fontWeight: active ? 'bold' : 'normal' }}>
-                      {icon} {rank}
+                  <div key={rank} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderTop: `0.5px solid ${COLORS.border}` }}>
+                    <span style={{ fontSize: 13, color: active ? COLORS.accent : COLORS.textSecondary, fontWeight: active ? 600 : 400 }}>
+                      {rank}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#6B7280' }}>{min}-{max === 9999 ? 'above' : max} rep</span>
-                    {active && <span style={{ fontSize: '11px', backgroundColor: '#4C1D95', color: '#C4B5FD', padding: '2px 10px', borderRadius: '999px', fontWeight: 'bold' }}>YOU ✓</span>}
+                    <span style={{ fontSize: 11, color: COLORS.textMuted }}>{rangeLabel}</span>
+                    {active && <span style={{ fontSize: 11, backgroundColor: COLORS.accentBg, color: COLORS.accent, padding: '2px 10px', borderRadius: 999, fontWeight: 600 }}>You</span>}
                   </div>
                 );
               })}
             </div>
+
+            {/* ACHIEVEMENTS PREVIEW — visible by default on Overview, not gated behind the Badges tab */}
+            <div style={{ ...cardStyle, marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>Achievements</h3>
+                <button onClick={() => setActiveTab('badges')} style={{ background: 'none', border: 'none', color: COLORS.accent, fontSize: 12, cursor: 'pointer', padding: 0 }}>
+                  View all
+                </button>
+              </div>
+              {badges.length === 0 ? (
+                <p style={{ fontSize: 12, color: COLORS.textMuted, margin: 0 }}>{'No badges yet \u2014 predict correctly to earn your first one.'}</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                  {badges.slice(0, 4).map((b) => (
+                    <div key={b.id} style={{ backgroundColor: COLORS.cardAlt, borderRadius: 10, padding: '10px 6px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 20, lineHeight: 1, marginBottom: 4 }}>{b.badge_icon}</div>
+                      <div style={{ fontSize: 10, color: COLORS.textSecondary, lineHeight: 1.3 }}>{b.badge_label}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <TournamentBreakdown userId={userId} />
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '24px' }}>
-              <a href="/predict" style={{ flex: 1, textAlign: 'center', backgroundColor: '#8B5CF6', color: 'white', padding: '12px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-                🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL Now
+            <div style={{ display: 'flex', gap: 8 }}>
+              <a href="/predict" style={{ flex: 1, textAlign: 'center', backgroundColor: COLORS.accent, color: '#fff', padding: 12, borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                Predict now
               </a>
-              <a href={'/u/' + username} style={{ flex: 1, textAlign: 'center', backgroundColor: '#0D2B14', color: '#8B5CF6', border: '1px solid #8B5CF6', padding: '12px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
-                🔗 Public Profile
+              <a href={'/u/' + username} style={{ flex: 1, textAlign: 'center', backgroundColor: 'transparent', color: COLORS.textSecondary, border: `0.5px solid ${COLORS.border}`, padding: 12, borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                Public profile
               </a>
             </div>
           </div>
         )}
-        {/* ── PREDICTIONS TAB ── */}
+
+        {/* PREDICTIONS TAB */}
         {activeTab === 'predictions' && (
           <div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
-              {COMPETITION_TABS.map(({ key, label, icon }) => (
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14, overflowX: 'auto', paddingBottom: 4 }}>
+              {COMPETITION_TABS.map(({ key, label }) => (
                 <button key={key} onClick={() => setActiveCompetition(key)}
-                  style={{ flexShrink: 0, padding: '6px 14px', borderRadius: '999px', border: '1px solid', borderColor: activeCompetition === key ? '#8B5CF6' : '#1A3A1A', backgroundColor: activeCompetition === key ? '#4C1D95' : 'transparent', color: activeCompetition === key ? 'white' : '#6B7280', cursor: 'pointer', fontSize: '12px', fontWeight: activeCompetition === key ? 'bold' : 'normal', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span dangerouslySetInnerHTML={{ __html: icon }} />
+                  style={{ flexShrink: 0, padding: '6px 14px', borderRadius: 999, border: `0.5px solid ${activeCompetition === key ? COLORS.accent : COLORS.border}`, backgroundColor: activeCompetition === key ? COLORS.accentBg : 'transparent', color: activeCompetition === key ? COLORS.accent : COLORS.textMuted, cursor: 'pointer', fontSize: 12, fontWeight: activeCompetition === key ? 600 : 400 }}>
                   {label}
                 </button>
               ))}
@@ -578,74 +600,72 @@ export default function Profile() {
             <PredictionHistory userId={userId} username={username} activeCompetition={activeCompetition} />
           </div>
         )}
-        {/* ── BADGES TAB ── */}
+
+        {/* BADGES TAB */}
         {activeTab === 'badges' && (
-          <div style={{ paddingBottom: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>🏅 Your Badges</h2>
-              <a href="/how-to-play" style={{ fontSize: '12px', color: '#8B5CF6', textDecoration: 'none' }}>How to earn →</a>
+          <div style={{ paddingBottom: 32 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>Your badges</h2>
+              <a href="/how-to-play" style={{ fontSize: 12, color: COLORS.accent, textDecoration: 'none' }}>How to earn</a>
             </div>
             {badges.length === 0 ? (
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏅</div>
-                <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>No badges yet — predict correctly to earn them!</p>
-                <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', textDecoration: 'none', fontWeight: 'bold' }}>Start predicting →</a>
+              <div style={{ ...cardStyle, padding: 40, textAlign: 'center' }}>
+                <p style={{ color: COLORS.textSecondary, fontSize: 13, marginBottom: 14 }}>{'No badges yet \u2014 predict correctly to earn them.'}</p>
+                <a href="/predict" style={{ color: COLORS.accent, fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>Start predicting</a>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                {badges.map((b) => {
-                  const color = BADGE_COLORS[b.badge_type] ?? '#8B5CF6';
-                  return (
-                    <div key={b.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + color + '40', borderRadius: '12px', padding: '14px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                      <div style={{ fontSize: '28px', lineHeight: 1 }}>{b.badge_icon}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 'bold', color, marginBottom: '2px' }}>{b.badge_label}</div>
-                        <div style={{ fontSize: '10px', color: '#4B5563' }}>{new Date(b.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
-                      </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                {badges.map((b) => (
+                  <div key={b.id} style={{ backgroundColor: COLORS.card, border: `0.5px solid ${COLORS.border}`, borderRadius: 10, padding: 12, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <div style={{ fontSize: 22, lineHeight: 1 }}>{b.badge_icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 2 }}>{b.badge_label}</div>
+                      <div style={{ fontSize: 10, color: COLORS.textMuted }}>{new Date(b.awarded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
-        {/* ── SETTINGS TAB ── */}
+
+        {/* SETTINGS TAB */}
         {activeTab === 'settings' && (
-          <div style={{ paddingBottom: '32px' }}>
-            <div id="country-selector" style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>🌍 Your Nation</h2>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '20px' }}>
-                <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '12px' }}>
+          <div style={{ paddingBottom: 32 }}>
+            <div style={{ marginBottom: 20 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>Your nation</h2>
+              <div style={cardStyle}>
+                <p style={{ color: COLORS.textSecondary, fontSize: 13, marginBottom: 12 }}>
                   Your nation determines which leaderboard you compete on. Every prediction earns points for your country.
                 </p>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
                   {COUNTRIES.map(c => (
                     <button key={c.code} onClick={() => setSelectedCountry(c.code)}
-                      style={{ padding: '6px 12px', borderRadius: '999px', border: '1px solid', borderColor: selectedCountry === c.code ? '#8B5CF6' : '#1A7A4A', backgroundColor: selectedCountry === c.code ? '#4C1D95' : 'transparent', color: selectedCountry === c.code ? 'white' : '#9CA3AF', fontSize: '12px', cursor: 'pointer' }}
-                      dangerouslySetInnerHTML={{ __html: c.label }}
-                    />
+                      style={{ padding: '6px 12px', borderRadius: 999, border: `0.5px solid ${selectedCountry === c.code ? COLORS.accent : COLORS.border}`, backgroundColor: selectedCountry === c.code ? COLORS.accentBg : 'transparent', color: selectedCountry === c.code ? COLORS.accent : COLORS.textSecondary, fontSize: 12, cursor: 'pointer' }}>
+                      {c.flag} {c.name}
+                    </button>
                   ))}
                 </div>
                 <button onClick={handleSaveCountry} disabled={savingCountry}
-                  style={{ backgroundColor: '#8B5CF6', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', opacity: savingCountry ? 0.7 : 1 }}>
-                  {savingCountry ? 'Saving...' : 'Save Nation'}
+                  style={{ backgroundColor: COLORS.accent, color: '#fff', border: 'none', padding: '10px 24px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, opacity: savingCountry ? 0.7 : 1 }}>
+                  {savingCountry ? 'Saving...' : 'Save nation'}
                 </button>
               </div>
             </div>
             <div>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '12px' }}>👤 Account</h2>
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px solid #1A3A1A', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>Account</h2>
+              <div style={cardStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: `0.5px solid ${COLORS.border}`, marginBottom: 12 }}>
                   <div>
-                    <div style={{ fontSize: '13px', color: '#6B7280' }}>Username</div>
-                    <div style={{ fontSize: '15px', color: 'white', fontWeight: 'bold' }}>@{username}</div>
+                    <div style={{ fontSize: 12, color: COLORS.textMuted }}>Username</div>
+                    <div style={{ fontSize: 14, color: COLORS.textPrimary, fontWeight: 600 }}>@{username}</div>
                   </div>
-                  <span style={{ fontSize: '11px', color: '#4B5563' }}>Permanent</span>
+                  <span style={{ fontSize: 11, color: COLORS.textMuted }}>Permanent</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '13px', color: '#6B7280' }}>Member since June 2026</div>
-                  <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: '1px solid #374151', color: '#6B7280', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>
-                    Sign Out
+                  <div style={{ fontSize: 12, color: COLORS.textMuted }}>Member since June 2026</div>
+                  <button onClick={handleSignOut} style={{ backgroundColor: 'transparent', border: `0.5px solid ${COLORS.border}`, color: COLORS.textSecondary, padding: '6px 14px', borderRadius: 8, cursor: 'pointer', fontSize: 12 }}>
+                    Sign out
                   </button>
                 </div>
               </div>
