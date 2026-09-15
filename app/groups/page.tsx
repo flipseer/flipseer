@@ -363,7 +363,7 @@ export default function GroupsPage() {
         {/* MY LEAGUES */}
         {myGroups.length > 0 && (
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>YOUR LEAGUES</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}><div style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>Your Leagues</div><span style={{ fontSize: '11px', color: '#8B5CF6' }}>{myGroups.length} active</span></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {myGroups.map((group) => {
                 const isActive = activeGroup?.id === group.id;
@@ -380,6 +380,19 @@ export default function GroupsPage() {
                         {group.member_count} member{group.member_count !== 1 ? 's' : ''} ·
                         <span style={{ color: '#8B5CF6', fontWeight: 'bold', marginLeft: '4px' }}>{group.invite_code}</span>
                       </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginRight: '6px' }}>
+                      {groupLeaders.length > 0 && groupLeaders[0]?.id === userId ? (
+                        <div>
+                          <div style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>🏆 #1</div>
+                          <div style={{ fontSize: '10px', color: '#F59E0B' }}>Leading</div>
+                        </div>
+                      ) : groupLeaders.findIndex(l => l.id === userId) > 0 ? (
+                        <div>
+                          <div style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold' }}>#{groupLeaders.findIndex(l => l.id === userId) + 1}</div>
+                          <div style={{ fontSize: '10px', color: '#4B5563' }}>of {group.member_count}</div>
+                        </div>
+                      ) : null}
                     </div>
                     <div style={{ color: isActive ? '#8B5CF6' : '#4B5563', fontSize: '18px', flexShrink: 0 }}>
                       {isActive ? '▾' : '›'}
@@ -423,6 +436,18 @@ export default function GroupsPage() {
                   style={{ flex: 1, backgroundColor: 'transparent', color: '#8B5CF6', border: '1px solid #8B5CF6', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', minWidth: '140px' }}>
                   Join with Code
                 </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ flex: 1, backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>293+</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Predictions made</div>
+                <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>across Flipseer</div>
+              </div>
+              <div style={{ flex: 1, backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>95</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Active forecasters</div>
+                <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>across Flipseer</div>
               </div>
             </div>
             <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>POPULAR LEAGUE IDEAS</div>
