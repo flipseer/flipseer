@@ -62,7 +62,6 @@ export default function GroupsPage() {
     const joinCode = params.get('join');
     const isWelcome = params.get('welcome') === '1';
     if (isWelcome) { setShowWelcome(true); }
-    // Check for stored join code from auth redirect
     const storedCode = sessionStorage.getItem('flipseer_join_code');
     const codeToUse = joinCode?.toUpperCase() || storedCode || '';
     if (codeToUse) {
@@ -73,11 +72,8 @@ export default function GroupsPage() {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // Guest with join code — store code and redirect to auth
-        const params = new URLSearchParams(window.location.search);
         const joinCode = params.get('join');
         if (joinCode) {
-          // Store join code so auth page can redirect back
           sessionStorage.setItem('flipseer_join_code', joinCode.toUpperCase());
           window.location.href = '/auth?join=' + joinCode.toUpperCase();
         } else {
@@ -157,17 +153,13 @@ export default function GroupsPage() {
     const joinUrl = `https://flipseer.com/groups?join=${group.invite_code}`;
     const name = group.name.toLowerCase();
     if (name.includes('office') || name.includes('work')) {
-      return `🏢 Office EPL League — who actually knows football?\n\nI've set up a Flipseer league for us. Predict every Premier League match before kickoff.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+      return `🏢 Office Football League — who actually knows football?\n\nI've set up a Flipseer league for us. Predict EPL, UCL, Liga 1 and Ghana PL matches before kickoff.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #Flipseer`;
     } else if (name.includes('family')) {
-      return `👨‍👩‍👧‍👦 Family EPL League — who knows football best?\n\nSet up a Flipseer league for us. Predict every match before kickoff. Full season.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
-    } else if (name.includes('uni') || name.includes('college') || name.includes('campus')) {
-      return `🎓 University EPL League — campus bragging rights!\n\nPredict every Premier League match before kickoff. See who tops the league.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+      return `👨‍👩‍👧‍👦 Family Football League — who knows football best?\n\nSet up a Flipseer league for us. Predict every match before kickoff.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #Flipseer`;
     } else if (name.includes('nigeria') || name.includes('india') || name.includes('indonesia') || name.includes('ghana') || name.includes('country')) {
-      return `🌍 Country EPL League — represent your nation!\n\nEvery correct prediction earns points for our nation in Flipseer's Nation Battle.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
-    } else if (name.includes('arsenal') || name.includes('liverpool') || name.includes('city') || name.includes('united') || name.includes('fan') || name.includes('club')) {
-      return `⚽ Fan League — who calls it best?\n\nPredict every EPL match before kickoff. Prove you know football.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #EPL2027`;
+      return `🌍 Country Football League — represent your nation!\n\nEvery correct prediction earns points for our nation in Flipseer's Nation Battle.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\nFree. No betting. #Flipseer`;
     }
-    return `🏴󠁧󠁢󠁥󠁮󠁧󠁿 Join my EPL league "${group.name}" on Flipseer!\n\nPredict every Premier League match. Compete privately AND earn points globally.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\n#PremierLeague #EPL2027 #Flipseer`;
+    return `⚽ Join my Flipseer private league "${group.name}"!\n\nPredict EPL, UCL, Liga 1 and Ghana PL matches. Compete privately AND earn points globally.\n\nJoin → ${joinUrl}\nCode: ${group.invite_code}\n\n#PremierLeague #UCL #Flipseer`;
   };
   const shareGroup = (group: any) => {
     const joinUrl = `https://flipseer.com/groups?join=${group.invite_code}`;
@@ -184,8 +176,8 @@ export default function GroupsPage() {
   if (loading) return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-        <p style={{ color: '#8B5CF6', fontSize: '16px' }}>Loading your groups...</p>
+        <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚽</div>
+        <p style={{ color: '#8B5CF6', fontSize: '16px' }}>Loading your leagues...</p>
       </div>
     </main>
   );
@@ -198,7 +190,6 @@ export default function GroupsPage() {
         .group-card:hover { border-color: #8B5CF6 !important; }
         .group-card { transition: border-color 0.15s ease; }
       `}</style>
-      {/* TOAST */}
       {toast && (
         <div style={{ position: 'fixed', top: '72px', left: '50%', transform: 'translateX(-50%)', zIndex: 200, backgroundColor: toastType === 'success' ? '#4C1D95' : '#7F1D1D', color: 'white', padding: '10px 24px', borderRadius: '999px', fontSize: '14px', fontWeight: 'bold', boxShadow: '0 4px 20px rgba(0,0,0,0.4)', animation: 'toastIn 0.3s ease', whiteSpace: 'nowrap' }}>
           {toastType === 'success' ? '✓ ' : '✕ '}{toast}
@@ -208,7 +199,7 @@ export default function GroupsPage() {
       <div style={{ background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)', padding: '48px 20px 32px', borderBottom: '1px solid #2D1B69', textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '7px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '5px 16px', marginBottom: '20px' }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>PRIVATE GROUPS · EPL 2026/27</span>
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>PRIVATE LEAGUES · ALL COMPETITIONS</span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(28px, 6vw, 48px)', letterSpacing: '-1px', marginBottom: '10px', lineHeight: '1.1' }}>
           YOUR OWN<br /><span style={{ color: '#8B5CF6' }}>FOOTBALL LEAGUE.</span>
@@ -222,9 +213,9 @@ export default function GroupsPage() {
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => { setShowCreate(true); setShowJoin(false); }}
             style={{ backgroundColor: '#8B5CF6', color: 'white', border: 'none', padding: '13px 28px', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
-            + Create Group
+            + Create League
           </button>
-          <button onClick={() => { setShowJoin(true); setShowCreate(false); window.scrollTo({top: 0, behavior: 'smooth'}); }}
+          <button onClick={() => { setShowJoin(true); setShowCreate(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #2D1B69', padding: '13px 28px', borderRadius: '10px', fontSize: '15px', cursor: 'pointer' }}>
             Join with Code
           </button>
@@ -235,12 +226,12 @@ export default function GroupsPage() {
         {showCreate && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '24px', marginBottom: '24px', animation: 'slideUp 0.3s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>Create a Group</h2>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>Create a League</h2>
               <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '20px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ marginBottom: '14px' }}>
-              <label style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>GROUP NAME *</label>
-              <input type="text" placeholder="e.g. EPL WhatsApp Gang" value={newGroupName}
+              <label style={{ fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>LEAGUE NAME *</label>
+              <input type="text" placeholder="e.g. WhatsApp Gunners FC" value={newGroupName}
                 onChange={e => setNewGroupName(e.target.value)} maxLength={40}
                 onKeyDown={e => e.key === 'Enter' && handleCreate()}
                 style={{ width: '100%', backgroundColor: '#0D1F0F', border: '1px solid #8B5CF6', borderRadius: '8px', padding: '12px 14px', color: 'white', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }} />
@@ -262,7 +253,7 @@ export default function GroupsPage() {
         {showJoin && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '16px', padding: '24px', marginBottom: '24px', animation: 'slideUp 0.3s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>Join a Group</h2>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>Join a League</h2>
               <button onClick={() => setShowJoin(false)} style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '20px', cursor: 'pointer' }}>✕</button>
             </div>
             <div style={{ marginBottom: '16px' }}>
@@ -274,17 +265,17 @@ export default function GroupsPage() {
             </div>
             <button onClick={handleJoin} disabled={joining || inviteCode.length < 9}
               style={{ width: '100%', padding: '13px', backgroundColor: inviteCode.length < 9 ? '#1A3A20' : '#8B5CF6', color: inviteCode.length < 9 ? '#4B5563' : 'white', border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: inviteCode.length < 9 ? 'not-allowed' : 'pointer' }}>
-              {joining ? 'Joining...' : 'Join Group →'}
+              {joining ? 'Joining...' : 'Join League →'}
             </button>
           </div>
         )}
-        {/* ACTIVE GROUP LEADERBOARD */}
+        {/* ACTIVE LEAGUE LEADERBOARD */}
         {activeGroup && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', marginBottom: '24px', overflow: 'hidden', animation: 'slideUp 0.3s ease', boxShadow: '0 0 24px rgba(139,92,246,0.15)' }}>
             <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid #2D1B69' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '4px' }}>PRIVATE GROUP · EPL 2026/27</div>
+                  <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '4px' }}>PRIVATE LEAGUE · ALL COMPETITIONS</div>
                   <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', margin: '0 0 8px' }}>{activeGroup.name}</h2>
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '12px', backgroundColor: '#050E05', border: '1px solid #2D1B69', padding: '3px 12px', borderRadius: '999px', color: '#9CA3AF' }}>
@@ -307,8 +298,8 @@ export default function GroupsPage() {
                 <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>Loading...</div>
               ) : groupLeaders.length === 0 ? (
                 <div style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>
-                  <div style={{ fontSize: '40px', marginBottom: '12px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
-                  <p>No predictions yet. EPL starts August 21!</p>
+                  <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚽</div>
+                  <p style={{ marginBottom: '8px' }}>No predictions yet — be the first!</p>
                   <a href="/predict" style={{ display: 'inline-block', marginTop: '12px', backgroundColor: '#8B5CF6', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>
                     Predict Now →
                   </a>
@@ -345,7 +336,7 @@ export default function GroupsPage() {
                         </div>
                         <div style={{ textAlign: 'right', flexShrink: 0 }}>
                           <div style={{ fontSize: '20px', fontWeight: 'bold', color: i === 0 ? '#F59E0B' : '#8B5CF6', fontFamily: 'Georgia, serif' }}>{leader.total_points}</div>
-                          <div style={{ fontSize: '10px', color: '#4B5563', letterSpacing: '1px' }}>PTS</div>
+                          <div style={{ fontSize: '10px', color: '#4B5563', letterSpacing: '1px' }}>REP</div>
                         </div>
                       </div>
                     </div>
@@ -356,7 +347,7 @@ export default function GroupsPage() {
             <div style={{ padding: '16px 20px', borderTop: '1px solid #2D1B69', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <button onClick={() => shareGroup(activeGroup)}
                 style={{ flex: 1, padding: '10px', backgroundColor: '#25D366', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', minWidth: '120px' }}>
-                📱 Invite via WhatsApp
+                📲 Invite via WhatsApp
               </button>
               <button onClick={() => copyCode(activeGroup.invite_code)}
                 style={{ flex: 1, padding: '10px', backgroundColor: '#8B5CF6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', minWidth: '100px' }}>
@@ -369,10 +360,10 @@ export default function GroupsPage() {
             </div>
           </div>
         )}
-        {/* MY GROUPS */}
+        {/* MY LEAGUES */}
         {myGroups.length > 0 && (
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>YOUR GROUPS</div>
+            <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>YOUR LEAGUES</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {myGroups.map((group) => {
                 const isActive = activeGroup?.id === group.id;
@@ -381,7 +372,7 @@ export default function GroupsPage() {
                     style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isActive ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
                     onClick={() => handleViewLeaderboard(group)}>
                     <div style={{ width: '44px', height: '44px', backgroundColor: '#4C1D95', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
-                      🏴󠁧󠁢󠁥󠁮󠁧󠁿
+                      ⚽
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '3px', color: isActive ? '#8B5CF6' : 'white' }}>{group.name}</div>
@@ -406,7 +397,7 @@ export default function GroupsPage() {
               <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '16px' }}>WHY CREATE A LEAGUE?</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
                 {[
-                  { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'Compete privately with friends on every EPL matchweek' },
+                  { icon: '⚽', text: 'Compete privately with friends on every matchweek across EPL, UCL, Liga 1 and Ghana PL' },
                   { icon: '📊', text: 'Compare accuracy — see who actually knows football' },
                   { icon: '🌍', text: 'Every prediction still counts in the global leaderboard' },
                   { icon: '🏆', text: 'Your nation earns points from every call you make' },
@@ -420,7 +411,7 @@ export default function GroupsPage() {
               </div>
               <div style={{ backgroundColor: '#050E05', border: '1px solid #8B5CF6', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px' }}>
                 <span style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold' }}>
-                  One prediction powers four systems — group, nation, global leaderboard, and permanent reputation.
+                  One prediction powers four systems — league, nation, global leaderboard, and permanent reputation.
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -428,7 +419,7 @@ export default function GroupsPage() {
                   style={{ flex: 1, backgroundColor: '#8B5CF6', color: 'white', border: 'none', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', minWidth: '140px' }}>
                   + Create Your League
                 </button>
-                <button onClick={() => { setShowJoin(true); window.scrollTo({top: 0, behavior: 'smooth'}); }}
+                <button onClick={() => { setShowJoin(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   style={{ flex: 1, backgroundColor: 'transparent', color: '#8B5CF6', border: '1px solid #8B5CF6', padding: '12px 20px', borderRadius: '10px', fontSize: '14px', cursor: 'pointer', minWidth: '140px' }}>
                   Join with Code
                 </button>
@@ -442,7 +433,7 @@ export default function GroupsPage() {
                 { icon: '🎓', name: 'University League', desc: 'Campus bragging rights all season' },
                 { icon: '🏆', name: 'Friends League', desc: 'Settle it once and for all' },
                 { icon: '🌍', name: 'Country League', desc: 'Represent your nation together' },
-                { icon: '⚽', name: 'Football Club Fan League', desc: 'Best predictor in your fan group' },
+                { icon: '⚽', name: 'Fan Club League', desc: 'Best predictor in your fan group' },
               ].map(({ icon, name, desc }) => (
                 <button key={name} onClick={() => { setNewGroupName(name); setShowCreate(true); }}
                   style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '10px', padding: '14px 12px', cursor: 'pointer', textAlign: 'left' }}
@@ -460,13 +451,13 @@ export default function GroupsPage() {
         <InviteBanner />
         {/* HOW IT WORKS */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '16px', padding: '24px' }}>
-          <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '20px' }}>HOW GROUPS WORK</div>
+          <div style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '20px' }}>HOW LEAGUES WORK</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
-              { n: '1', icon: '➕', title: 'Create a group', desc: 'Name it. Get a unique FLIP-XXXX code instantly.' },
-              { n: '2', icon: '📱', title: 'Share the code', desc: 'Send to friends via WhatsApp. Anyone with the code can join.' },
-              { n: '3', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', title: 'Predict EPL as normal', desc: 'Predictions count in your group AND the global leaderboard. No extra steps.' },
-              { n: '4', icon: '🏆', title: 'Watch the battle', desc: 'Group leaderboard updates after every match result. See who called it best.' },
+              { n: '1', icon: '➕', title: 'Create a league', desc: 'Name it. Get a unique FLIP-XXXX code instantly.' },
+              { n: '2', icon: '📲', title: 'Share the code', desc: 'Send to friends via WhatsApp. Anyone with the code can join.' },
+              { n: '3', icon: '⚽', title: 'Predict matches as normal', desc: 'Predictions across EPL, UCL, Liga 1 and Ghana PL count in your league AND globally. No extra steps.' },
+              { n: '4', icon: '🏆', title: 'Watch the battle', desc: 'League leaderboard updates after every match result. See who called it best.' },
             ].map(({ n, icon, title, desc }) => (
               <div key={n} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <div style={{ width: '32px', height: '32px', backgroundColor: '#4C1D95', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold', flexShrink: 0, color: '#C4B5FD' }}>{n}</div>
