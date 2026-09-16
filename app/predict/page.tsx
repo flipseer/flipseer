@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import NationShareCard from '@/components/NationShareCard';
+import LeagueJoinPrompt from '@/components/LeagueJoinPrompt';
 
 const supabase = createClient();
 
@@ -394,6 +395,7 @@ export default function Predict() {
   const [lastPrediction, setLastPrediction] = useState<{ match: string; outcome: string; leagueCode: string } | null>(null);
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
+  const [showLeaguePrompt, setShowLeaguePrompt] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const DAILY_LIMIT = 16;
 
@@ -514,6 +516,10 @@ export default function Predict() {
         setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
         const totalPreds = (lifetimePredictionCount || 0) + 1;
         setLifetimePredictionCount(totalPreds);
+        // Show league join prompt after very first prediction
+        if (totalPreds === 1) {
+          setTimeout(() => setShowLeaguePrompt(true), 1500);
+        }
         if (totalPreds % 3 === 0 || totalPreds === 1) {
           const matchData = matches.find((m: any) => m.id === matchId);
           const outcomeLabel = predictions[matchId]?.outcome === 'home' ? matchData?.home_team
@@ -658,6 +664,13 @@ export default function Predict() {
 
       {nationShare && country && (
         <NationShareCard country={country} pointsJustEarned={nationShare.points} matchName={nationShare.matchName} onClose={() => setNationShare(null)} />
+      )}
+      {showLeaguePrompt && user && (
+        <LeagueJoinPrompt
+          userId={user.id}
+          username={username}
+          onDone={() => setShowLeaguePrompt(false)}
+        />
       )}
     </main>
   );
