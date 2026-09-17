@@ -614,9 +614,23 @@ export default function Predict() {
         {!activeLeagueData.active ? (
           <ComingSoon league={activeLeagueData} />
         ) : matchesLoading ? (
-          <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚽</div>
-            <p>Loading {activeLeague} matches...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[1,2,3].map(i => (
+              <div key={i} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '12px', padding: '20px', animation: 'shimmer 1.5s ease-in-out infinite' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px' }}>
+                  <div style={{ height: '10px', width: '120px', backgroundColor: '#1A3A1A', borderRadius: '4px' }} />
+                  <div style={{ height: '10px', width: '60px', backgroundColor: '#1A3A1A', borderRadius: '4px' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ height: '18px', width: '100px', backgroundColor: '#1A3A1A', borderRadius: '4px' }} />
+                  <div style={{ height: '12px', width: '20px', backgroundColor: '#1A3A1A', borderRadius: '4px' }} />
+                  <div style={{ height: '18px', width: '100px', backgroundColor: '#1A3A1A', borderRadius: '4px' }} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {[1,2,3].map(j => <div key={j} style={{ flex: 1, height: '36px', backgroundColor: '#1A3A1A', borderRadius: '8px' }} />)}
+                </div>
+              </div>
+            ))}
           </div>
         ) : matches.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#6B7280', padding: '60px', backgroundColor: '#0D2B14', borderRadius: '12px' }}>
