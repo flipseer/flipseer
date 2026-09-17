@@ -532,7 +532,7 @@ export default function Home() {
         </div>
       </div>
       {/* BUZZ BAR */}
-      {mounted && totalUsers > 0 && (
+      {mounted && (
         <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
             {totalPredictions > 0 && (
@@ -540,12 +540,15 @@ export default function Home() {
                 <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
               </span>
             )}
-            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
-            </span>
+            {totalUsers > 0 && (
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
+              </span>
+            )}
             {nextMatchCountdown && (
               <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
             )}
+            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
           </div>
         </div>
       )}
@@ -579,6 +582,9 @@ export default function Home() {
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
             🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free forever
+          </span>
+          <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
+            🏆 Private leagues active · 293+ predictions made
           </span>
           <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Predict Now →
@@ -629,7 +635,7 @@ export default function Home() {
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
-            ⚽ Make Your First Prediction →
+            ⚽ Make Your First Prediction — Free →
           </a>
           <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
             👥 Challenge a Friend
@@ -638,6 +644,9 @@ export default function Home() {
         <p style={{ fontSize: '13px', color: '#8895A3', letterSpacing: '0.5px', marginBottom: '6px' }}>
           Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
         </p>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#6B7280' }}>🇬🇭 Ghana · 🇮🇩 Indonesia · 🇮🇳 India · 🇳🇬 Nigeria predicting now</span>
+        </div>
         <p style={{ fontSize: '13px', color: '#6B7280' }}>
           Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
         </p>
