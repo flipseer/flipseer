@@ -698,7 +698,27 @@ export default function GroupsPage() {
         {/* ── EMPTY STATE ── */}
         {myGroups.length === 0 && !showCreate && !showJoin && (
           <div style={{ marginBottom: '20px' }}>
-            <div style={{ background: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '22px', marginBottom: '14px' }}>
+            <div style={{ background: 'linear-gradient(135deg,#1A0B2E,#0D2B14)', border: '1px solid #8B5CF6', borderRadius: '14px', padding: '24px', marginBottom: '14px', textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>🏆</div>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: '0 0 8px' }}>Create your first private league</h2>
+              <p style={{ fontSize: '13px', color: '#9CA3AF', margin: '0 0 20px', lineHeight: 1.6 }}>
+                Turn your WhatsApp football group into a real competition. Every prediction counts in your league, your nation, and the global leaderboard.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }}>
+                {['🏢 Office', '👨‍👩‍👧‍👦 Family', '📱 WhatsApp', '🌍 Country'].map(tag => (
+                  <span key={tag} style={{ fontSize: '12px', color: '#8B5CF6', background: 'rgba(139,92,246,.1)', border: '1px solid rgba(139,92,246,.3)', padding: '4px 10px', borderRadius: '999px' }}>{tag}</span>
+                ))}
+              </div>
+              <button onClick={() => { setShowCreate(true); setStep('name'); }}
+                style={{ width: '100%', background: '#8B5CF6', color: 'white', border: 'none', padding: '13px', borderRadius: '10px', fontSize: '15px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px', boxShadow: '0 0 24px rgba(139,92,246,.3)' }}>
+                + Create My First League
+              </button>
+              <button onClick={() => setShowJoin(true)}
+                style={{ width: '100%', background: 'transparent', color: '#9CA3AF', border: '1px solid #2A3A2A', padding: '11px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer' }}>
+                Or join with a FLIP code
+              </button>
+            </div>
+            <div style={{ background: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '16px', marginBottom: '14px' }}>
               <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', margin: '0 0 12px' }}>WHY CREATE A LEAGUE?</p>
               {[
                 { icon: '⚽', text: 'Compete privately across EPL, UCL, Liga 1 and Ghana PL' },
@@ -724,6 +744,7 @@ export default function GroupsPage() {
                   Join with Code
                 </button>
               </div>
+            </div>
             </div>
             <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '10px' }}>QUICK START</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: '8px', marginBottom: '20px' }}>
