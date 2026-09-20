@@ -1,46 +1,13 @@
 User-agent: *
 Allow: /
 
-# Explicitly allow major crawlers
-User-agent: Googlebot
-Allow: /
-
-User-agent: AhrefsBot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-# Block auth-required and API routes
-Disallow: /api/
-Disallow: /admin/
+# Block admin and internal API routes only
+Disallow: /api/admin/
+Disallow: /api/sync/
+Disallow: /api/seed/
+Disallow: /api/cron/
+Disallow: /auth/callback
 Disallow: /auth/
-Disallow: /predict
-Disallow: /groups
 
-# Public SEO pages — explicitly allowed
-Allow: /u/
-Allow: /matches/
-Allow: /nations
-Allow: /leaderboard
-Allow: /world-cup-2026
-Allow: /epl
-Allow: /epl/matchweek-1
-Allow: /how-to-predict-football
-Allow: /football-reputation
-Allow: /how-to-play
-Allow: /india
-Allow: /indonesia
-Allow: /nigeria
-Allow: /ghana
-Allow: /brazil
-Allow: /argentina
-Allow: /england
-Allow: /france
-Allow: /germany
-Allow: /spain
-Allow: /morocco
-Allow: /portugal
-Allow: /norway
-
+# Sitemap
 Sitemap: https://flipseer.com/sitemap.xml
