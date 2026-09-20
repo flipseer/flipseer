@@ -16,12 +16,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'Flipseer — Football Reputation Platform',
-  description: 'Predict World Cup 2026 matches. Represent your nation. Build your permanent football reputation. Free. No betting. No gambling.',
-  keywords: 'football prediction, World Cup 2026, football reputation, nation battle, EPL predictions',
+  description: 'Predict EPL, UCL, Liga 1 and Ghana PL matches. Build your permanent football reputation. Compete in private leagues. Free forever. No betting.',
+  keywords: 'football prediction, EPL predictions, UCL predictions, football reputation, private leagues, nation battle, Liga 1 predictions, Ghana Premier League',
   authors: [{ name: 'Flipseer' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
   metadataBase: new URL('https://flipseer.com'),
+  alternates: {
+    canonical: 'https://flipseer.com',
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
@@ -36,7 +39,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Flipseer — Football Reputation Platform',
-    description: 'Predict World Cup 2026 matches. Represent your nation. Build your permanent football reputation.',
+    description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free private leagues for your WhatsApp group.',
     url: 'https://flipseer.com',
     siteName: 'Flipseer',
     images: [{ url: '/api/og/home', width: 1200, height: 630 }],
@@ -46,7 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Flipseer — Football Reputation Platform',
-    description: 'Predict World Cup 2026. Represent your nation. Build your permanent football reputation.',
+    description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free forever.',
     images: ['/api/og/home'],
   },
   icons: {
@@ -59,6 +62,16 @@ export const metadata: Metadata = {
     ],
     apple: '/icons/apple-touch-icon.png',
     shortcut: '/icons/icon-96x96.png',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -78,6 +91,8 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#02081F" />
         <meta name="msapplication-tap-highlight" content="no" />
+        {/* Canonical */}
+        <link rel="canonical" href="https://flipseer.com" />
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://api-football.com" />
