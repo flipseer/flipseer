@@ -340,7 +340,7 @@ export default function GroupsPage() {
                   </button>
                 </div>
                 <button onClick={() => { const msg = getWhatsAppMessage(createdGroup, [], 1); window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-    trackInviteShared({ leagueCode: group.invite_code, channel: 'whatsapp' }); }}
+    trackInviteShared({ leagueCode: createdGroup.invite_code, channel: 'whatsapp' }); }}
                   style={{ width: '100%', padding: '12px', background: '#25D366', color: 'white', border: 'none', borderRadius: '9px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>
                   📲 Share on WhatsApp
                 </button>
