@@ -535,7 +535,7 @@ export default function Predict() {
         // Track GA4 events
         trackPredictionCreated({
           competition: activeLeague,
-          matchId: match.id,
+          matchId: String(match.id),
           homeTeam: match.home_team,
           awayTeam: match.away_team,
           outcome: selectedOutcome,
