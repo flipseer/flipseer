@@ -533,13 +533,14 @@ export default function Predict() {
         const totalPreds = (lifetimePredictionCount || 0) + 1;
         setLifetimePredictionCount(totalPreds);
         // Track GA4 events
+        const matchData = matches.find((m: any) => m.id === matchId);
         trackPredictionCreated({
           competition: activeLeague,
-          matchId: String(match.id),
-          homeTeam: match.home_team,
-          awayTeam: match.away_team,
-          outcome: selectedOutcome,
-          confidence: confidence,
+          matchId: String(matchId),
+          homeTeam: matchData?.home_team || '',
+          awayTeam: matchData?.away_team || '',
+          outcome: predictions[matchId]?.outcome || '',
+          confidence: predictions[matchId]?.confidence || 0,
           isFirstPrediction: totalPreds === 1,
         });
         if (totalPreds > 1) {
