@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import NationShareCard from '@/components/NationShareCard';
 import LeagueJoinPrompt from '@/components/LeagueJoinPrompt';
+import { trackSignup, trackPredictionCreated, trackRepeatPrediction } from '@/lib/analytics';
 
 const supabase = createClient();
 
@@ -396,8 +397,23 @@ export default function Predict() {
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [nationShare, setNationShare] = useState<{ matchName: string; points: number } | null>(null);
   const [showLeaguePrompt, setShowLeaguePrompt] = useState(false);
+  const signupTracked = useRef(false);
   const [authChecked, setAuthChecked] = useState(false);
   const DAILY_LIMIT = 16;
+
+  useEffect(() => {
+    // Fire signup event once for new users — prevents duplicate fires on re-render
+    if (!signupTracked.current) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('new_user') === '1') {
+        signupTracked.current = true;
+        trackSignup('email');
+        // Clean URL without reload
+        const cleanUrl = window.location.pathname + '?welcome=1';
+        window.history.replaceState({}, '', cleanUrl);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -516,6 +532,23 @@ export default function Predict() {
         setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
         const totalPreds = (lifetimePredictionCount || 0) + 1;
         setLifetimePredictionCount(totalPreds);
+        // Track GA4 events
+        trackPredictionCreated({
+          competition: activeLeague,
+          matchId: match.id,
+          homeTeam: match.home_team,
+          awayTeam: match.away_team,
+          outcome: selectedOutcome,
+          confidence: confidence,
+          isFirstPrediction: totalPreds === 1,
+        });
+        if (totalPreds > 1) {
+          trackRepeatPrediction({
+            totalPredictions: totalPreds,
+            competition: activeLeague,
+            daysSinceFirst: 0,
+          });
+        }
         // Show league join prompt after very first prediction
         if (totalPreds === 1) {
           setTimeout(() => setShowLeaguePrompt(true), 1500);
