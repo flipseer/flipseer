@@ -584,7 +584,7 @@ export default function Home() {
             🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free forever
           </span>
           <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
-            🏆 Private leagues active · 293+ predictions made
+            🏆 Private leagues active · Building toward World Cup 2030
           </span>
           <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Predict Now →
@@ -602,13 +602,14 @@ export default function Home() {
           ))}
         </div>
       </div>
+      {/* HERO FIRST — above the fold */}
+      {/* UPCOMING MATCHES */}
+      <UpcomingMatches />
       {/* LIVE SCORES + ACTIVITY */}
       <LiveScoreCard />
       <LiveActivity />
-      {/* UPCOMING MATCHES */}
-      <UpcomingMatches />
       {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '80px 20px 64px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
+      <section style={{ textAlign: 'center', padding: '40px 20px 48px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
@@ -629,10 +630,15 @@ export default function Home() {
             </>
           )}
         </h1>
-        <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 28px', fontFamily: 'Georgia, serif' }}>
+        <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 12px', fontFamily: 'Georgia, serif' }}>
           Predict EPL, UCL, Liga 1 and Ghana PL matches before kick-off. Build a permanent Football Reputation.{' '}
           <span style={{ color: '#8B5CF6' }}>Represent your country.</span>
         </p>
+        <div style={{ marginBottom: '20px' }}>
+          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 14px', borderRadius: '999px' }}>
+            🌍 Building toward World Cup 2030 · Start your record today
+          </span>
+        </div>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
           <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
             ⚽ Make Your First Prediction — Free →
