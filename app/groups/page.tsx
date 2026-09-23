@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase-browser';
+import { trackLeagueJoined, trackLeagueCreated, trackInviteShared } from '@/lib/analytics';
 const supabase = createClient();
 
 const FLAG: { [key: string]: string } = {
@@ -162,6 +163,7 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: false });
     await loadGroups(userId);
     setCreatedGroup({ ...group, member_count: 1 });
+    trackLeagueCreated({ leagueCode: code, competition: newComp });
     setStep('done');
     setCreating(false);
     setExpandedId(group.id);
@@ -178,6 +180,7 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: true });
     await loadGroups(userId);
     toast$('Joined ' + group.name + '!');
+    trackLeagueJoined({ leagueCode: group.invite_code, leagueName: group.name, viaInvite: true, isOfficial: ['FLIP-EPL1','FLIP-UCL1','FLIP-AFR1','FLIP-ASI1','FLIP-GLB1'].includes(group.invite_code) });
     setJoining(false);
     setShowJoin(false);
     setJoinCode('');
@@ -336,7 +339,8 @@ export default function GroupsPage() {
                     Copy Code
                   </button>
                 </div>
-                <button onClick={() => { const msg = getWhatsAppMessage(createdGroup, [], 1); window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank'); }}
+                <button onClick={() => { const msg = getWhatsAppMessage(createdGroup, [], 1); window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    trackInviteShared({ leagueCode: group.invite_code, channel: 'whatsapp' }); }}
                   style={{ width: '100%', padding: '12px', background: '#25D366', color: 'white', border: 'none', borderRadius: '9px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>
                   📲 Share on WhatsApp
                 </button>
