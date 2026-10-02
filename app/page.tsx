@@ -1,5 +1,5 @@
 'use client';
-import { trackLandingView, trackSignupStarted } from '@/lib/analytics';
+import { trackSignupStarted } from '@/lib/analytics';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
@@ -61,7 +61,6 @@ function LiveActivity() {
     } catch (e) {}
   };
   useEffect(() => {
-    trackLandingView();
     setMounted(true);
     fetchActivity();
     const interval = setInterval(fetchActivity, 60000);
