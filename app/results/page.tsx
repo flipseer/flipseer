@@ -18,7 +18,7 @@ export default function ResultsPage() {
     { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
     { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
     { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
-    { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
+    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',        color: '#FF6B35' },
   ];
 
   useEffect(() => {
@@ -27,10 +27,10 @@ export default function ResultsPage() {
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : '2000-01-01')
+          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01')
           .order('kickoff', { ascending: false }),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : '2000-01-01'),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : '2000-01-01')
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01'),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01')
           .gte('kickoff', '2000-01-01'),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
