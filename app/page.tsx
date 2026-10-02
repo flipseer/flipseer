@@ -1,4 +1,5 @@
 'use client';
+import { trackLandingView, trackSignupStarted } from '@/lib/analytics';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
@@ -60,6 +61,7 @@ function LiveActivity() {
     } catch (e) {}
   };
   useEffect(() => {
+    trackLandingView();
     setMounted(true);
     fetchActivity();
     const interval = setInterval(fetchActivity, 60000);
@@ -631,8 +633,8 @@ export default function Home() {
           )}
         </h1>
         <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 12px', fontFamily: 'Georgia, serif' }}>
-          Predict EPL, UCL, Liga 1 and Ghana PL matches before kick-off. Build a permanent Football Reputation.{' '}
-          <span style={{ color: '#8B5CF6' }}>Represent your country.</span>
+          Your football knowledge deserves a permanent record. Predict matches before kick-off. Prove your calls are right.{' '}
+          <span style={{ color: '#8B5CF6' }}>Build your Football Reputation.</span>
         </p>
         <div style={{ marginBottom: '20px' }}>
           <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 14px', borderRadius: '999px' }}>
