@@ -30,7 +30,7 @@ const LEAGUES = [
   { key: 'Liga 1 2026/27',   label: 'Liga 1',    icon: '&#x1F1EE;&#x1F1E9;', color: '#CE1126', active: true },
   { key: 'Ghana PL 2026/27', label: 'Ghana PL',  icon: '&#x1F1EC;&#x1F1ED;', color: '#F59E0B', active: true },
   { key: 'NPFL 2026/27',     label: 'NPFL',      icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
-  { key: 'ISL 2026/27',      label: 'ISL',       icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: false },
+  { key: 'ISL 2026/27',      label: 'ISL',       icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: true },
   { key: 'World Cup 2026',   label: 'World Cup', icon: '&#x1F3C6;',           color: '#F59E0B', active: false },
 ];
 
