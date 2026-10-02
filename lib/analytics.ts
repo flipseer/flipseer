@@ -151,3 +151,33 @@ export function trackNationSet(country: string) {
 export function trackCTAClick(cta: string) {
   track('cta_click', { cta_label: cta });
 }
+
+// ── FUNNEL EVENTS ──
+
+// Landing page view — call on homepage mount
+export function trackLandingView(source?: string) {
+  track('landing_view', {
+    source: typeof document !== 'undefined' ? (source || document.referrer || 'direct') : 'direct',
+    path: typeof window !== 'undefined' ? window.location.pathname : '/',
+  });
+}
+
+// Signup started — call when register/join button clicked
+export function trackSignupStarted() {
+  track('signup_started', {});
+}
+
+// First prediction explicit event
+export function trackFirstPrediction(competition: string) {
+  track('first_prediction', { competition });
+}
+
+// Second prediction — key retention signal
+export function trackSecondPrediction(competition: string) {
+  track('second_prediction', { competition });
+}
+
+// Invite sent
+export function trackInviteSent(channel: string, leagueCode: string) {
+  track('invite_sent', { channel, league_code: leagueCode });
+}
