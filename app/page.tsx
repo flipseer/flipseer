@@ -1,5 +1,5 @@
 'use client';
-import { trackSignupStarted } from '@/lib/analytics';
+import { trackLandingView, trackSignupStarted } from '@/lib/analytics';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
@@ -61,6 +61,7 @@ function LiveActivity() {
     } catch (e) {}
   };
   useEffect(() => {
+    trackLandingView();
     setMounted(true);
     fetchActivity();
     const interval = setInterval(fetchActivity, 60000);
@@ -349,6 +350,30 @@ function ClaimModal() {
 }
 
 // ── MAIN HOME PAGE ──
+
+function PWAInstallButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const handler = (e: any) => { e.preventDefault(); setDeferredPrompt(e); setShow(true); };
+    window.addEventListener('beforeinstallprompt', handler);
+    if (window.matchMedia('(display-mode: standalone)').matches) setShow(false);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+  if (!show) return null;
+  return (
+    <button onClick={async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setShow(false);
+      setDeferredPrompt(null);
+    }} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '12px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.4)', color: '#C4B5FD', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
+      📲 Install Flipseer App
+    </button>
+  );
+}
+
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [heroNation, setHeroNation] = useState('');
