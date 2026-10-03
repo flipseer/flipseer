@@ -31,7 +31,6 @@ const LEAGUES = [
   { key: 'Ghana PL 2026/27', label: 'Ghana PL',  icon: '&#x1F1EC;&#x1F1ED;', color: '#F59E0B', active: true },
   { key: 'NPFL 2026/27',     label: 'NPFL',      icon: '&#x1F1F3;&#x1F1EC;', color: '#008751', active: false },
   { key: 'ISL 2026/27',      label: 'ISL',       icon: '&#x1F1EE;&#x1F1F3;', color: '#FF6B35', active: true },
-  { key: 'World Cup 2026',   label: 'World Cup', icon: '&#x1F3C6;',           color: '#F59E0B', active: false },
 ];
 
 function formatKickoffLocal(kickoffUtc: string): string {
@@ -156,26 +155,8 @@ function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | 
 function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
   const launch = league.key === 'ISL 2026/27' ? 'October 10, 2026'
     : league.key === 'NPFL 2026/27' ? 'January 2027'
-    : league.key === 'World Cup 2026' ? 'Archive'
     : 'Coming soon';
 
-  if (league.key === 'World Cup 2026') {
-    return (
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <div style={{ fontSize: '64px', marginBottom: '20px' }}>🏆</div>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '12px', color: 'white' }}>FIFA World Cup 2026</h2>
-        <div style={{ display: 'inline-block', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '999px', padding: '6px 20px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold' }}>🇪🇸 Spain are World Champions 2026</span>
-        </div>
-        <p style={{ color: '#9CA3AF', fontSize: '15px', lineHeight: '1.7', maxWidth: '400px', margin: '0 auto 32px' }}>
-          The tournament is over. Spain beat France 2-0 in the Final. Your World Cup predictions are permanent — locked forever.
-        </p>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/leaderboard" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 'bold' }}>Final Leaderboard →</a>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
@@ -598,7 +579,7 @@ export default function Predict() {
               {league.label}
               {!league.active && (
                 <span style={{ fontSize: '9px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '2px 7px', borderRadius: '999px', marginLeft: '4px' }}>
-                  {league.key === 'World Cup 2026' ? 'DONE' : 'SOON'}
+                  {league.key === 'NPFL 2026/27' ? 'JAN' : league.key === 'ISL 2026/27' ? 'OCT 10' : 'SOON'}
                 </span>
               )}
             </button>
