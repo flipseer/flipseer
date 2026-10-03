@@ -29,13 +29,7 @@ const nextConfig = {
         destination: '/premier-league',
         permanent: true,
       },
-      // www → non-www canonical redirect
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.flipseer.com' }],
-        destination: 'https://flipseer.com/:path*',
-        permanent: true,
-      },
+
 
     ]
   },
