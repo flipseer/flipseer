@@ -9,7 +9,7 @@ const supabase = createClient();
 
 const LEAGUES = [
   { href: '/epl',       label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27',        badge: 'LIVE',  badgeColor: '#8B5CF6' },
-  { href: '/ucl',       label: '⭐ UCL 2026/27',           badge: 'SEP 17', badgeColor: '#A78BFA' },
+  { href: '/ucl',       label: '⭐ UCL 2026/27',           badge: 'OCT 13', badgeColor: '#A78BFA' },
   { href: '/ghana',     label: '🇬🇭 Ghana PL 2026/27',      badge: 'LIVE',  badgeColor: '#F59E0B' },
   { href: '/indonesia', label: '🇮🇩 Liga 1 2026/27',        badge: 'LIVE',  badgeColor: '#CE1126' },
   { href: '/india',     label: '🇮🇳 ISL 2026/27',           badge: 'OCT',   badgeColor: '#FF6B35' },
