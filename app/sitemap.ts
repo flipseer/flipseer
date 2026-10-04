@@ -48,9 +48,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('matches')
       .select('home_team, away_team, kickoff, status')
       .eq('competition', 'EPL 2026/27')
+      .eq('status', 'completed')
       .not('home_team', 'is', null)
       .not('away_team', 'is', null)
-      .order('kickoff', { ascending: true })
+      .order('kickoff', { ascending: false })
 
     const cleanTeam = (name: string) => name
       .toLowerCase()
@@ -77,6 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from('matches')
       .select('home_team, away_team, kickoff')
       .eq('competition', 'UCL 2026/27')
+      .eq('status', 'completed')
       .gte('kickoff', '2026-10-13')
       .not('home_team', 'is', null)
       .order('kickoff', { ascending: true })
