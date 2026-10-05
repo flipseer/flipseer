@@ -17,13 +17,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // www → non-www canonical redirect — fixes sitemap redirect error
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.flipseer.com' }],
-        destination: 'https://flipseer.com/:path*',
-        permanent: true,
-      },
       // Old world cup pages
       {
         source: '/world-cup-2026/:country',
