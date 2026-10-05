@@ -32,7 +32,7 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
-function LiveActivity() {
+function LiveActivity() { // CLS fix: reserve space before data loads
   const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
   const fetchActivity = async () => {
@@ -132,7 +132,9 @@ function LiveScoreCard() {
     const interval = setInterval(fetchLive, 60000);
     return () => clearInterval(interval);
   }, []);
-  if (!mounted || liveMatches.length === 0) return null;
+  if (!mounted || liveMatches.length === 0) return (
+    <div style={{ minHeight: '60px' }} />
+  );
   return (
     <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -524,8 +526,8 @@ export default function Home() {
         @keyframes ctaPulse { 0%, 100% { box-shadow: 0 0 12px rgba(46,158,94,0.3); } 50% { box-shadow: 0 0 24px rgba(46,158,94,0.6); } }
       `}</style>
       {/* TICKER */}
-      <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0' }}>
-        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
+      <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
+        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform' }}>
           {(() => {
             const staticItems = [
               { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL · UCL · Liga 1 · Ghana PL — all live now', isUser: false, color: '#6B7280' },
@@ -619,7 +621,7 @@ export default function Home() {
       </div>
       {/* NATION TICKER */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
+        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform' }}>
           {[...NATION_TICKERS, ...NATION_TICKERS].map((n, i) => (
             <a key={i} href={'/auth?nation=' + n.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid ' + (heroNation === n.name ? '#8B5CF6' : '#1A3A1A'), backgroundColor: heroNation === n.name ? 'rgba(139,92,246,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
               <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
