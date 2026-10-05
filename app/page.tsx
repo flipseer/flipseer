@@ -64,9 +64,10 @@ function LiveActivity() { // CLS fix: reserve space before data loads
   };
   useEffect(() => {
     setMounted(true);
-    fetchActivity();
+    // Defer to let LCP paint first
+    const defer = setTimeout(fetchActivity, 800);
     const interval = setInterval(fetchActivity, 60000);
-    return () => clearInterval(interval);
+    return () => { clearTimeout(defer); clearInterval(interval); };
   }, []);
   if (!mounted) return null;
   return (
@@ -129,9 +130,10 @@ function LiveScoreCard() {
   };
   useEffect(() => {
     setMounted(true);
-    fetchLive();
+    // Defer to let LCP paint first
+    const defer = setTimeout(fetchLive, 1200);
     const interval = setInterval(fetchLive, 60000);
-    return () => clearInterval(interval);
+    return () => { clearTimeout(defer); clearInterval(interval); };
   }, []);
   if (!mounted || liveMatches.length === 0) return (
     <div style={{ minHeight: '60px' }} />
