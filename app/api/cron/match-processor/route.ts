@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
   log.push('Cron started: ' + now.toISOString())
 
   try {
-    const windowStart = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString()
+    // 24 hour lookback window (was 12) — catches matches that span midnight
+    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
     const windowEnd = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
 
     const { data: windowMatches } = await supabase
@@ -36,11 +37,13 @@ export async function GET(req: NextRequest) {
       .gte('kickoff', windowStart)
       .lte('kickoff', windowEnd)
 
+    // Catch stuck matches — any status including upcoming that kicked off 3+ hours ago
+    const stuckCutoff = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString()
     const { data: stuckMatches } = await supabase
       .from('matches')
       .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score')
-      .in('status', ['locked', 'live'])
-      .lt('kickoff', windowStart)
+      .in('status', ['locked', 'live', 'upcoming'])
+      .lt('kickoff', stuckCutoff)
 
     const allMatches = [...(windowMatches || []), ...(stuckMatches || [])]
     const seen = new Set<number>()
@@ -125,7 +128,6 @@ export async function GET(req: NextRequest) {
 
         log.push('SETTLED: ' + match.home_team + ' ' + homeScore + '-' + awayScore + ' ' + match.away_team)
 
-        // Auto-detect upset
         const winner = homeScore > awayScore ? 'home' : awayScore > homeScore ? 'away' : 'draw'
         const { data: preds } = await supabase
           .from('predictions')
@@ -155,7 +157,6 @@ export async function GET(req: NextRequest) {
 
         await new Promise(r => setTimeout(r, 3000))
 
-        // Notify result via email/push
         try {
           const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://flipseer.com'
           const nr = await fetch(origin + '/api/notify-result', {
@@ -171,7 +172,6 @@ export async function GET(req: NextRequest) {
           log.push('NOTIFY ERROR: ' + e.message)
         }
 
-        // Auto-post result to X + Facebook — fires only when match completes
         try {
           const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://flipseer.com'
           const ap = await fetch(origin + '/api/cron/auto-post?match_id=' + match.id, {
