@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import MatchPageClient from './MatchPageClient';
 
+export const dynamic = 'force-dynamic';
+
 type Props = { params: { match: string } };
 
 function parseSlug(slug: string): { home: string; away: string } {
@@ -15,18 +17,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { home, away } = parseSlug(params.match);
   if (!home || !away) return { title: 'Match Not Found | Flipseer' };
 
+  // Fetch match to get competition name for metadata
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: matches } = await supabase
+    .from('matches')
+    .select('competition, kickoff, home_score, away_score, status')
+    .ilike('home_team', home)
+    .ilike('away_team', away)
+    .limit(1);
+
+  const match = matches?.[0];
+  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
+  const isCompleted = match?.status === 'completed';
+  const resultStr = isCompleted && match?.home_score !== null
+    ? ` | Result: ${match.home_score}-${match.away_score}`
+    : '';
+
+  const title = `${home} vs ${away} Prediction | ${competition} | Flipseer`;
+  const desc = isCompleted
+    ? `${home} ${match?.home_score}-${match?.away_score} ${away}${resultStr}. See what Flipseer fans predicted before kickoff. Build your own football reputation. Free.`
+    : `Predict ${home} vs ${away} before kickoff. Lock your ${competition} prediction permanently. Build your football reputation on Flipseer. Free. No betting.`;
+
   return {
-    title: `${home} vs ${away} Predictions | World Cup 2026 | Flipseer`,
-    description: `See what football fans predict for ${home} vs ${away}. Community prediction percentages, top forecasters, exact score predictions. Free. No betting.`,
-    keywords: `${home} vs ${away} prediction, ${home} ${away} World Cup 2026, ${home} vs ${away} forecast, football prediction ${home} ${away}`,
+    title,
+    description: desc,
+    keywords: `${home} vs ${away} prediction, ${home} ${away} ${competition}, ${home} vs ${away} forecast, football prediction`,
     alternates: {
       canonical: `https://flipseer.com/matches/${params.match}`,
     },
     openGraph: {
-      title: `${home} vs ${away} — World Cup 2026 Predictions | Flipseer`,
-      description: `What are football fans predicting for ${home} vs ${away}? See community split, top forecasters and exact score predictions on Flipseer.`,
+      title,
+      description: desc,
       url: `https://flipseer.com/matches/${params.match}`,
       images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: desc,
     },
   };
 }
@@ -48,7 +79,7 @@ export default async function MatchPage({ params }: Props) {
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
   // Find the match
@@ -66,17 +97,18 @@ export default async function MatchPage({ params }: Props) {
   let communityStats = { home: 0, draw: 0, away: 0, total: 0 };
 
   if (match) {
+    // Show all predictions — not filtered by processed status
+    // This ensures completed match pages have content for Google
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome, confidence_pct, predicted_home_score, predicted_away_score, profiles(username, country, total_points)')
       .eq('match_id', match.id)
-      .eq('prediction_processed', false) // Only show pending (hide results)
       .order('confidence_pct', { ascending: false })
       .limit(10);
 
     predictions = preds || [];
 
-    // Community stats
+    // Community stats — all predictions
     const { data: allPreds } = await supabase
       .from('predictions')
       .select('predicted_outcome')
