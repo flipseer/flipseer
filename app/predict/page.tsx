@@ -380,7 +380,7 @@ export default function Predict() {
   const [showLeaguePrompt, setShowLeaguePrompt] = useState(false);
   const signupTracked = useRef(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const DAILY_LIMIT = 16;
+  const DAILY_LIMIT = 40;
 
   useEffect(() => {
     // Fire signup event once for new users — prevents duplicate fires on re-render
