@@ -1,8 +1,10 @@
 'use client';
-import { trackLandingView, trackSignupStarted } from '@/lib/analytics';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { createClient } from '@/lib/supabase-browser';
-import InviteBanner from '@/components/InviteBanner';
+import dynamic from 'next/dynamic';
+
+// Lazy load heavy components
+const InviteBanner = dynamic(() => import('@/components/InviteBanner'), { ssr: false });
 const supabase = createClient();
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '&#x1F1EE;&#x1F1F3;', 'Brazil': '&#x1F1E7;&#x1F1F7;',
@@ -61,7 +63,6 @@ function LiveActivity() { // CLS fix: reserve space before data loads
     } catch (e) {}
   };
   useEffect(() => {
-    trackLandingView();
     setMounted(true);
     fetchActivity();
     const interval = setInterval(fetchActivity, 60000);
@@ -523,11 +524,11 @@ export default function Home() {
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes bannerPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         @keyframes liveBadgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.95); } }
-        @keyframes ctaPulse { 0%, 100% { box-shadow: 0 0 12px rgba(46,158,94,0.3); } 50% { box-shadow: 0 0 24px rgba(46,158,94,0.6); } }
+        @keyframes ctaPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
       `}</style>
       {/* TICKER */}
       <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
-        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform' }}>
+        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
           {(() => {
             const staticItems = [
               { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL · UCL · Liga 1 · Ghana PL — all live now', isUser: false, color: '#6B7280' },
@@ -621,7 +622,7 @@ export default function Home() {
       </div>
       {/* NATION TICKER */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform' }}>
+        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
           {[...NATION_TICKERS, ...NATION_TICKERS].map((n, i) => (
             <a key={i} href={'/auth?nation=' + n.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid ' + (heroNation === n.name ? '#8B5CF6' : '#1A3A1A'), backgroundColor: heroNation === n.name ? 'rgba(139,92,246,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
               <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
