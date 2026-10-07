@@ -517,19 +517,12 @@ export default function Predict() {
         const matchData = matches.find((m: any) => m.id === matchId);
         trackPredictionCreated({
           competition: activeLeague,
-          matchId: String(matchId),
-          homeTeam: matchData?.home_team || '',
-          awayTeam: matchData?.away_team || '',
-          outcome: predictions[matchId]?.outcome || '',
-          confidence: predictions[matchId]?.confidence || 0,
-          isFirstPrediction: totalPreds === 1,
+          match_id: String(matchId),
+          home_team: matchData?.home_team || '',
+          away_team: matchData?.away_team || '',
         });
         if (totalPreds > 1) {
-          trackRepeatPrediction({
-            totalPredictions: totalPreds,
-            competition: activeLeague,
-            daysSinceFirst: 0,
-          });
+          trackRepeatPrediction({});
         }
         // Show league join prompt after very first prediction
         if (totalPreds === 1) {
