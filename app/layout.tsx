@@ -89,8 +89,6 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-TileColor" content="#02081F" />
         <meta name="msapplication-tap-highlight" content="no" />
-        {/* Canonical */}
-        <link rel="canonical" href="https://flipseer.com" />
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://api-football.com" />
