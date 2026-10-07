@@ -15,37 +15,35 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'Morocco': '&#x1F1F2;&#x1F1E6;', 'Japan': '&#x1F1EF;&#x1F1F5;',
   'South Korea': '&#x1F1F0;&#x1F1F7;', 'Australia': '&#x1F1E6;&#x1F1FA;',
   'Canada': '&#x1F1E8;&#x1F1E6;', 'Indonesia': '&#x1F1EE;&#x1F1E9;',
-  'Other': '&#x1F30D;',
+  'Ghana': '&#x1F1EC;&#x1F1ED;', 'Other': '&#x1F30D;',
   'IN': '&#x1F1EE;&#x1F1F3;', 'BR': '&#x1F1E7;&#x1F1F7;',
   'AR': '&#x1F1E6;&#x1F1F7;', 'FR': '&#x1F1EB;&#x1F1F7;',
   'DE': '&#x1F1E9;&#x1F1EA;', 'GB': '&#x1F3F4;',
   'ES': '&#x1F1EA;&#x1F1F8;', 'PT': '&#x1F1F5;&#x1F1F9;',
   'NL': '&#x1F1F3;&#x1F1F1;', 'IT': '&#x1F1EE;&#x1F1F9;',
   'MX': '&#x1F1F2;&#x1F1FD;', 'US': '&#x1F1FA;&#x1F1F8;',
-  'NG': '&#x1F1F3;&#x1F1EC;', 'SN': '&#x1F1F8;&#x1F1F3;',
-  'MA': '&#x1F1F2;&#x1F1E6;', 'JP': '&#x1F1EF;&#x1F1F5;',
-  'ID': '&#x1F1EE;&#x1F1E9;', 'ZA': '&#x1F1FF;&#x1F1E6;',
+  'NG': '&#x1F1F3;&#x1F1EC;', 'GH': '&#x1F1EC;&#x1F1ED;',
+  'ID': '&#x1F1EE;&#x1F1E9;',
 };
 
 const STATIC_TICKER = [
-  'World Cup 2026 kicks off June 11 -- 104 matches to predict',
-  'Predict exact scores for up to 108 pts per match',
-  'Represent your nation on the global leaderboard',
-  'Your predictions lock at kick-off -- forever on record',
+  'EPL 2026/27 · Predict every match before kick-off',
+  'UEFA Champions League · Group stage predictions open now',
+  'Liga 1 Indonesia · Ghana Premier League · ISL India — all live',
+  'Your predictions lock at kick-off — forever on record',
   'No betting. No luck. Pure football intelligence.',
-  'June 11 -- Mexico vs South Africa -- Group A kicks off',
-  'Build your permanent football reputation -- free forever',
+  'Predict exact scores for up to 108 pts per match',
+  'Build your permanent football reputation — free forever',
   'Every correct call earns points toward your legacy',
 ];
 
-const COMING_SOON = [
-  { icon: '&#x1F3C6;', title: 'EPL & Champions League', desc: "Europe's biggest stages. Your biggest calls.", date: 'Aug 2026' },
-  { icon: '&#x1F1EA;&#x1F1F8;', title: 'La Liga & Serie A', desc: 'El Clasico. Derby della Madonnina. Predict them all.', date: 'Sep 2026' },
-  { icon: '&#x1F1E9;&#x1F1EA;', title: 'Bundesliga & Ligue 1', desc: 'Der Klassiker. PSG. The rivalries never end.', date: 'Oct 2026' },
-  { icon: '&#x1F91D;', title: 'Brand Partnerships', desc: "Exclusive rewards from the world's top football brands.", date: 'Late 2026' },
+const LIVE_COMPETITIONS = [
+  { icon: '&#x1F3F4;', name: 'EPL 2026/27', desc: "England's top flight. 380 matches.", color: '#8B5CF6' },
+  { icon: '&#x2B50;', name: 'UCL 2026/27', desc: "Europe's elite. Group stage live.", color: '#A78BFA' },
+  { icon: '&#x1F1EE;&#x1F1E9;', name: 'Liga 1 Indonesia', desc: 'Indonesian top flight.', color: '#CE1126' },
+  { icon: '&#x1F1EC;&#x1F1ED;', name: 'Ghana Premier League', desc: 'West Africa\'s finest.', color: '#F59E0B' },
+  { icon: '&#x1F1EE;&#x1F1F3;', name: 'ISL India', desc: 'Indian Super League.', color: '#FF6B35' },
 ];
-
-const REAL_USER_THRESHOLD = 100;
 
 const TOP_NATIONS = [
   { flag: '&#x1F1EE;&#x1F1F3;', name: 'India', slug: 'india' },
@@ -59,10 +57,11 @@ const TOP_NATIONS = [
   { flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia', slug: 'indonesia' },
   { flag: '&#x1F1EB;&#x1F1F7;', name: 'France', slug: 'france' },
   { flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain', slug: 'spain' },
-  { flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal', slug: 'portugal' },
+  { flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana', slug: 'ghana' },
 ];
 
-// ── PRIMARY CTA BUTTON (reused inline throughout) ──────────────────────────
+const REAL_USER_THRESHOLD = 100;
+
 function CTAButton({ label = '&#x26BD; START PREDICTING FREE', href = '/auth', size = 'md' }: { label?: string; href?: string; size?: 'sm' | 'md' | 'lg' }) {
   const pad = size === 'lg' ? '20px 56px' : size === 'sm' ? '12px 28px' : '16px 40px';
   const fs = size === 'lg' ? '20px' : size === 'sm' ? '14px' : '17px';
@@ -86,13 +85,12 @@ function CTAButton({ label = '&#x26BD; START PREDICTING FREE', href = '/auth', s
   );
 }
 
-// ── STICKY MOBILE CTA ──────────────────────────────────────────────────────
 function StickyMobileCTA({ user }: { user: any }) {
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (user) return; // already signed in
+    if (user) return;
     try {
       if (sessionStorage.getItem('sticky_cta_dismissed')) { setDismissed(true); return; }
     } catch (_) {}
@@ -106,56 +104,15 @@ function StickyMobileCTA({ user }: { user: any }) {
     <>
       <style>{`
         @media (min-width: 768px) { .fs-sticky-cta { display: none !important; } }
-        @keyframes ctaSlideUp {
-          from { transform: translateY(100%); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
+        @keyframes ctaSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .fs-sticky-cta { animation: ctaSlideUp 0.35s ease-out forwards; }
       `}</style>
-
-      {/* Height placeholder — prevents content from hiding behind bar */}
       <div className="fs-sticky-cta" style={{ height: '74px' }} aria-hidden="true" />
-
-      <div
-        className="fs-sticky-cta"
-        style={{
-          position: 'fixed',
-          bottom: 0, left: 0, right: 0,
-          zIndex: 200,
-          backgroundColor: '#0A1A0C',
-          borderTop: '1px solid #1A7A4A',
-          padding: '10px 14px',
-          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-        }}
-      >
-        <a
-          href="/auth"
-          style={{
-            flex: 1,
-            display: 'block',
-            textAlign: 'center',
-            backgroundColor: '#2E9E5E',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: '15px',
-            padding: '13px 16px',
-            borderRadius: '10px',
-            textDecoration: 'none',
-          }}
-        >
+      <div className="fs-sticky-cta" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200, backgroundColor: '#0A1A0C', borderTop: '1px solid #1A7A4A', padding: '10px 14px', paddingBottom: 'max(10px, env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <a href="/auth" style={{ flex: 1, display: 'block', textAlign: 'center', backgroundColor: '#2E9E5E', color: 'white', fontWeight: 'bold', fontSize: '15px', padding: '13px 16px', borderRadius: '10px', textDecoration: 'none' }}>
           &#x26BD; START PREDICTING FREE
         </a>
-        <button
-          onClick={() => {
-            setDismissed(true);
-            try { sessionStorage.setItem('sticky_cta_dismissed', '1'); } catch (_) {}
-          }}
-          aria-label="Dismiss"
-          style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '18px', cursor: 'pointer', padding: '8px', lineHeight: 1, flexShrink: 0 }}
-        >
+        <button onClick={() => { setDismissed(true); try { sessionStorage.setItem('sticky_cta_dismissed', '1'); } catch (_) {} }} aria-label="Dismiss" style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '18px', cursor: 'pointer', padding: '8px', lineHeight: 1, flexShrink: 0 }}>
           ✕
         </button>
       </div>
@@ -163,7 +120,6 @@ function StickyMobileCTA({ user }: { user: any }) {
   );
 }
 
-// ── BUZZ COUNTER ───────────────────────────────────────────────────────────
 function BuzzCounter() {
   const [count24h, setCount24h] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -194,7 +150,7 @@ function BuzzCounter() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
             <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x26A1; {count24h} predictions</span> made in last 24 hours
+              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x26A1; {count24h} predictions</span> in last 24h
             </span>
           </div>
         )}
@@ -204,57 +160,13 @@ function BuzzCounter() {
           </span>
         )}
         <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-          <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x1F3C6; 104 matches</span> to predict
+          <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x1F3C6; 5 competitions</span> live now
         </span>
       </div>
     </div>
   );
 }
 
-// ── DYNAMIC BANNER ─────────────────────────────────────────────────────────
-function DynamicBanner({ spotsLeft }: { spotsLeft: number }) {
-  const [bannerText, setBannerText] = useState('FIFA World Cup 2026 -- Build your football reputation!');
-  const [bgColor, setBgColor] = useState('#1A7A4A');
-  const [mounted, setMounted] = useState(false);
-
-  const updateBannerText = (spots: number) => {
-    const now = new Date();
-    const kickoff = new Date('2026-06-11T19:00:00Z');
-    const diff = kickoff.getTime() - now.getTime();
-    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    const hoursLeft = Math.ceil(diff / (1000 * 60 * 60));
-    const minutesLeft = Math.ceil(diff / (1000 * 60));
-
-    if (diff <= 0) { setBannerText('LIVE NOW -- World Cup 2026 is underway -- Predict upcoming matches!'); setBgColor('#EF4444'); }
-    else if (minutesLeft <= 60) { setBannerText('KICKS OFF IN ' + minutesLeft + ' MINUTES -- Last chance to predict!'); setBgColor('#EF4444'); }
-    else if (hoursLeft <= 24) { setBannerText('TODAY -- World Cup 2026 is LIVE -- Predict upcoming matches NOW!'); setBgColor('#DC2626'); }
-    else if (daysLeft === 1) { setBannerText('World Cup 2026 LIVE -- Only ' + spots + ' Founding spots left!'); setBgColor('#B45309'); }
-    else if (daysLeft === 2) { setBannerText('2 DAYS TO GO -- Only ' + spots + ' Founding Forecaster spots remaining!'); setBgColor('#92400E'); }
-    else if (daysLeft === 3) { setBannerText('3 DAYS TO GO -- Only ' + spots + ' Founding Forecaster spots left!'); setBgColor('#1A7A4A'); }
-    else if (daysLeft <= 7) { setBannerText(daysLeft + ' days until World Cup -- Only ' + spots + ' Founding spots left!'); setBgColor('#1A7A4A'); }
-    else { setBannerText('FIFA World Cup 2026 starts June 11 -- Build your permanent football reputation!'); setBgColor('#1A7A4A'); }
-  };
-
-  useEffect(() => {
-    setMounted(true);
-    updateBannerText(spotsLeft);
-    const interval = setInterval(() => updateBannerText(spotsLeft), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!mounted) return null;
-
-  return (
-    <div style={{ backgroundColor: bgColor, padding: '10px 20px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.2)', position: 'sticky', top: 0, zIndex: 50 }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>&#x26BD; {bannerText}</span>
-        <a href="/auth" style={{ backgroundColor: 'white', color: bgColor, padding: '5px 18px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>Join Free &#x2192;</a>
-      </div>
-    </div>
-  );
-}
-
-// ── LIVE SCORECARD ─────────────────────────────────────────────────────────
 function LiveScoreCard() {
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [lastUpdated, setLastUpdated] = useState('');
@@ -267,9 +179,7 @@ function LiveScoreCard() {
       if (data.live && data.live.length > 0) {
         setLiveMatches(data.live);
         setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      } else {
-        setLiveMatches([]);
-      }
+      } else { setLiveMatches([]); }
     } catch (e) { setLiveMatches([]); }
   };
 
@@ -294,10 +204,9 @@ function LiveScoreCard() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {liveMatches.map((match) => (
-            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', boxShadow: '0 0 16px rgba(239,68,68,0.08)' }}>
+            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <div style={{ minWidth: '48px', textAlign: 'center' }}>
                 <div style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>{match.elapsed ? match.elapsed + "'" : 'LIVE'}</div>
-                <div style={{ fontSize: '10px', color: '#4B5563', marginTop: '2px' }}>{match.status === 'HT' ? 'HT' : match.status === 'FT' ? 'FT' : ''}</div>
               </div>
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'right', flex: 1 }}>{match.home}</span>
@@ -308,7 +217,6 @@ function LiveScoreCard() {
                 </div>
                 <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'left', flex: 1 }}>{match.away}</span>
               </div>
-              <div style={{ fontSize: '11px', color: '#6B7280', whiteSpace: 'nowrap' }}>{match.round?.replace('Group Stage - ', 'Group ')}</div>
             </div>
           ))}
         </div>
@@ -320,7 +228,6 @@ function LiveScoreCard() {
   );
 }
 
-// ── UPCOMING MATCHES ───────────────────────────────────────────────────────
 function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -328,7 +235,7 @@ function UpcomingMatches() {
 
   useEffect(() => {
     const fetchMatches = async () => {
-      const { data } = await supabase.from('matches').select('id, home_team, away_team, kickoff, status, league').in('status', ['upcoming', 'live', 'locked']).order('kickoff', { ascending: true }).limit(4);
+      const { data } = await supabase.from('matches').select('id, home_team, away_team, kickoff, status, league, competition').in('status', ['upcoming', 'live', 'locked']).order('kickoff', { ascending: true }).limit(4);
       setMatches(data || []);
       setLoading(false);
     };
@@ -346,7 +253,7 @@ function UpcomingMatches() {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const date = new Date(utcString);
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const tzMap: { [key: string]: string } = { 'Asia/Calcutta': 'IST', 'Asia/Kolkata': 'IST', 'Africa/Lagos': 'WAT', 'Africa/Abuja': 'WAT', 'Asia/Jakarta': 'WIB', 'America/Mexico_City': 'CST', 'America/New_York': 'EDT', 'Europe/London': 'BST', 'Asia/Dubai': 'GST', 'Asia/Singapore': 'SGT', 'Asia/Tokyo': 'JST', 'America/Sao_Paulo': 'BRT' };
+    const tzMap: { [key: string]: string } = { 'Asia/Calcutta': 'IST', 'Asia/Kolkata': 'IST', 'Africa/Lagos': 'WAT', 'Asia/Jakarta': 'WIB', 'America/New_York': 'EDT', 'Europe/London': 'BST', 'Asia/Dubai': 'GST' };
     const formatted = date.toLocaleString('en-GB', { timeZone: tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
     const tzLabel = tzMap[tz] || '';
     return formatted + (tzLabel ? ' ' + tzLabel : '');
@@ -366,32 +273,25 @@ function UpcomingMatches() {
     return s + 's';
   };
 
-  const isLive = (kickoff: string, status: string) => {
-    if (status === 'live') return true;
-    const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
-    const diff = now.getTime() - new Date(utcString).getTime();
-    return diff > 0 && diff < 105 * 60 * 1000;
-  };
-
   if (loading || matches.length === 0) return null;
 
   return (
     <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>WORLD CUP 2026</p>
+        <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>LIVE COMPETITIONS</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '8px' }}>Upcoming Matches</h2>
         <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '32px' }}>Predict before kick-off. Your call is locked forever.</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
           {matches.map((match) => {
-            const live = isLive(match.kickoff, match.status);
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
+            const isLive = match.status === 'live';
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#2E9E5E' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'nowrap', boxShadow: live ? '0 0 20px rgba(46,158,94,0.15)' : 'none', overflow: 'hidden' }}>
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isLive ? '#2E9E5E' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'nowrap', overflow: 'hidden' }}>
                 <div style={{ minWidth: '90px', textAlign: 'center', flexShrink: 0 }}>
-                  {live ? (
-                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', letterSpacing: '1px' }}>LIVE</span>
+                  {isLive ? (
+                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px' }}>LIVE</span>
                   ) : countdown ? (
                     <span style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#F59E0B', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', border: '1px solid #F59E0B' }}>{countdown}</span>
                   ) : (
@@ -405,7 +305,7 @@ function UpcomingMatches() {
                     <span style={{ fontSize: '12px', color: '#4B5563', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
                     <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', flexShrink: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{match.league}</div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{match.competition}</div>
                 </div>
                 <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {kickoffPast ? 'Locked' : 'Predict →'}
@@ -415,77 +315,17 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>View all 104 World Cup matches &#x2192;</a>
+          <a href="/predict" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>View all upcoming matches &#x2192;</a>
         </div>
       </div>
     </section>
   );
 }
 
-// ── CONFETTI ───────────────────────────────────────────────────────────────
-const PARTICLES = [
-  { id: 0, left: 5, delay: 0.0, dur: 3.0, icon: '&#x26BD;', size: 24 },
-  { id: 1, left: 12, delay: 0.3, dur: 2.8, icon: '&#x1F3C6;', size: 18 },
-  { id: 2, left: 20, delay: 0.1, dur: 3.2, icon: '&#x2B50;', size: 20 },
-  { id: 3, left: 28, delay: 0.5, dur: 2.6, icon: '&#x26BD;', size: 28 },
-  { id: 4, left: 35, delay: 0.2, dur: 3.5, icon: '&#x1F3C6;', size: 22 },
-  { id: 5, left: 42, delay: 0.4, dur: 2.9, icon: '&#x26BD;', size: 16 },
-  { id: 6, left: 50, delay: 0.1, dur: 3.1, icon: '&#x2B50;', size: 26 },
-  { id: 7, left: 58, delay: 0.6, dur: 2.7, icon: '&#x26BD;', size: 20 },
-  { id: 8, left: 65, delay: 0.3, dur: 3.3, icon: '&#x1F3C6;', size: 24 },
-  { id: 9, left: 72, delay: 0.2, dur: 2.5, icon: '&#x26BD;', size: 18 },
-  { id: 10, left: 80, delay: 0.5, dur: 3.0, icon: '&#x2B50;', size: 22 },
-  { id: 11, left: 88, delay: 0.1, dur: 2.8, icon: '&#x26BD;', size: 28 },
-  { id: 12, left: 95, delay: 0.4, dur: 3.4, icon: '&#x1F3C6;', size: 20 },
-  { id: 13, left: 15, delay: 0.7, dur: 2.6, icon: '&#x26BD;', size: 16 },
-  { id: 14, left: 45, delay: 0.8, dur: 3.2, icon: '&#x2B50;', size: 24 },
-  { id: 15, left: 75, delay: 0.6, dur: 2.9, icon: '&#x26BD;', size: 20 },
-];
-
-function WelcomeConfetti() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    try {
-      const seen = sessionStorage.getItem('flipseer_welcome');
-      if (!seen) {
-        setShow(true);
-        sessionStorage.setItem('flipseer_welcome', '1');
-        const timer = setTimeout(() => setShow(false), 4500);
-        return () => clearTimeout(timer);
-      }
-    } catch (_) {}
-  }, []);
-  if (!show) return null;
-  return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 999, overflow: 'hidden' }}>
-      <style>{`
-        @keyframes fall { 0% { transform: translateY(-60px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(540deg); opacity: 0; } }
-        @keyframes fadeWelcome { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 20% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 75% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } }
-      `}</style>
-      <div style={{ position: 'fixed', top: '50%', left: '50%', textAlign: 'center', animation: 'fadeWelcome 4s forwards', zIndex: 1000, pointerEvents: 'none', backgroundColor: 'rgba(13,31,15,0.92)', border: '2px solid #2E9E5E', borderRadius: '20px', padding: '32px 48px', boxShadow: '0 0 60px rgba(46,158,94,0.4)' }}>
-        <div style={{ fontSize: '56px', marginBottom: '12px' }}>&#x26BD;</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '26px', color: 'white', fontWeight: 'bold' }}>Welcome to Flipseer!</div>
-        <div style={{ fontSize: '15px', color: '#2E9E5E', marginTop: '8px' }}>Build your permanent football legacy</div>
-        <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '6px' }}>World Cup 2026 &#xB7; June 11</div>
-      </div>
-      {PARTICLES.map((p) => (
-        <div key={p.id} dangerouslySetInnerHTML={{ __html: p.icon }}
-          style={{ position: 'absolute', left: p.left + '%', top: '-60px', fontSize: p.size + 'px', animation: 'fall ' + p.dur + 's ' + p.delay + 's ease-in forwards' }}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ── PAGE ───────────────────────────────────────────────────────────────────
 export default function Home() {
   const [tickerItems, setTickerItems] = useState<any[]>([]);
   const [useRealTicker, setUseRealTicker] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [days, setDays] = useState(0);
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
   const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
   const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -497,29 +337,6 @@ export default function Home() {
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const wcStart = new Date('2026-06-11T19:00:00Z');
-    const interval = setInterval(() => {
-      const now = new Date();
-      const started = now >= wcStart;
-      if (started) {
-        const elapsed = now.getTime() - wcStart.getTime();
-        setDays(Math.floor(elapsed / (1000 * 60 * 60 * 24)));
-        setHours(Math.floor((elapsed / (1000 * 60 * 60)) % 24));
-        setMinutes(Math.floor((elapsed / (1000 * 60)) % 60));
-        setSeconds(Math.floor((elapsed / 1000) % 60));
-      } else {
-        const diff = wcStart.getTime() - now.getTime();
-        if (diff <= 0) { clearInterval(interval); return; }
-        setDays(Math.floor(diff / (1000 * 60 * 60 * 24)));
-        setHours(Math.floor((diff / (1000 * 60 * 60)) % 24));
-        setMinutes(Math.floor((diff / (1000 * 60)) % 60));
-        setSeconds(Math.floor((diff / 1000) % 60));
-      }
-    }, 1000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -566,7 +383,7 @@ export default function Home() {
             if (sorted.length >= 3) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
           }
         }
-      } catch (err) { console.error('Leaderboard error:', err); }
+      } catch (err) {}
     };
     fetchLeaderboard();
   }, []);
@@ -577,7 +394,6 @@ export default function Home() {
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
-      <WelcomeConfetti />
       <style>{`
         @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -608,19 +424,16 @@ export default function Home() {
       </div>
 
       <BuzzCounter />
-      <DynamicBanner spotsLeft={100 - foundingAwarded} />
       <LiveScoreCard />
 
       {/* ── HERO ── */}
       <section style={{ textAlign: 'center', padding: '80px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
         <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '32px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span suppressHydrationWarning style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            {mounted ? (new Date() >= new Date('2026-06-11T19:00:00Z')
-              ? 'WORLD CUP 2026 · LIVE · Day ' + (days + 1)
-              : 'WORLD CUP 2026 · ' + days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's')
-              : 'WORLD CUP 2026 · LIVE NOW'}
+
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '32px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
+            EPL · UCL · Liga 1 · Ghana PL · ISL — LIVE NOW
           </span>
         </div>
 
@@ -628,24 +441,22 @@ export default function Home() {
           Your Football Knowledge<br />Deserves a Record.<br /><span style={{ color: '#2E9E5E' }}>Forever.</span>
         </h1>
         <p style={{ fontSize: '18px', color: '#9CA3AF', lineHeight: '1.7', maxWidth: '560px', margin: '0 auto 16px' }}>
-          Predict every FIFA World Cup 2026 match before kick-off.<br />
+          Predict every match across 5 live competitions.<br />
           <strong style={{ color: '#D1FAE5' }}>Build your permanent football reputation. Free. No betting.</strong>
         </p>
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '36px' }}>
           <span style={{ fontSize: '13px', color: '#6B7280' }}>
-            {totalUsers > 0 ? 'Join ' + totalUsers + ' Founding Forecasters -- ' : 'Only 100 Founding Forecaster spots -- '}
+            {totalUsers > 0 ? 'Join ' + totalUsers + ' Founding Forecasters — ' : 'Only 100 Founding Forecaster spots — '}
             <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Exclusive badge. Never awarded again.</span>
           </span>
         </div>
 
-        {/* HERO CTA */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '56px' }}>
           <CTAButton label="&#x26BD; START PREDICTING FREE" size="lg" />
           <p style={{ fontSize: '12px', color: '#4B5563', margin: 0 }}>Free forever. No card required. 10-second sign-up.</p>
           <a href="/how-to-play" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>How it works &#x2192;</a>
         </div>
 
-        {/* TRUST SHIELD */}
         <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '14px 24px', marginBottom: '40px' }}>
           <div style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '10px', textAlign: 'center' }}>YOUR DATA. YOUR RULES.</div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -659,7 +470,7 @@ export default function Home() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
-          {[{ value: '104', label: 'Matches to Predict' }, { value: '48', label: 'Nations' }, { value: '39', label: 'Days of Football' }].map((stat, i) => (
+          {[{ value: '5', label: 'Live Competitions' }, { value: '380+', label: 'EPL Matches' }, { value: '125+', label: 'UCL Matches' }].map((stat, i) => (
             <div key={i} style={{ textAlign: 'center', animation: 'countup 0.6s ease ' + (i * 0.2) + 's both' }}>
               <div style={{ fontSize: '40px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{stat.value}</div>
               <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>{stat.label}</div>
@@ -668,10 +479,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* LIVE COMPETITIONS */}
+      {/* LIVE COMPETITIONS GRID */}
+      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '48px 20px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>PREDICT ACROSS</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '28px' }}>5 Live Competitions</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+            {LIVE_COMPETITIONS.map(({ icon, name, desc, color }) => (
+              <a key={name} href="/predict" style={{ backgroundColor: '#0D2B14', border: '1px solid ' + color + '40', borderRadius: '14px', padding: '20px 16px', textDecoration: 'none', display: 'block', textAlign: 'center', transition: 'border-color 0.2s' }}>
+                <div style={{ fontSize: '28px', marginBottom: '8px' }} dangerouslySetInnerHTML={{ __html: icon }} />
+                <div style={{ fontSize: '13px', color: color, fontWeight: 'bold', marginBottom: '4px' }}>{name}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280' }}>{desc}</div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <UpcomingMatches />
 
-      {/* ── MID-PAGE CTA ── */}
+      {/* MID-PAGE CTA */}
       <section style={{ backgroundColor: '#0A1A0C', borderTop: '1px solid #1A7A4A', borderBottom: '1px solid #1A7A4A', padding: '48px 20px', textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>READY TO PROVE IT?</p>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '8px' }}>Your football knowledge deserves a record.</h2>
@@ -680,24 +507,24 @@ export default function Home() {
         <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '12px' }}>Free forever. 10-second sign-up.</p>
       </section>
 
-      {/* TENSION / WHY FLIPSEER */}
+      {/* TENSION */}
       <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '28px' }}>YOU KNOW THIS FEELING</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {[
-              { moment: '"I said Brazil wins this. Nobody believed me."', emotion: 'Vindication' },
-              { moment: '"I called the exact score. 2-1. Before anyone."', emotion: 'Glory' },
-              { moment: '"My country vs yours. I\'ll put my reputation on it."', emotion: 'National Pride' },
-              { moment: '"This upset is coming. I feel it in my bones."', emotion: 'Instinct' },
+              { moment: '"I said Arsenal wins the title. Nobody believed me."', emotion: 'VINDICATION' },
+              { moment: '"I called the exact score. 2-1. Before anyone."', emotion: 'GLORY' },
+              { moment: '"My country vs yours. I\'ll put my reputation on it."', emotion: 'NATIONAL PRIDE' },
+              { moment: '"This upset is coming. I feel it in my bones."', emotion: 'INSTINCT' },
             ].map(({ moment, emotion }) => (
               <div key={emotion} style={{ display: 'flex', alignItems: 'center', gap: '20px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px 24px', textAlign: 'left' }}>
                 <div style={{ fontSize: '32px', minWidth: '44px', textAlign: 'center' }}>&#x26A1;</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '17px', color: 'white', fontStyle: 'italic', fontFamily: 'Georgia, serif', marginBottom: '4px' }}>{moment}</div>
-                  <div style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '2px', fontWeight: 'bold' }}>{emotion.toUpperCase()}</div>
+                  <div style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '2px', fontWeight: 'bold' }}>{emotion}</div>
                 </div>
-                <div style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', backgroundColor: '#0D1F0F', padding: '6px 14px', borderRadius: '999px', whiteSpace: 'nowrap' }}>Prove it &#x2192;</div>
+                <a href="/auth" style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', backgroundColor: '#0D1F0F', padding: '6px 14px', borderRadius: '999px', whiteSpace: 'nowrap', textDecoration: 'none' }}>Prove it &#x2192;</a>
               </div>
             ))}
           </div>
@@ -712,19 +539,18 @@ export default function Home() {
         <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '40px' }}>Every prediction earns points for your country. India vs Brazil. England vs Argentina. The rivalry is real.</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '32px' }}>
           {TOP_NATIONS.map(({ flag, name, slug }) => (
-            <a key={slug} href={'/world-cup-2026/' + slug} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 8px', textDecoration: 'none', display: 'block' }}>
+            <a key={slug} href={'/predict'} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 8px', textDecoration: 'none', display: 'block' }}>
               <div style={{ fontSize: '28px', marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: flag }} />
               <div style={{ fontSize: '12px', color: '#D1FAE5', fontWeight: 'bold' }}>{name}</div>
             </a>
           ))}
         </div>
-        <a href="/world-cup-2026" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>See all 48 nations and groups &#x2192;</a>
-        <div style={{ marginTop: '48px' }}>
-          {isRealLeaderboard ? (
+        {isRealLeaderboard && (
+          <div style={{ marginTop: '32px' }}>
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
               <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-                <span>RANK &#xB7; NATION</span>
-                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>LIVE &#xB7; FORECASTERS &#xB7; POINTS</span>
+                <span>RANK · NATION</span>
+                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>LIVE · FORECASTERS · POINTS</span>
               </div>
               {realLeaderboard.map(({ rank, flag, country, forecasters, points }) => (
                 <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A' }}>
@@ -736,23 +562,9 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          ) : (
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', maxWidth: '560px', margin: '0 auto 16px', overflow: 'hidden' }}>
-              <div style={{ backgroundColor: '#050E05', padding: '14px 20px', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px', textAlign: 'center' }}>GLOBAL NATION LEADERBOARD -- LAUNCHING JUNE 11</div>
-              <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>&#x1F30D;</div>
-                <p style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>Your nation needs you.</p>
-                <p style={{ fontSize: '14px', color: '#9CA3AF', marginBottom: '16px', lineHeight: '1.7' }}>The national leaderboard goes live June 11.<br />Early predictors shape their country's position from day one.</p>
-                <p style={{ fontSize: '13px', color: '#4B5563' }}>
-                  {totalUsers > 0
-                    ? totalUsers + ' forecasters registered -- ' + (100 - totalUsers > 0 ? (100 - foundingAwarded) + ' Founding spots remaining' : 'rankings activating soon!')
-                    : "Be among the founding forecasters. Claim your country's #1 spot."}
-                </p>
-              </div>
-            </div>
-          )}
-          <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic', marginTop: '8px' }}>Every prediction you make moves your nation up the table.</p>
-        </div>
+            <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic' }}>Every prediction you make moves your nation up the table.</p>
+          </div>
+        )}
       </section>
 
       {/* HOW IT WORKS */}
@@ -765,7 +577,7 @@ export default function Home() {
               { step: '01', icon: '&#x1F3AF;', title: 'Call the match', desc: 'Pick the winner. Predict the exact score. Set your confidence before kick-off.' },
               { step: '02', icon: '&#x1F512;', title: 'It locks forever', desc: 'Once the whistle blows, your call is sealed. No edits. No excuses. Just your word.' },
               { step: '03', icon: '&#x26A1;', title: 'Earn reputation', desc: 'Correct calls earn points. Upsets earn glory. Exact scores earn legend status.' },
-              { step: '04', icon: '&#x1F451;', title: 'Build your legacy', desc: 'Tournament after tournament. Your profile grows. Your reputation is permanent.' },
+              { step: '04', icon: '&#x1F451;', title: 'Build your legacy', desc: 'Competition after competition. Your profile grows. Your reputation is permanent.' },
             ].map(({ step, icon, title, desc }) => (
               <div key={step} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '28px 24px' }}>
                 <div style={{ fontSize: '11px', color: '#1A7A4A', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>STEP {step}</div>
@@ -781,7 +593,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── PRIVATE LEAGUES / FRIENDS ── */}
+      {/* PRIVATE LEAGUES */}
       <section style={{ padding: '72px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>CHALLENGE YOUR FRIENDS</p>
@@ -822,40 +634,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ROADMAP */}
-      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>ROADMAP</p>
-          <h2 style={{ textAlign: 'center', fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>The World Cup is just the start.</h2>
-          <p style={{ textAlign: 'center', color: '#6B7280', fontSize: '14px', marginBottom: '32px' }}>EPL. Champions League. El Clasico. Der Klassiker. Your reputation builds forever.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {COMING_SOON.map(({ icon, title, desc, date }) => (
-              <div key={title} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ fontSize: '26px', minWidth: '40px', textAlign: 'center' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', marginBottom: '2px' }}>{title}</div>
-                  <div style={{ fontSize: '12px', color: '#6B7280' }}>{desc}</div>
-                </div>
-                <div style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', backgroundColor: '#0D1F0F', border: '1px solid #1A7A4A', padding: '4px 12px', borderRadius: '999px', whiteSpace: 'nowrap' }}>{date}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FINAL CTA ── */}
+      {/* FINAL CTA */}
       <section style={{ textAlign: 'center', padding: '80px 20px 100px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ fontSize: '56px', marginBottom: '20px' }}>&#x1F3C6;</div>
+        <div style={{ fontSize: '56px', marginBottom: '20px' }}>&#x26BD;</div>
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '44px', marginBottom: '16px', lineHeight: '1.2' }}>
-          June 11. The whistle blows.<br /><span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
+          5 competitions live.<br /><span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
         </h2>
-        <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>The forecasters who start now will have a head start.<br />Your legacy clock is ticking.</p>
+        <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>The forecasters who start now build the longest record.<br />Your legacy clock is ticking.</p>
         <CTAButton label="&#x26BD; START PREDICTING FREE" size="lg" />
         <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free to join. Always.</p>
       </section>
 
-      {/* STICKY MOBILE CTA */}
       <StickyMobileCTA user={user} />
     </main>
   );
