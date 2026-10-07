@@ -1,9 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
-
+import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
-
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'India': '&#x1F1EE;&#x1F1F3;', 'Brazil': '&#x1F1E7;&#x1F1F7;',
   'Argentina': '&#x1F1E6;&#x1F1F7;', 'France': '&#x1F1EB;&#x1F1F7;',
@@ -15,163 +14,91 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'Morocco': '&#x1F1F2;&#x1F1E6;', 'Japan': '&#x1F1EF;&#x1F1F5;',
   'South Korea': '&#x1F1F0;&#x1F1F7;', 'Australia': '&#x1F1E6;&#x1F1FA;',
   'Canada': '&#x1F1E8;&#x1F1E6;', 'Indonesia': '&#x1F1EE;&#x1F1E9;',
-  'Ghana': '&#x1F1EC;&#x1F1ED;', 'Other': '&#x1F30D;',
+  'Other': '&#x1F30D;',
   'IN': '&#x1F1EE;&#x1F1F3;', 'BR': '&#x1F1E7;&#x1F1F7;',
   'AR': '&#x1F1E6;&#x1F1F7;', 'FR': '&#x1F1EB;&#x1F1F7;',
   'DE': '&#x1F1E9;&#x1F1EA;', 'GB': '&#x1F3F4;',
   'ES': '&#x1F1EA;&#x1F1F8;', 'PT': '&#x1F1F5;&#x1F1F9;',
   'NL': '&#x1F1F3;&#x1F1F1;', 'IT': '&#x1F1EE;&#x1F1F9;',
   'MX': '&#x1F1F2;&#x1F1FD;', 'US': '&#x1F1FA;&#x1F1F8;',
-  'NG': '&#x1F1F3;&#x1F1EC;', 'GH': '&#x1F1EC;&#x1F1ED;',
-  'ID': '&#x1F1EE;&#x1F1E9;',
+  'NG': '&#x1F1F3;&#x1F1EC;', 'SN': '&#x1F1F8;&#x1F1F3;',
+  'MA': '&#x1F1F2;&#x1F1E6;', 'JP': '&#x1F1EF;&#x1F1F5;',
+  'ID': '&#x1F1EE;&#x1F1E9;', 'ZA': '&#x1F1FF;&#x1F1E6;',
+  'GH': '&#x1F1EC;&#x1F1ED;', 'CO': '&#x1F1E8;&#x1F1F4;',
+  'AU': '&#x1F1E6;&#x1F1FA;', 'CA': '&#x1F1E8;&#x1F1E6;',
+  'TR': '&#x1F1F9;&#x1F1F7;', 'KR': '&#x1F1F0;&#x1F1F7;',
+  'SA': '&#x1F1F8;&#x1F1E6;', 'PK': '&#x1F1F5;&#x1F1F0;',
+  'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
-const STATIC_TICKER = [
-  'EPL 2026/27 · Predict every match before kick-off',
-  'UEFA Champions League · Group stage predictions open now',
-  'Liga 1 Indonesia · Ghana Premier League · ISL India — all live',
-  'Your predictions lock at kick-off — forever on record',
-  'No betting. No luck. Pure football intelligence.',
-  'Predict exact scores for up to 108 pts per match',
-  'Build your permanent football reputation — free forever',
-  'Every correct call earns points toward your legacy',
-];
-
-const LIVE_COMPETITIONS = [
-  { icon: '&#x1F3F4;', name: 'EPL 2026/27', desc: "England's top flight. 380 matches.", color: '#8B5CF6' },
-  { icon: '&#x2B50;', name: 'UCL 2026/27', desc: "Europe's elite. Group stage live.", color: '#A78BFA' },
-  { icon: '&#x1F1EE;&#x1F1E9;', name: 'Liga 1 Indonesia', desc: 'Indonesian top flight.', color: '#CE1126' },
-  { icon: '&#x1F1EC;&#x1F1ED;', name: 'Ghana Premier League', desc: 'West Africa\'s finest.', color: '#F59E0B' },
-  { icon: '&#x1F1EE;&#x1F1F3;', name: 'ISL India', desc: 'Indian Super League.', color: '#FF6B35' },
-];
-
-const TOP_NATIONS = [
-  { flag: '&#x1F1EE;&#x1F1F3;', name: 'India', slug: 'india' },
-  { flag: '&#x1F1E7;&#x1F1F7;', name: 'Brazil', slug: 'brazil' },
-  { flag: '&#x1F1E6;&#x1F1F7;', name: 'Argentina', slug: 'argentina' },
-  { flag: '&#x1F3F4;', name: 'England', slug: 'england' },
-  { flag: '&#x1F1F3;&#x1F1EC;', name: 'Nigeria', slug: 'nigeria' },
-  { flag: '&#x1F1F2;&#x1F1FD;', name: 'Mexico', slug: 'mexico' },
-  { flag: '&#x1F1FA;&#x1F1F8;', name: 'USA', slug: 'usa' },
-  { flag: '&#x1F1E9;&#x1F1EA;', name: 'Germany', slug: 'germany' },
-  { flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia', slug: 'indonesia' },
-  { flag: '&#x1F1EB;&#x1F1F7;', name: 'France', slug: 'france' },
-  { flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain', slug: 'spain' },
-  { flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana', slug: 'ghana' },
-];
-
-const REAL_USER_THRESHOLD = 100;
-
-function CTAButton({ label = '&#x26BD; START PREDICTING FREE', href = '/auth', size = 'md' }: { label?: string; href?: string; size?: 'sm' | 'md' | 'lg' }) {
-  const pad = size === 'lg' ? '20px 56px' : size === 'sm' ? '12px 28px' : '16px 40px';
-  const fs = size === 'lg' ? '20px' : size === 'sm' ? '14px' : '17px';
-  return (
-    <a
-      href={href}
-      dangerouslySetInnerHTML={{ __html: label }}
-      style={{
-        display: 'inline-block',
-        backgroundColor: '#1A7A4A',
-        color: 'white',
-        padding: pad,
-        borderRadius: '10px',
-        textDecoration: 'none',
-        fontSize: fs,
-        fontWeight: 'bold',
-        boxShadow: '0 0 32px rgba(46,158,94,0.3)',
-        letterSpacing: '0.2px',
-      }}
-    />
-  );
-}
-
-function StickyMobileCTA({ user }: { user: any }) {
-  const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    if (user) return;
-    try {
-      if (sessionStorage.getItem('sticky_cta_dismissed')) { setDismissed(true); return; }
-    } catch (_) {}
-    const t = setTimeout(() => setVisible(true), 2200);
-    return () => clearTimeout(t);
-  }, [user]);
-
-  if (user || dismissed || !visible) return null;
-
-  return (
-    <>
-      <style>{`
-        @media (min-width: 768px) { .fs-sticky-cta { display: none !important; } }
-        @keyframes ctaSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .fs-sticky-cta { animation: ctaSlideUp 0.35s ease-out forwards; }
-      `}</style>
-      <div className="fs-sticky-cta" style={{ height: '74px' }} aria-hidden="true" />
-      <div className="fs-sticky-cta" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200, backgroundColor: '#0A1A0C', borderTop: '1px solid #1A7A4A', padding: '10px 14px', paddingBottom: 'max(10px, env(safe-area-inset-bottom))', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <a href="/auth" style={{ flex: 1, display: 'block', textAlign: 'center', backgroundColor: '#2E9E5E', color: 'white', fontWeight: 'bold', fontSize: '15px', padding: '13px 16px', borderRadius: '10px', textDecoration: 'none' }}>
-          &#x26BD; START PREDICTING FREE
-        </a>
-        <button onClick={() => { setDismissed(true); try { sessionStorage.setItem('sticky_cta_dismissed', '1'); } catch (_) {} }} aria-label="Dismiss" style={{ background: 'none', border: 'none', color: '#6B7280', fontSize: '18px', cursor: 'pointer', padding: '8px', lineHeight: 1, flexShrink: 0 }}>
-          ✕
-        </button>
-      </div>
-    </>
-  );
-}
-
-function BuzzCounter() {
-  const [count24h, setCount24h] = useState(0);
-  const [totalUsers, setTotalUsers] = useState(0);
+function LiveActivity() { // CLS fix: reserve space before data loads
+  const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
-
+  const fetchActivity = async () => {
+    try {
+      const { data } = await supabase
+        .from('predictions')
+        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id, profiles(username, country)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (data) {
+        const seen = new Set<string>();
+        const unique = data.filter((p: any) => {
+          if (!p.profiles?.username || seen.has(p.user_id)) return false;
+          seen.add(p.user_id);
+          return true;
+        }).slice(0, 5);
+        const items = unique.map((p: any) => {
+          const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+          const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+          const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
+          const country = p.profiles?.country || '';
+          return { username: p.profiles.username, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', pick, confidence: p.confidence_pct, points: p.points_earned, processed: p.prediction_processed, timeAgo };
+        });
+        setActivities(items);
+      }
+    } catch (e) {}
+  };
   useEffect(() => {
     setMounted(true);
-    const fetch24h = async () => {
-      try {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count: predCount } = await supabase.from('predictions').select('*', { count: 'exact', head: true }).gte('created_at', since);
-        const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-        setCount24h(predCount || 0);
-        setTotalUsers(userCount || 0);
-      } catch (e) {}
-    };
-    fetch24h();
-    const interval = setInterval(fetch24h, 5 * 60 * 1000);
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  if (!mounted || (count24h === 0 && totalUsers === 0)) return null;
-
+  if (!mounted) return null;
   return (
-    <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 20px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', flexWrap: 'wrap' }}>
-        {count24h > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-              <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x26A1; {count24h} predictions</span> in last 24h
-            </span>
-          </div>
-        )}
-        {totalUsers > 0 && (
-          <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-            <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>&#x1F465; {totalUsers} forecasters</span> building their legacy
-          </span>
-        )}
-        <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-          <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>&#x1F3C6; 5 competitions</span> live now
-        </span>
+    <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>RECENT ACTIVITY</span>
+          <span style={{ fontSize: '11px', color: '#8895A3', marginLeft: 'auto' }}>Latest predictions</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {activities.map((a, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '8px', padding: '8px 12px' }}>
+              <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: a.flag }} />
+              <span style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold' }}>@{a.username}</span>
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                {a.processed && a.points > 0
+                  ? <><span>gained </span><span style={{ color: '#F59E0B', fontWeight: 'bold' }}>+{a.points} rep</span></>
+                  : <><span>predicted </span><span style={{ color: 'white', fontWeight: 'bold' }}>{a.pick}</span><span> · </span><span style={{ color: '#8B5CF6' }}>{a.confidence}%</span></>
+                }
+              </span>
+              <span style={{ fontSize: '10px', color: '#8895A3', marginLeft: 'auto' }}>{a.timeAgo}</span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
 function LiveScoreCard() {
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [matchEvents, setMatchEvents] = useState<{ [key: number]: any[] }>({});
   const [lastUpdated, setLastUpdated] = useState('');
   const [mounted, setMounted] = useState(false);
-
   const fetchLive = async () => {
     try {
       const res = await fetch('/api/live-scores');
@@ -179,49 +106,99 @@ function LiveScoreCard() {
       if (data.live && data.live.length > 0) {
         setLiveMatches(data.live);
         setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-      } else { setLiveMatches([]); }
+        const evMap: { [key: number]: any[] } = {};
+        await Promise.all(data.live.map(async (match: any) => {
+          if (!match.api_id && !match.id) return;
+          const fixtureId = match.api_id || match.id;
+          try {
+            const evRes = await fetch('/api/match-events?fixture=' + fixtureId);
+            if (evRes.ok) {
+              const evData = await evRes.json();
+              if (evData?.events) evMap[fixtureId] = evData.events;
+            }
+          } catch (e) {}
+        }));
+        setMatchEvents(evMap);
+      } else {
+        setLiveMatches([]);
+      }
     } catch (e) { setLiveMatches([]); }
   };
-
   useEffect(() => {
     setMounted(true);
     fetchLive();
     const interval = setInterval(fetchLive, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  if (!mounted || liveMatches.length === 0) return null;
-
+  if (!mounted || liveMatches.length === 0) return (
+    <div style={{ minHeight: '60px' }} />
+  );
   return (
-    <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '20px' }}>
+    <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
-            <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#EF4444', letterSpacing: '2px' }}>LIVE NOW</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#EF4444', letterSpacing: '2px' }}>LIVE NOW</span>
           </div>
-          <span style={{ fontSize: '11px', color: '#4B5563' }}>Updated {lastUpdated}</span>
+          {lastUpdated && <span style={{ fontSize: '10px', color: '#4B5563' }}>Updated {lastUpdated}</span>}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {liveMatches.map((match) => (
-            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ minWidth: '48px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#EF4444', fontWeight: 'bold' }}>{match.elapsed ? match.elapsed + "'" : 'LIVE'}</div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'right', flex: 1 }}>{match.home}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '6px 16px', minWidth: '80px', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{match.home_score}</span>
-                  <span style={{ fontSize: '16px', color: '#4B5563' }}>-</span>
-                  <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{match.away_score}</span>
+        {liveMatches.map((match) => {
+          const fixtureId = match.api_id || match.id;
+          const evs = matchEvents[fixtureId] || [];
+          return (
+            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: evs.length > 0 ? '12px' : '0' }}>
+                <div style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold', minWidth: '44px', textAlign: 'center' }}>{match.elapsed ? match.elapsed + "'" : 'LIVE'}</div>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1, textAlign: 'right' }}>{match.home}</span>
+                  <div style={{ backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '6px', padding: '4px 12px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>{match.home_score} - {match.away_score}</span>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1 }}>{match.away}</span>
                 </div>
-                <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'white', textAlign: 'left', flex: 1 }}>{match.away}</span>
               </div>
+              {evs.length > 0 && (
+                <div style={{ borderTop: '1px solid #1A3A1A', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {evs.map((ev: any, i: number) => {
+                    const isGoal = ev.type === 'Goal';
+                    const isYellow = ev.detail === 'Yellow Card';
+                    const isRed = ev.detail === 'Red Card';
+                    const isSub = ev.type === 'subst';
+                    const isPenalty = ev.detail === 'Penalty';
+                    const isOwnGoal = ev.detail === 'Own Goal';
+                    const isMissedPen = ev.detail === 'Missed Penalty';
+                    const icon = isGoal ? '⚽' : isYellow ? '🟨' : isRed ? '🟥' : isSub ? '🔄' : '📣';
+                    const color = isGoal ? '#2E9E5E' : isYellow ? '#F59E0B' : isRed ? '#EF4444' : isSub ? '#8B5CF6' : '#6B7280';
+                    const player = ev.player?.name?.split(' ').pop() || '';
+                    const assist = ev.assist?.name?.split(' ').pop() || '';
+                    const team = ev.team?.name || '';
+                    let text = '';
+                    if (isGoal && isPenalty) text = `GOAL! ${player} converts from the spot — ${team}`;
+                    else if (isGoal && isOwnGoal) text = `Own goal by ${player} — ${team}`;
+                    else if (isGoal) text = `GOAL! ${player}${assist ? ' (assist: ' + assist + ')' : ''} — ${team}`;
+                    else if (isMissedPen) text = `${player} misses the penalty — ${team}`;
+                    else if (isRed) text = `${player} is sent off — ${team}`;
+                    else if (isYellow) text = `${player} booked — ${team}`;
+                    else if (isSub) text = `${player} on${assist ? ' for ' + assist : ''} — ${team}`;
+                    else text = `${player} — ${ev.detail}`;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
+                        <span style={{ fontSize: '10px', color: '#8895A3', minWidth: '28px', fontWeight: 'bold' }}>{ev.time?.elapsed}&apos;</span>
+                        <span style={{ fontSize: '14px' }}>{icon}</span>
+                        <span style={{ fontSize: '12px', color, fontWeight: isGoal ? 'bold' : 'normal', lineHeight: 1.4 }}>{text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: '12px' }}>
-          <a href="/predict" style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', textDecoration: 'none' }}>&#x1F3AF; Predict upcoming matches &#x2192;</a>
+          );
+        })}
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+          <a href="/predict" style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>
+            🎯 Predict upcoming matches →
+          </a>
         </div>
       </div>
     </section>
@@ -232,10 +209,15 @@ function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
-
   useEffect(() => {
     const fetchMatches = async () => {
-      const { data } = await supabase.from('matches').select('id, home_team, away_team, kickoff, status, league, competition').in('status', ['upcoming', 'live', 'locked']).order('kickoff', { ascending: true }).limit(4);
+      const { data } = await supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, status, league, competition')
+        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27'])
+        .in('status', ['upcoming', 'live'])
+        .order('kickoff', { ascending: true })
+        .limit(5);
       setMatches(data || []);
       setLoading(false);
     };
@@ -243,22 +225,18 @@ function UpcomingMatches() {
     const interval = setInterval(fetchMatches, 60000);
     return () => clearInterval(interval);
   }, []);
-
   useEffect(() => {
     const tick = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(tick);
   }, []);
-
   const formatKickoff = (kickoff: string) => {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const date = new Date(utcString);
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const tzMap: { [key: string]: string } = { 'Asia/Calcutta': 'IST', 'Asia/Kolkata': 'IST', 'Africa/Lagos': 'WAT', 'Asia/Jakarta': 'WIB', 'America/New_York': 'EDT', 'Europe/London': 'BST', 'Asia/Dubai': 'GST' };
+    const tzMap: { [key: string]: string } = { 'Asia/Calcutta': 'IST', 'Asia/Kolkata': 'IST', 'Africa/Lagos': 'WAT', 'Asia/Jakarta': 'WIB', 'America/New_York': 'EDT', 'Europe/London': 'BST', 'America/Sao_Paulo': 'BRT', 'Asia/Tokyo': 'JST' };
     const formatted = date.toLocaleString('en-GB', { timeZone: tz, day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
-    const tzLabel = tzMap[tz] || '';
-    return formatted + (tzLabel ? ' ' + tzLabel : '');
+    return formatted + (tzMap[tz] ? ' ' + tzMap[tz] : '');
   };
-
   const getCountdown = (kickoff: string) => {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const diff = new Date(utcString).getTime() - now.getTime();
@@ -272,42 +250,46 @@ function UpcomingMatches() {
     if (m > 0) return m + 'm ' + s + 's';
     return s + 's';
   };
-
+  const isLive = (kickoff: string, status: string) => {
+    if (status === 'live') return true;
+    const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
+    const diff = now.getTime() - new Date(utcString).getTime();
+    return diff > 0 && diff < 105 * 60 * 1000;
+  };
   if (loading || matches.length === 0) return null;
-
   return (
-    <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+    <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>LIVE COMPETITIONS</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', textAlign: 'center', marginBottom: '8px' }}>Upcoming Matches</h2>
-        <p style={{ color: '#6B7280', fontSize: '14px', textAlign: 'center', marginBottom: '32px' }}>Predict before kick-off. Your call is locked forever.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+        <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>⚽ LIVE COMPETITIONS</p>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '6px' }}>Upcoming Matches</h2>
+        <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', marginBottom: '24px' }}>Predict before kick-off. Your call is locked forever.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           {matches.map((match) => {
+            const live = isLive(match.kickoff, match.status);
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
-            const isLive = match.status === 'live';
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (isLive ? '#2E9E5E' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'nowrap', overflow: 'hidden' }}>
-                <div style={{ minWidth: '90px', textAlign: 'center', flexShrink: 0 }}>
-                  {isLive ? (
-                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '11px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px' }}>LIVE</span>
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
+                <div style={{ minWidth: '80px', textAlign: 'center', flexShrink: 0 }}>
+                  {live ? (
+                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px' }}>LIVE</span>
                   ) : countdown ? (
-                    <span style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#F59E0B', fontSize: '12px', fontWeight: 'bold', padding: '4px 10px', borderRadius: '999px', border: '1px solid #F59E0B' }}>{countdown}</span>
+                    <span style={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8B5CF6', fontSize: '11px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px', border: '1px solid #8B5CF6' }}>{countdown}</span>
                   ) : (
-                    <span style={{ fontSize: '11px', color: '#6B7280' }}>Soon</span>
+                    <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
                   )}
-                  <div style={{ fontSize: '12px', color: '#9CA3AF', marginTop: '4px', fontWeight: 'bold' }}>{formatKickoff(match.kickoff)}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', flexShrink: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '12px', color: '#4B5563', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
-                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'white', flexShrink: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                    <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>{match.competition}</div>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.league}</div>
                 </div>
-                <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#1A7A4A', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '8px 18px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {kickoffPast ? 'Locked' : 'Predict →'}
                 </a>
               </div>
@@ -315,338 +297,497 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>View all upcoming matches &#x2192;</a>
+          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL →</a>
         </div>
       </div>
     </section>
   );
 }
 
-export default function Home() {
-  const [tickerItems, setTickerItems] = useState<any[]>([]);
-  const [useRealTicker, setUseRealTicker] = useState(false);
+function ClaimModal() {
+  const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
-  const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [foundingAwarded, setFoundingAwarded] = useState(0);
-  const [user, setUser] = useState<any>(null);
-
   useEffect(() => {
     setMounted(true);
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setUser(session?.user ?? null));
-    return () => subscription.unsubscribe();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) return;
+      const seen = sessionStorage.getItem('flipseer_welcome_modal');
+      if (seen) return;
+      setTimeout(() => { setShow(true); sessionStorage.setItem('flipseer_welcome_modal', '1'); }, 3000);
+    });
   }, []);
+  if (!mounted || !show) return null;
+  return (
+    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }} onClick={() => setShow(false)}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '380px', backgroundColor: '#0D1F0F', border: '2px solid #8B5CF6', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 0 60px rgba(139,92,246,0.4)' }}>
+        <div style={{ background: 'linear-gradient(135deg,#4C1D95,#8B5CF6)', padding: '24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚽</div>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>Predict. Prove. Repeat.</h2>
+          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · Liga 1 · Ghana PL · UCL all live now.</p>
+        </div>
+        <div style={{ padding: '20px 24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            {[
+              { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', color: '#8B5CF6' },
+              { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', color: '#CE1126' },
+              { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', color: '#F59E0B' },
+              { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', color: '#A78BFA' },
+            ].map(({ flag, name, status, color }) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 12px' }}>
+                <span style={{ fontSize: '14px' }}>{flag} <span style={{ color: 'white', fontSize: '13px' }}>{name}</span></span>
+                <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>{status}</span>
+              </div>
+            ))}
+          </div>
+          <a href="/predict" style={{ display: 'block', backgroundColor: '#8B5CF6', color: 'white', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', textAlign: 'center', marginBottom: '10px' }}>
+            ⚽ Start Predicting Free →
+          </a>
+          <p style={{ fontSize: '11px', color: '#4B5563', textAlign: 'center', margin: '8px 0 0' }}>Free forever · No betting · No card required</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+// ── MAIN HOME PAGE ──
+
+function PWAInstallButton() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [show, setShow] = useState(false);
   useEffect(() => {
-    const fetchTicker = async () => {
-      const { data } = await supabase.from('predictions').select('predicted_outcome, confidence_pct, profiles(username, country)').order('created_at', { ascending: false }).limit(30);
-      if (data && data.length > 0) {
-        const items = data.filter((p: any) => p.profiles?.username).map((p: any) => ({
-          type: 'real', country: p.profiles?.country || 'Other', username: p.profiles?.username,
-          pick: p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw',
-          confidence: p.confidence_pct || 50,
-        }));
-        if (items.length >= 3) { setTickerItems(items); setUseRealTicker(true); }
-      }
-    };
-    fetchTicker();
+    const handler = (e: any) => { e.preventDefault(); setDeferredPrompt(e); setShow(true); };
+    window.addEventListener('beforeinstallprompt', handler);
+    if (window.matchMedia('(display-mode: standalone)').matches) setShow(false);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+  if (!show) return null;
+  return (
+    <button onClick={async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setShow(false);
+      setDeferredPrompt(null);
+    }} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '12px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.4)', color: '#C4B5FD', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer' }}>
+      📲 Install Flipseer App
+    </button>
+  );
+}
 
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  const [heroNation, setHeroNation] = useState('');
+  const [nationRank, setNationRank] = useState(0);
+  const [nationForecasters, setNationForecasters] = useState(0);
+  const [nextMatchCountdown, setNextMatchCountdown] = useState('');
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [activeForecasters, setActiveForecasters] = useState(0);
+  const [totalPredictions, setTotalPredictions] = useState(0);
+  const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
+  const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
+  const [topUsers, setTopUsers] = useState<any[]>([]);
+  const [topNations, setTopNations] = useState<any[]>([]);
+  useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
-    const fetchLeaderboard = async () => {
+    const fetchData = async () => {
       try {
-        const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-        const userCount = count || 0;
-        setTotalUsers(userCount);
-        try {
-          const spotsRes = await fetch('/api/founding-spots');
-          const spotsData = await spotsRes.json();
-          if (spotsData.awarded !== undefined) setFoundingAwarded(spotsData.awarded);
-        } catch (e) { setFoundingAwarded(userCount); }
-        if (userCount >= REAL_USER_THRESHOLD) {
+        const statsRes = await fetch('/api/stats');
+        const stats = await statsRes.json();
+        setTotalPredictions(stats.totalPredictions || 0);
+        setTotalUsers(stats.totalUsers || 0);
+        setActiveForecasters(stats.activeForecasters || 0);
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const tzToCountry: { [key: string]: string } = {
+          'Asia/Calcutta': 'India', 'Asia/Kolkata': 'India', 'Asia/Jakarta': 'Indonesia',
+          'Africa/Lagos': 'Nigeria', 'America/Sao_Paulo': 'Brazil', 'America/Buenos_Aires': 'Argentina',
+          'America/Argentina/Buenos_Aires': 'Argentina', 'America/Mexico_City': 'Mexico',
+          'America/New_York': 'USA', 'America/Chicago': 'USA', 'America/Los_Angeles': 'USA',
+          'Europe/London': 'England', 'Europe/Paris': 'France', 'Europe/Berlin': 'Germany',
+          'Europe/Madrid': 'Spain', 'Europe/Lisbon': 'Portugal', 'Africa/Accra': 'Ghana',
+          'Africa/Johannesburg': 'South Africa', 'Africa/Casablanca': 'Morocco', 'Africa/Cairo': 'Egypt',
+          'Asia/Tokyo': 'Japan', 'Asia/Seoul': 'South Korea', 'Asia/Karachi': 'Pakistan',
+          'Asia/Dhaka': 'Bangladesh', 'Australia/Sydney': 'Australia', 'America/Toronto': 'Canada',
+          'America/Bogota': 'Colombia', 'Asia/Riyadh': 'Saudi Arabia', 'Asia/Tashkent': 'Uzbekistan',
+          'Europe/Istanbul': 'Turkey', 'Europe/Zagreb': 'Croatia', 'Europe/Oslo': 'Norway',
+        };
+        const tzToCode: { [key: string]: string } = {
+          'Asia/Calcutta': 'IN', 'Asia/Kolkata': 'IN', 'Asia/Jakarta': 'ID',
+          'Africa/Lagos': 'NG', 'America/Sao_Paulo': 'BR', 'America/Buenos_Aires': 'AR',
+          'America/Argentina/Buenos_Aires': 'AR', 'America/Mexico_City': 'MX',
+          'America/New_York': 'US', 'America/Chicago': 'US', 'America/Los_Angeles': 'US',
+          'Europe/London': 'GB', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE',
+          'Europe/Madrid': 'ES', 'Europe/Lisbon': 'PT', 'Africa/Accra': 'GH',
+          'Africa/Johannesburg': 'ZA', 'Africa/Casablanca': 'MA', 'Asia/Tokyo': 'JP',
+          'Asia/Seoul': 'KR', 'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD',
+          'Australia/Sydney': 'AU', 'America/Toronto': 'CA', 'America/Bogota': 'CO',
+          'Asia/Riyadh': 'SA', 'Europe/Istanbul': 'TR', 'Europe/Oslo': 'NO',
+        };
+        const detectedNation = tzToCountry[tz] || '';
+        const visitorCode = tzToCode[tz] || '';
+        if (detectedNation) {
+          setHeroNation(detectedNation);
+          try { localStorage.setItem('flipseer_detected_nation', detectedNation); } catch (e) {}
+        }
+        let leaderboardData: any[] = [];
+        if ((stats.totalUsers || 0) >= 5) {
           const res = await fetch('/api/leaderboard');
           const data = await res.json();
-          if (data && data.length >= 5) {
+          if (data && Array.isArray(data)) leaderboardData = data;
+          if (leaderboardData.length >= 1) {
             const countryMap: { [key: string]: { points: number; forecasters: number } } = {};
-            data.forEach((u: any) => {
-              const country = u.country || 'Other';
-              if (!countryMap[country]) countryMap[country] = { points: 0, forecasters: 0 };
-              countryMap[country].points += u.total_points || 0;
-              countryMap[country].forecasters += 1;
+            leaderboardData.forEach((u: any) => {
+              const c = u.country || 'Other';
+              if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0 };
+              countryMap[c].points += u.total_points || 0;
+              countryMap[c].forecasters += 1;
             });
-            const sorted = Object.entries(countryMap).sort((a, b) => b[1].points - a[1].points).slice(0, 6).map(([country, stats], i) => ({
-              rank: i + 1, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', country,
-              forecasters: stats.forecasters.toLocaleString(), points: stats.points.toLocaleString(),
-            }));
-            if (sorted.length >= 3) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
+            const ranked = Object.entries(countryMap).sort((a, b) => b[1].points - a[1].points);
+            const visitorRankIdx = ranked.findIndex(([c]) => c === visitorCode);
+            if (visitorRankIdx >= 0) { setNationRank(visitorRankIdx + 1); setNationForecasters(ranked[visitorRankIdx][1].forecasters); }
+            const sorted = ranked.slice(0, 6).map(([country, s], i) => {
+              const countryNames: { [key: string]: string } = { 'IN': 'India', 'ID': 'Indonesia', 'NG': 'Nigeria', 'BR': 'Brazil', 'AR': 'Argentina', 'FR': 'France', 'DE': 'Germany', 'GB': 'England', 'ES': 'Spain', 'PT': 'Portugal', 'MX': 'Mexico', 'US': 'USA', 'GH': 'Ghana', 'ZA': 'South Africa', 'MA': 'Morocco', 'JP': 'Japan', 'KR': 'South Korea', 'AU': 'Australia', 'CA': 'Canada', 'CO': 'Colombia', 'TR': 'Turkey', 'Other': 'Other Nations' };
+              return { rank: i + 1, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', country: countryNames[country] || country, forecasters: s.forecasters, points: s.points };
+            });
+            if (sorted.length >= 1) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
           }
         }
-      } catch (err) {}
+        const { data: topU } = await supabase.from('profiles')
+          .select('username, total_points, rank_icon, country')
+          .gt('total_points', 0)
+          .order('total_points', { ascending: false })
+          .limit(10);
+        if (topU && topU.length > 0) setTopUsers(topU);
+        const { data: allP } = await supabase.from('profiles').select('country, total_points');
+        if (allP) {
+          const nationMap: { [key: string]: number } = {};
+          allP.forEach((p: any) => {
+            if (!p.country) return;
+            nationMap[p.country] = (nationMap[p.country] || 0) + (p.total_points || 0);
+          });
+          const FLAGS: { [key: string]: string } = {
+            'IN': '🇮🇳', 'ID': '🇮🇩', 'NG': '🇳🇬', 'BR': '🇧🇷', 'AR': '🇦🇷',
+            'GB': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'GH': '🇬🇭', 'FR': '🇫🇷', 'DE': '🇩🇪', 'ES': '🇪🇸',
+            'PT': '🇵🇹', 'MX': '🇲🇽', 'US': '🇺🇸', 'MA': '🇲🇦', 'JP': '🇯🇵',
+            'KR': '🇰🇷', 'AU': '🇦🇺', 'PK': '🇵🇰', 'BD': '🇧🇩', 'SA': '🇸🇦',
+          };
+          const NAMES: { [key: string]: string } = {
+            'IN': 'India', 'ID': 'Indonesia', 'NG': 'Nigeria', 'BR': 'Brazil',
+            'AR': 'Argentina', 'GB': 'England', 'GH': 'Ghana', 'FR': 'France',
+            'DE': 'Germany', 'ES': 'Spain', 'PT': 'Portugal', 'MX': 'Mexico',
+            'US': 'USA', 'MA': 'Morocco', 'JP': 'Japan', 'KR': 'South Korea',
+          };
+          const nationsSorted = Object.entries(nationMap)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([code, pts], idx) => ({ rank: idx + 1, flag: FLAGS[code] || '🌍', name: NAMES[code] || code, pts }));
+          setTopNations(nationsSorted);
+        }
+        const { data: nextMatch } = await supabase.from('matches').select('kickoff').in('competition', ['EPL 2026/27', 'UCL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27']).in('status', ['upcoming', 'locked']).order('kickoff', { ascending: true }).limit(1).single();
+        if (nextMatch?.kickoff) {
+          const utc = nextMatch.kickoff.endsWith('Z') ? nextMatch.kickoff : nextMatch.kickoff.replace(' ', 'T') + 'Z';
+          const diff = new Date(utc).getTime() - Date.now();
+          if (diff > 0) {
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            setNextMatchCountdown(h > 0 ? h + 'h ' + m + 'm' : m + 'm');
+          }
+        }
+      } catch (err) { console.error('Data fetch error:', err); }
     };
-    fetchLeaderboard();
+    fetchData();
   }, []);
 
-  const staticDoubled = [...STATIC_TICKER, ...STATIC_TICKER];
-  const realDoubled = useRealTicker ? [...tickerItems, ...tickerItems] : [];
-  const displayTicker = useRealTicker ? realDoubled : staticDoubled;
+  const NATION_TICKERS = [
+    { code: 'IN', flag: '&#x1F1EE;&#x1F1F3;', name: 'India' }, { code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia' },
+    { code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', name: 'Nigeria' }, { code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', name: 'Brazil' },
+    { code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', name: 'Argentina' }, { code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', name: 'France' },
+    { code: 'DE', flag: '&#x1F1E9;&#x1F1EA;', name: 'Germany' }, { code: 'ES', flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain' },
+    { code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal' }, { code: 'GB', flag: '&#x1F3F4;', name: 'England' },
+    { code: 'MX', flag: '&#x1F1F2;&#x1F1FD;', name: 'Mexico' }, { code: 'US', flag: '&#x1F1FA;&#x1F1F8;', name: 'USA' },
+    { code: 'GH', flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana' }, { code: 'MA', flag: '&#x1F1F2;&#x1F1E6;', name: 'Morocco' },
+    { code: 'JP', flag: '&#x1F1EF;&#x1F1F5;', name: 'Japan' }, { code: 'KR', flag: '&#x1F1F0;&#x1F1F7;', name: 'S.Korea' },
+    { code: 'AU', flag: '&#x1F1E6;&#x1F1FA;', name: 'Australia' }, { code: 'CA', flag: '&#x1F1E8;&#x1F1E6;', name: 'Canada' },
+    { code: 'ZA', flag: '&#x1F1FF;&#x1F1E6;', name: 'S.Africa' }, { code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', name: 'Egypt' },
+    { code: 'PK', flag: '&#x1F1F5;&#x1F1F0;', name: 'Pakistan' }, { code: 'BD', flag: '&#x1F1E7;&#x1F1E9;', name: 'Bangladesh' },
+    { code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', name: 'Norway' }, { code: 'SE', flag: '&#x1F1F8;&#x1F1EA;', name: 'Sweden' },
+  ];
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
+      <ClaimModal />
       <style>{`
-        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.8; } 94% { opacity: 1; } }
-        @keyframes countup { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes bannerPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes liveBadgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.95); } }
+        @keyframes ctaPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
       `}</style>
-
       {/* TICKER */}
-      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A7A4A', overflow: 'hidden', padding: '10px 0' }}>
-        <div style={{ display: 'flex', gap: '48px', animation: 'ticker 50s linear infinite', whiteSpace: 'nowrap', width: 'max-content' }}>
-          {displayTicker.map((item: any, i: number) => (
-            <span key={i} style={{ fontSize: '13px', color: '#9CA3AF', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              {item.type === 'real' ? (
-                <>
-                  <span dangerouslySetInnerHTML={{ __html: COUNTRY_FLAGS[item.country] || '&#x1F30D;' }} />
-                  <span style={{ color: '#2E9E5E', fontWeight: 'bold' }}>@{item.username}</span>
-                  <span>predicted</span>
-                  <span style={{ color: 'white', fontWeight: 'bold' }}>{item.pick}</span>
-                  <span style={{ color: '#2E9E5E' }}>&#xB7; {item.confidence}% confidence</span>
-                </>
-              ) : (
-                <span style={{ color: '#6B7280' }}>&#x26BD; {item}</span>
-              )}
-              <span style={{ color: '#1A3A20', marginLeft: '16px' }}>|</span>
-            </span>
-          ))}
+      <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
+        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
+          {(() => {
+            const staticItems = [
+              { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL · UCL · Liga 1 · Ghana PL — all live now', isUser: false, color: '#6B7280' },
+              { icon: '🌍', text: 'India vs Indonesia vs Nigeria — the Nation Battle is on', isUser: false, color: '#6B7280' },
+              { icon: '⚽', text: 'Predict exact scores for up to 108 rep per match — no betting ever', isUser: false, color: '#6B7280' },
+              { icon: '🔒', text: 'Your predictions lock at kick-off — permanent proof of your football intelligence', isUser: false, color: '#6B7280' },
+              { icon: '🏆', text: 'Represent your nation — every correct call earns reputation for your country', isUser: false, color: '#6B7280' },
+              { icon: '🆓', text: 'Build your permanent football reputation — free forever — no card required', isUser: false, color: '#6B7280' },
+            ];
+            const userItems = topUsers.map(u => ({
+              icon: u.rank_icon || '⚽',
+              text: '@' + u.username + ' · ' + u.total_points + ' rep',
+              isUser: true,
+              color: '#8B5CF6',
+            }));
+            const nationItems = topNations.map(n => ({
+              icon: n.flag,
+              text: '#' + n.rank + ' ' + n.name + ' · ' + n.pts + ' rep',
+              isUser: true,
+              color: '#F59E0B',
+            }));
+            const allItems = [...staticItems, ...userItems, ...nationItems, ...staticItems, ...userItems, ...nationItems];
+            return allItems.map((item, i) => (
+              <span key={i} style={{ fontSize: '12px', color: item.isUser ? (item.color || '#8B5CF6') : '#6B7280', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: item.isUser ? 'bold' : 'normal' }}>
+                <span>{item.icon}</span> {item.text}
+                <span style={{ color: '#2D1B69', marginLeft: '16px' }}>|</span>
+              </span>
+            ));
+          })()}
         </div>
       </div>
-
-      <BuzzCounter />
-      <LiveScoreCard />
-
-      {/* ── HERO ── */}
-      <section style={{ textAlign: 'center', padding: '80px 20px 60px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '20px', padding: '8px 20px', marginBottom: '32px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1px' }}>
-            EPL · UCL · Liga 1 · Ghana PL · ISL — LIVE NOW
-          </span>
-        </div>
-
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(36px, 8vw, 60px)', lineHeight: '1.1', marginBottom: '20px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
-          Your Football Knowledge<br />Deserves a Record.<br /><span style={{ color: '#2E9E5E' }}>Forever.</span>
-        </h1>
-        <p style={{ fontSize: '18px', color: '#9CA3AF', lineHeight: '1.7', maxWidth: '560px', margin: '0 auto 16px' }}>
-          Predict every match across 5 live competitions.<br />
-          <strong style={{ color: '#D1FAE5' }}>Build your permanent football reputation. Free. No betting.</strong>
-        </p>
-        <div style={{ display: 'inline-block', backgroundColor: 'rgba(46,158,94,0.08)', border: '1px solid #1A7A4A', borderRadius: '999px', padding: '6px 20px', marginBottom: '36px' }}>
-          <span style={{ fontSize: '13px', color: '#6B7280' }}>
-            {totalUsers > 0 ? 'Join ' + totalUsers + ' Founding Forecasters — ' : 'Only 100 Founding Forecaster spots — '}
-            <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>Exclusive badge. Never awarded again.</span>
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', marginBottom: '56px' }}>
-          <CTAButton label="&#x26BD; START PREDICTING FREE" size="lg" />
-          <p style={{ fontSize: '12px', color: '#4B5563', margin: 0 }}>Free forever. No card required. 10-second sign-up.</p>
-          <a href="/how-to-play" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>How it works &#x2192;</a>
-        </div>
-
-        <div style={{ display: 'inline-block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '14px 24px', marginBottom: '40px' }}>
-          <div style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '10px', textAlign: 'center' }}>YOUR DATA. YOUR RULES.</div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            {[{ icon: '&#x1F512;', text: 'Your data stays yours' }, { icon: '&#x1F6E1;', text: 'Encrypted & Secure' }, { icon: '&#x1F6AB;', text: 'Never Sold' }, { icon: '&#x1F193;', text: 'Always Free' }].map(({ icon, text }) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '14px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <span style={{ fontSize: '12px', color: '#6EE7B7', fontWeight: 'bold' }}>{text}</span>
-              </div>
-            ))}
+      {/* BUZZ BAR */}
+      {mounted && (
+        <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+            {totalPredictions > 0 && (
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
+              </span>
+            )}
+            {totalUsers > 0 && (
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
+              </span>
+            )}
+            {nextMatchCountdown && (
+              <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
+            )}
+            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
           </div>
         </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '56px', flexWrap: 'wrap' }}>
-          {[{ value: '5', label: 'Live Competitions' }, { value: '380+', label: 'EPL Matches' }, { value: '125+', label: 'UCL Matches' }].map((stat, i) => (
-            <div key={i} style={{ textAlign: 'center', animation: 'countup 0.6s ease ' + (i * 0.2) + 's both' }}>
-              <div style={{ fontSize: '40px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>{stat.value}</div>
-              <div style={{ fontSize: '13px', color: '#6B7280', marginTop: '4px' }}>{stat.label}</div>
-            </div>
+      )}
+      {/* LIVE COMPETITIONS PREDICT BANNER */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '10px 20px', overflowX: 'auto' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', minWidth: 'max-content' }}>
+          <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', flexShrink: 0, animation: 'bannerPulse 2s ease-in-out infinite' }}>⚡ PREDICT TODAY:</span>
+          {[
+            { href: '/predict', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6', live: true },
+            { href: '/predict', flag: '🇮🇩', name: 'Liga 1', color: '#CE1126', live: true },
+            { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
+            { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
+            { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: false, soon: 'Oct 10' },
+          ].map(({ href, flag, name, color, live, soon }) => (
+            <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s ease' }}>
+              <span style={{ fontSize: '14px' }}>{flag}</span>
+              <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
+              {live
+                ? <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold', animation: 'liveBadgePulse 1.5s ease-in-out infinite' }}>10/day</span>
+                : <span style={{ fontSize: '9px', color: '#4B5563', fontStyle: 'italic' }}>{soon}</span>
+              }
+            </a>
           ))}
+          <a href="/predict" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#2E9E5E', color: 'white', borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, fontSize: '11px', fontWeight: 'bold', animation: 'ctaPulse 1.5s ease-in-out infinite', boxShadow: '0 0 16px rgba(46,158,94,0.4)' }}>
+            Predict Now →
+          </a>
         </div>
-      </section>
-
-      {/* LIVE COMPETITIONS GRID */}
-      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '48px 20px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>PREDICT ACROSS</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '28px' }}>5 Live Competitions</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
-            {LIVE_COMPETITIONS.map(({ icon, name, desc, color }) => (
-              <a key={name} href="/predict" style={{ backgroundColor: '#0D2B14', border: '1px solid ' + color + '40', borderRadius: '14px', padding: '20px 16px', textDecoration: 'none', display: 'block', textAlign: 'center', transition: 'border-color 0.2s' }}>
-                <div style={{ fontSize: '28px', marginBottom: '8px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <div style={{ fontSize: '13px', color: color, fontWeight: 'bold', marginBottom: '4px' }}>{name}</div>
-                <div style={{ fontSize: '11px', color: '#6B7280' }}>{desc}</div>
-              </a>
-            ))}
-          </div>
+      </div>
+      {/* TOP BANNER */}
+      <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free forever
+          </span>
+          <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
+            🏆 Private leagues active · Building toward World Cup 2030
+          </span>
+          <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+            Predict Now →
+          </a>
         </div>
-      </section>
-
-      <UpcomingMatches />
-
-      {/* MID-PAGE CTA */}
-      <section style={{ backgroundColor: '#0A1A0C', borderTop: '1px solid #1A7A4A', borderBottom: '1px solid #1A7A4A', padding: '48px 20px', textAlign: 'center' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>READY TO PROVE IT?</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '8px' }}>Your football knowledge deserves a record.</h2>
-        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '24px' }}>Every prediction you make is sealed at kick-off. No edits. No luck. Pure football intelligence.</p>
-        <CTAButton label="&#x26BD; START PREDICTING FREE" size="md" />
-        <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '12px' }}>Free forever. 10-second sign-up.</p>
-      </section>
-
-      {/* TENSION */}
-      <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '28px' }}>YOU KNOW THIS FEELING</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {[
-              { moment: '"I said Arsenal wins the title. Nobody believed me."', emotion: 'VINDICATION' },
-              { moment: '"I called the exact score. 2-1. Before anyone."', emotion: 'GLORY' },
-              { moment: '"My country vs yours. I\'ll put my reputation on it."', emotion: 'NATIONAL PRIDE' },
-              { moment: '"This upset is coming. I feel it in my bones."', emotion: 'INSTINCT' },
-            ].map(({ moment, emotion }) => (
-              <div key={emotion} style={{ display: 'flex', alignItems: 'center', gap: '20px', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '20px 24px', textAlign: 'left' }}>
-                <div style={{ fontSize: '32px', minWidth: '44px', textAlign: 'center' }}>&#x26A1;</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '17px', color: 'white', fontStyle: 'italic', fontFamily: 'Georgia, serif', marginBottom: '4px' }}>{moment}</div>
-                  <div style={{ fontSize: '12px', color: '#6B7280', letterSpacing: '2px', fontWeight: 'bold' }}>{emotion}</div>
-                </div>
-                <a href="/auth" style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', backgroundColor: '#0D1F0F', padding: '6px 14px', borderRadius: '999px', whiteSpace: 'nowrap', textDecoration: 'none' }}>Prove it &#x2192;</a>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: '16px', color: '#6B7280', marginTop: '28px', fontStyle: 'italic' }}>Flipseer turns that feeling into permanent proof.</p>
-        </div>
-      </section>
-
-      {/* NATIONAL PRIDE */}
-      <section style={{ padding: '72px 20px', maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>NATIONAL PRIDE</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '38px', marginBottom: '12px' }}>Which nation will you represent?</h2>
-        <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '40px' }}>Every prediction earns points for your country. India vs Brazil. England vs Argentina. The rivalry is real.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', marginBottom: '32px' }}>
-          {TOP_NATIONS.map(({ flag, name, slug }) => (
-            <a key={slug} href={'/predict'} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '12px', padding: '16px 8px', textDecoration: 'none', display: 'block' }}>
-              <div style={{ fontSize: '28px', marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: flag }} />
-              <div style={{ fontSize: '12px', color: '#D1FAE5', fontWeight: 'bold' }}>{name}</div>
+      </div>
+      {/* NATION TICKER */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 0', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
+          {[...NATION_TICKERS, ...NATION_TICKERS].map((n, i) => (
+            <a key={i} href={'/auth?nation=' + n.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid ' + (heroNation === n.name ? '#8B5CF6' : '#1A3A1A'), backgroundColor: heroNation === n.name ? 'rgba(139,92,246,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
+              <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
+              <span style={{ fontSize: '11px', color: heroNation === n.name ? '#8B5CF6' : '#8895A3', fontWeight: heroNation === n.name ? 'bold' : 'normal' }}>{n.name}</span>
             </a>
           ))}
         </div>
-        {isRealLeaderboard && (
-          <div style={{ marginTop: '32px' }}>
-            <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', overflow: 'hidden', maxWidth: '560px', margin: '0 auto 16px' }}>
-              <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
-                <span>RANK · NATION</span>
-                <span style={{ color: '#2E9E5E', fontSize: '10px' }}>LIVE · FORECASTERS · POINTS</span>
-              </div>
-              {realLeaderboard.map(({ rank, flag, country, forecasters, points }) => (
-                <div key={rank} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid #1A3A1A' }}>
-                  <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 'bold', minWidth: '28px' }}>#{rank}</span>
-                  <span style={{ fontSize: '20px', marginRight: '10px' }} dangerouslySetInnerHTML={{ __html: flag }} />
-                  <span style={{ flex: 1, fontSize: '15px', color: 'white' }}>{country}</span>
-                  <span style={{ fontSize: '12px', color: '#6B7280', marginRight: '16px' }}>{forecasters}</span>
-                  <span style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: 'bold' }}>{points} pts</span>
-                </div>
-              ))}
-            </div>
-            <p style={{ fontSize: '13px', color: '#4B5563', fontStyle: 'italic' }}>Every prediction you make moves your nation up the table.</p>
+      </div>
+      {/* HERO FIRST — above the fold */}
+      {/* UPCOMING MATCHES */}
+      <UpcomingMatches />
+      {/* LIVE SCORES + ACTIVITY */}
+      <LiveScoreCard />
+      <LiveActivity />
+      {/* HERO */}
+      <section style={{ textAlign: 'center', padding: '40px 20px 48px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · ⭐ UCL · LIVE NOW</span>
+        </div>
+        <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
+          {heroNation && nationRank > 0 ? (
+            <>
+              <span style={{ fontSize: 'clamp(32px, 6vw, 56px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '-0.5px' }}>{heroNation.toUpperCase()} IS RANKED</span>
+              <span style={{ fontSize: 'clamp(80px, 18vw, 140px)', color: '#8B5CF6', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
+              <span style={{ fontSize: 'clamp(28px, 5vw, 48px)', color: '#8B5CF6', display: 'block', marginTop: '12px' }}>CAN YOU HELP THEM REACH #1?</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>PROVE YOUR</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', color: '#8B5CF6', display: 'block', letterSpacing: '-2px' }}>FOOTBALL</span>
+              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>INTELLIGENCE.</span>
+            </>
+          )}
+        </h1>
+        <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 12px', fontFamily: 'Georgia, serif' }}>
+          Your football knowledge deserves a permanent record. Predict matches before kick-off. Prove your calls are right.{' '}
+          <span style={{ color: '#8B5CF6' }}>Build your Football Reputation.</span>
+        </p>
+        <div style={{ marginBottom: '20px' }}>
+          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 14px', borderRadius: '999px' }}>
+            🌍 Building toward World Cup 2030 · Start your record today
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
+            ⚽ Make Your First Prediction — Free →
+          </a>
+          <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
+            👥 Challenge a Friend
+          </a>
+        </div>
+        <p style={{ fontSize: '13px', color: '#8895A3', letterSpacing: '0.5px', marginBottom: '6px' }}>
+          Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
+        </p>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#6B7280' }}>🇬🇭 Ghana · 🇮🇩 Indonesia · 🇮🇳 India · 🇳🇬 Nigeria predicting now</span>
+        </div>
+        <p style={{ fontSize: '13px', color: '#6B7280' }}>
+          Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
+        </p>
+        {mounted && (nationForecasters > 0 || nextMatchCountdown) && (
+          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69' }}>
+            {nationForecasters > 0 && nationRank > 0 && (
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                🔥 <strong style={{ color: '#F59E0B' }}>{nationForecasters}</strong> {heroNation} forecasters competing
+              </span>
+            )}
+            {nextMatchCountdown && (
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                ⏱ Next match locks in <strong style={{ color: '#EF4444' }}>{nextMatchCountdown}</strong>
+              </span>
+            )}
+            {totalUsers > 0 && (
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>
+                🌍 <strong style={{ color: '#8B5CF6' }}>{totalUsers}</strong> forecasters globally
+              </span>
+            )}
           </div>
         )}
       </section>
-
-      {/* HOW IT WORKS */}
-      <section style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', borderBottom: '1px solid #1A3A1A', padding: '72px 20px' }}>
+      {/* THREE STEPS */}
+      <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px', textAlign: 'center' }}>HOW IT WORKS</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '40px', textAlign: 'center' }}>From prediction to legend.</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12 }}>
             {[
-              { step: '01', icon: '&#x1F3AF;', title: 'Call the match', desc: 'Pick the winner. Predict the exact score. Set your confidence before kick-off.' },
-              { step: '02', icon: '&#x1F512;', title: 'It locks forever', desc: 'Once the whistle blows, your call is sealed. No edits. No excuses. Just your word.' },
-              { step: '03', icon: '&#x26A1;', title: 'Earn reputation', desc: 'Correct calls earn points. Upsets earn glory. Exact scores earn legend status.' },
-              { step: '04', icon: '&#x1F451;', title: 'Build your legacy', desc: 'Competition after competition. Your profile grows. Your reputation is permanent.' },
-            ].map(({ step, icon, title, desc }) => (
-              <div key={step} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '28px 24px' }}>
-                <div style={{ fontSize: '11px', color: '#1A7A4A', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>STEP {step}</div>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <h3 style={{ fontSize: '17px', color: '#2E9E5E', marginBottom: '8px', fontFamily: 'Georgia, serif' }}>{title}</h3>
-                <p style={{ color: '#6B7280', fontSize: '13px', lineHeight: '1.7' }}>{desc}</p>
+              { num: '1', icon: '🎯', title: 'Predict', desc: 'Pick the outcome before kick-off. Set your confidence.' },
+              { num: '2', icon: '🔒', title: 'Lock', desc: 'Prediction locks at kick-off. No edits. Permanent record.' },
+              { num: '3', icon: '📈', title: 'Track', desc: 'See your accuracy, streak and global rank after every result.' },
+              { num: '4', icon: '🏆', title: 'Build Reputation', desc: 'Earn reputation across EPL, UCL, Liga 1 and Ghana PL. Forever.' },
+            ].map(({ num, icon, title, desc }) => (
+              <div key={num} style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: 12, padding: '18px 14px', textAlign: 'center' }}>
+                <div style={{ fontSize: 9, color: '#8B5CF6', fontWeight: 700, letterSpacing: '2px', marginBottom: 6 }}>STEP {num}</div>
+                <div style={{ fontSize: 26, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'white', marginBottom: 6 }}>{title}</div>
+                <div style={{ fontSize: 11, color: '#8895A3', lineHeight: 1.6 }}>{desc}</div>
               </div>
             ))}
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <a href="/how-to-play" style={{ color: '#2E9E5E', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>Full guide: scoring, badges and more &#x2192;</a>
-          </div>
         </div>
       </section>
-
-      {/* PRIVATE LEAGUES */}
-      <section style={{ padding: '72px 20px', borderBottom: '1px solid #1A3A1A' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>CHALLENGE YOUR FRIENDS</p>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '12px' }}>Join your friends on Flipseer.</h2>
-          <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '36px', lineHeight: '1.7' }}>Create a private league. Predict together. Your group's football reputation, on record forever.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '36px' }}>
-            {[
-              { icon: '&#x1F465;', title: 'Private Leagues', desc: 'Create your group, share the code. Only your people in.' },
-              { icon: '&#x1F3C6;', title: 'Your Group Table', desc: 'See who in your circle is the real football brain.' },
-              { icon: '&#x1F4F2;', title: 'WhatsApp Ready', desc: 'Share your picks and your group link in one tap.' },
-            ].map(({ icon, title, desc }) => (
-              <div key={title} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '28px 20px' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-                <h3 style={{ fontSize: '16px', color: 'white', marginBottom: '6px' }}>{title}</h3>
-                <p style={{ fontSize: '13px', color: '#6B7280', lineHeight: '1.6' }}>{desc}</p>
-              </div>
-            ))}
-          </div>
-          <a href="/groups" style={{ display: 'inline-block', backgroundColor: 'transparent', color: '#2E9E5E', border: '1px solid #2E9E5E', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>
-            &#x1F465; CREATE A GROUP
-          </a>
-          <p style={{ fontSize: '12px', color: '#4B5563', marginTop: '8px' }}>Or join an existing group with a code from your friends.</p>
-        </div>
-      </section>
-
-      {/* NO BETTING */}
-      <section style={{ padding: '72px 20px', maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: '13px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '20px' }}>THE PROMISE</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '36px', marginBottom: '16px' }}>Pure football.<br /><span style={{ color: '#2E9E5E' }}>Nothing else.</span></h2>
-        <p style={{ color: '#6B7280', fontSize: '16px', marginBottom: '40px', lineHeight: '1.7' }}>No money. No odds. No gambling. Just football intelligence.<br />The beautiful game. The right way.</p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap' }}>
-          {[{ icon: '&#x1F6AB;', text: 'No Betting. Ever.' }, { icon: '&#x1F916;', text: 'No AI Tips.' }, { icon: '&#x1F4D6;', text: 'Permanent Record.' }, { icon: '&#x1F30D;', text: 'Global Rankings.' }, { icon: '&#x1F193;', text: 'Always Free.' }].map(({ icon, text }) => (
-            <div key={text} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '28px', marginBottom: '6px' }} dangerouslySetInnerHTML={{ __html: icon }} />
-              <div style={{ fontSize: '13px', color: '#9CA3AF', fontWeight: 'bold' }}>{text}</div>
+      {/* INVITE BANNER */}
+      <InviteBanner />
+      {/* 4 COMPETITIONS */}
+      <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '32px 24px' }}>
+            <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: '12px' }}>4 COMPETITIONS · LIVE NOW</div>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(22px,5vw,32px)', marginBottom: '12px', fontWeight: 800 }}>
+              One reputation.<br /><span style={{ color: '#8B5CF6' }}>Every competition.</span>
+            </h2>
+            <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>
+              EPL · UCL · Liga 1 · Ghana PL — your predictions across all competitions build one permanent Football Reputation. Forever.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+              {[
+                { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6' },
+                { flag: '⭐', name: 'UCL', color: '#A78BFA' },
+                { flag: '🇮🇩', name: 'Liga 1', color: '#CE1126' },
+                { flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B' },
+              ].map(({ flag, name, color }) => (
+                <div key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: color + '15', border: '1px solid ' + color + '50', borderRadius: '999px', padding: '5px 14px' }}>
+                  <span>{flag}</span>
+                  <span style={{ fontSize: '12px', color, fontWeight: 700 }}>{name}</span>
+                  <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '1px 6px', borderRadius: '999px', fontWeight: 700 }}>LIVE</span>
+                </div>
+              ))}
             </div>
-          ))}
+            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 700, boxShadow: '0 0 24px rgba(139,92,246,0.3)' }}>
+              ⚽ Start Predicting Free →
+            </a>
+            <p style={{ fontSize: '11px', color: '#4B5563', marginTop: '12px' }}>Free forever · No betting · No card required</p>
+          </div>
         </div>
       </section>
-
-      {/* FINAL CTA */}
-      <section style={{ textAlign: 'center', padding: '80px 20px 100px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(46,158,94,0.07) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ fontSize: '56px', marginBottom: '20px' }}>&#x26BD;</div>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '44px', marginBottom: '16px', lineHeight: '1.2' }}>
-          5 competitions live.<br /><span style={{ color: '#2E9E5E' }}>Will your record be ready?</span>
-        </h2>
-        <p style={{ color: '#6B7280', marginBottom: '36px', fontSize: '17px', lineHeight: '1.7' }}>The forecasters who start now build the longest record.<br />Your legacy clock is ticking.</p>
-        <CTAButton label="&#x26BD; START PREDICTING FREE" size="lg" />
-        <p style={{ color: '#4B5563', fontSize: '13px', marginTop: '16px' }}>Free to join. Always.</p>
+      {/* NATION BATTLE */}
+      <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE · LIVE</p>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '34px', marginBottom: '8px' }}>Which nation leads the world?</h2>
+          <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '24px' }}>Every prediction earns points for your country. The rivalry is real.</p>
+          <div style={{ textAlign: 'center' }}>
+            <a href="/nations" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '10px 24px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold' }}>View Nation Battle →</a>
+          </div>
+        </div>
       </section>
-
-      <StickyMobileCTA user={user} />
+      {/* FOOTER */}
+      <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#8B5CF6', marginBottom: 16, letterSpacing: '-0.5px' }}>⚽ FLIPSEER</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', flexWrap: 'wrap', marginBottom: 16 }}>
+            {[
+              { href: '/about', label: 'About' },
+              { href: '/how-to-play', label: 'How to Play' },
+              { href: '/football-reputation', label: 'Football Reputation' },
+              { href: '/nations', label: 'Nation Battle' },
+              { href: '/leaderboard', label: 'Leaderboard' },
+              { href: '/privacy', label: 'Privacy Policy' },
+              { href: '/terms', label: 'Terms of Service' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} style={{ color: '#6B7280', fontSize: 13, textDecoration: 'none' }}>{label}</a>
+            ))}
+          </div>
+          <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>Free forever · No betting · No gambling · Pure football intelligence</p>
+          <p style={{ color: '#2E4A2E', fontSize: 11 }}>© 2026 Flipseer · Global Football Reputation Network</p>
+        </div>
+      </footer>
     </main>
   );
 }
