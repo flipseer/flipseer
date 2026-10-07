@@ -43,7 +43,6 @@ function getWhatsAppMessage(group: any, leaders: any[], userRank: number) {
   msg += `Free. No betting. Predictions lock at kickoff. ⚽`;
   return msg;
 }
-
 type Tab = 'leaderboard' | 'matches' | 'manage';
 
 export default function GroupsPage() {
@@ -163,6 +162,7 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: false });
     await loadGroups(userId);
     setCreatedGroup({ ...group, member_count: 1 });
+    // FIX 1: was { leagueCode: code, competition: newComp }
     trackLeagueCreated({ league_code: code, league_name: newComp });
     setStep('done');
     setCreating(false);
@@ -180,7 +180,8 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: true });
     await loadGroups(userId);
     toast$('Joined ' + group.name + '!');
-    trackLeagueJoined({ leagueCode: group.invite_code, leagueName: group.name, viaInvite: true, isOfficial: ['FLIP-EPL1','FLIP-UCL1','FLIP-AFR1','FLIP-ASI1','FLIP-GLB1'].includes(group.invite_code) });
+    // FIX 2: was { leagueCode: ..., leagueName: ..., viaInvite: ..., isOfficial: ... }
+    trackLeagueJoined({ league_code: group.invite_code, league_name: group.name });
     setJoining(false);
     setShowJoin(false);
     setJoinCode('');
@@ -340,7 +341,7 @@ export default function GroupsPage() {
                   </button>
                 </div>
                 <button onClick={() => { const msg = getWhatsAppMessage(createdGroup, [], 1); window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-    trackInviteShared({ leagueCode: createdGroup.invite_code, channel: 'whatsapp' }); }}
+                  trackInviteShared({ channel: 'whatsapp', league_code: createdGroup.invite_code }); }}
                   style={{ width: '100%', padding: '12px', background: '#25D366', color: 'white', border: 'none', borderRadius: '9px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>
                   📲 Share on WhatsApp
                 </button>
