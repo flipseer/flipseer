@@ -163,7 +163,7 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: false });
     await loadGroups(userId);
     setCreatedGroup({ ...group, member_count: 1 });
-    trackLeagueCreated({ leagueCode: code, competition: newComp });
+    trackLeagueCreated({ league_code: code, league_name: newComp });
     setStep('done');
     setCreating(false);
     setExpandedId(group.id);
