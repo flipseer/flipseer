@@ -65,7 +65,22 @@ function LiveActivity() { // CLS fix: reserve space before data loads
     const interval = setInterval(fetchActivity, 60000);
     return () => clearInterval(interval);
   }, []);
-  if (!mounted) return null;
+  // CLS fix: always reserve space — render skeleton rows until data arrives
+  if (!mounted || activities.length === 0) return (
+    <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px', minHeight: '164px' }} aria-hidden="true">
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block' }} />
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>RECENT ACTIVITY</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ height: '38px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '8px' }} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
   return (
     <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -130,9 +145,8 @@ function LiveScoreCard() {
     const interval = setInterval(fetchLive, 60000);
     return () => clearInterval(interval);
   }, []);
-  if (!mounted || liveMatches.length === 0) return (
-    <div style={{ minHeight: '60px' }} />
-  );
+  // CLS fix: always reserve height — no live matches is common, keep as 0px invisible placeholder
+  if (!mounted || liveMatches.length === 0) return null;
   return (
     <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -256,7 +270,21 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
-  if (loading || matches.length === 0) return null;
+  // CLS fix: show skeleton section with fixed height while loading so content below doesn't jump
+  if (loading) return (
+    <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ height: '14px', width: '140px', backgroundColor: '#1A3A1A', borderRadius: '4px', margin: '0 auto 12px' }} />
+        <div style={{ height: '32px', width: '240px', backgroundColor: '#1A3A1A', borderRadius: '4px', margin: '0 auto 24px' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ height: '72px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '12px' }} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+  if (matches.length === 0) return null;
   return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -557,27 +585,25 @@ export default function Home() {
           })()}
         </div>
       </div>
-      {/* BUZZ BAR */}
-      {mounted && (
-        <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px' }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-            {totalPredictions > 0 && (
-              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-                <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
-              </span>
-            )}
-            {totalUsers > 0 && (
-              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
-                <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
-              </span>
-            )}
-            {nextMatchCountdown && (
-              <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
-            )}
-            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
-          </div>
+      {/* BUZZ BAR — always rendered to avoid CLS; content invisible until mounted */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px', minHeight: '34px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', visibility: mounted ? 'visible' : 'hidden' }}>
+          {totalPredictions > 0 && (
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
+            </span>
+          )}
+          {totalUsers > 0 && (
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
+            </span>
+          )}
+          {nextMatchCountdown && (
+            <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
+          )}
+          <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
         </div>
-      )}
+      </div>
       {/* LIVE COMPETITIONS PREDICT BANNER */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '10px 20px', overflowX: 'auto' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', minWidth: 'max-content' }}>
@@ -682,25 +708,24 @@ export default function Home() {
         <p style={{ fontSize: '13px', color: '#6B7280' }}>
           Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
         </p>
-        {mounted && (nationForecasters > 0 || nextMatchCountdown) && (
-          <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69' }}>
-            {nationForecasters > 0 && nationRank > 0 && (
-              <span style={{ fontSize: '13px', color: '#6B7280' }}>
-                🔥 <strong style={{ color: '#F59E0B' }}>{nationForecasters}</strong> {heroNation} forecasters competing
-              </span>
-            )}
-            {nextMatchCountdown && (
-              <span style={{ fontSize: '13px', color: '#6B7280' }}>
-                ⏱ Next match locks in <strong style={{ color: '#EF4444' }}>{nextMatchCountdown}</strong>
-              </span>
-            )}
-            {totalUsers > 0 && (
-              <span style={{ fontSize: '13px', color: '#6B7280' }}>
-                🌍 <strong style={{ color: '#8B5CF6' }}>{totalUsers}</strong> forecasters globally
-              </span>
-            )}
-          </div>
-        )}
+        {/* CLS fix: always render with fixed height; content invisible until data arrives */}
+        <div style={{ minHeight: '80px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69', visibility: (mounted && (nationForecasters > 0 || nextMatchCountdown || totalUsers > 0)) ? 'visible' : 'hidden' }}>
+          {nationForecasters > 0 && nationRank > 0 && (
+            <span style={{ fontSize: '13px', color: '#6B7280' }}>
+              🔥 <strong style={{ color: '#F59E0B' }}>{nationForecasters}</strong> {heroNation} forecasters competing
+            </span>
+          )}
+          {nextMatchCountdown && (
+            <span style={{ fontSize: '13px', color: '#6B7280' }}>
+              ⏱ Next match locks in <strong style={{ color: '#EF4444' }}>{nextMatchCountdown}</strong>
+            </span>
+          )}
+          {totalUsers > 0 && (
+            <span style={{ fontSize: '13px', color: '#6B7280' }}>
+              🌍 <strong style={{ color: '#8B5CF6' }}>{totalUsers}</strong> forecasters globally
+            </span>
+          )}
+        </div>
       </section>
       {/* THREE STEPS */}
       <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
