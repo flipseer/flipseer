@@ -34,30 +34,49 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
 function LiveActivity() { // CLS fix: reserve space before data loads
   const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [fetched, setFetched] = useState(false);
   const fetchActivity = async () => {
     try {
-      const { data } = await supabase
+      // Step 1: fetch recent predictions (no join — avoids FK lookup issues)
+      const { data: preds } = await supabase
         .from('predictions')
-        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id, profiles(username, country)')
+        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id')
         .order('created_at', { ascending: false })
         .limit(50);
-      if (data) {
+
+      if (preds && preds.length > 0) {
+        // Step 2: deduplicate by user_id, keep 5 most recent unique users
         const seen = new Set<string>();
-        const unique = data.filter((p: any) => {
-          if (!p.profiles?.username || seen.has(p.user_id)) return false;
+        const unique = preds.filter((p: any) => {
+          if (seen.has(p.user_id)) return false;
           seen.add(p.user_id);
           return true;
         }).slice(0, 5);
-        const items = unique.map((p: any) => {
-          const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
-          const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
-          const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
-          const country = p.profiles?.country || '';
-          return { username: p.profiles.username, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', pick, confidence: p.confidence_pct, points: p.points_earned, processed: p.prediction_processed, timeAgo };
-        });
+
+        // Step 3: fetch profiles for those user_ids separately
+        const userIds = unique.map((p: any) => p.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, country')
+          .in('id', userIds);
+
+        const profileMap: { [key: string]: any } = {};
+        (profiles || []).forEach((pr: any) => { profileMap[pr.id] = pr; });
+
+        const items = unique
+          .filter((p: any) => profileMap[p.user_id]?.username)
+          .map((p: any) => {
+            const profile = profileMap[p.user_id];
+            const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+            const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
+            const country = profile?.country || '';
+            return { username: profile.username, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', pick, confidence: p.confidence_pct, points: p.points_earned, processed: p.prediction_processed, timeAgo };
+          });
         setActivities(items);
       }
-    } catch (e) {}
+    } catch (e) { console.error('LiveActivity fetch error:', e); }
+    setFetched(true);
   };
   useEffect(() => {
     setMounted(true);
@@ -65,8 +84,8 @@ function LiveActivity() { // CLS fix: reserve space before data loads
     const interval = setInterval(fetchActivity, 60000);
     return () => clearInterval(interval);
   }, []);
-  // CLS fix: always reserve space — render skeleton rows until data arrives
-  if (!mounted || activities.length === 0) return (
+  // Show skeleton only while loading (not yet fetched); hide entirely if no data after fetch
+  if (!mounted || !fetched) return (
     <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px', minHeight: '164px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -81,6 +100,7 @@ function LiveActivity() { // CLS fix: reserve space before data loads
       </div>
     </section>
   );
+  if (activities.length === 0) return null;
   return (
     <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
