@@ -248,7 +248,7 @@ function UpcomingMatches() {
       const { data } = await supabase
         .from('matches')
         .select('id, home_team, away_team, kickoff, status, league, competition')
-        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27'])
+        .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
         .limit(5);
@@ -345,7 +345,7 @@ function UpcomingMatches() {
           })}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL →</a>
+          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL · ISL →</a>
         </div>
       </div>
     </section>
