@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
@@ -32,163 +32,92 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
 };
 
 // ── REPUTATION TICKER ──
-// Shows real users earning points — scrolls vertically, impossible to miss
+// Continuous scrolling marquee of all users with rep > 0 — impossible to miss
 function ReputationTicker() {
   const [items, setItems] = useState<any[]>([]);
-  const [visible, setVisible] = useState(false);
-  const [currentIdx, setCurrentIdx] = useState(0);
-  const [blink, setBlink] = useState(true);
-  const intervalRef = useRef<any>(null);
 
   useEffect(() => {
-    const fetch = async () => {
+    const load = async () => {
       try {
-        // Get ALL users with reputation points > 0, ordered by total points
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, username, country, total_points, rank_icon, accuracy_pct, prediction_count, correct_count, updated_at')
+          .select('id, username, country, total_points, rank_icon, accuracy_pct')
           .gt('total_points', 0)
           .not('username', 'is', null)
           .order('total_points', { ascending: false })
           .limit(100);
-
         if (!profiles || profiles.length === 0) return;
-
-        // Shuffle so different users appear on each page load
-        const shuffled = [...profiles].sort(() => Math.random() - 0.5).slice(0, 40);
-
-        const tickerItems = shuffled
-          .filter((p: any) => p.username)
-          .map((p: any) => {
-            const country = p.country || '';
-            const flag = COUNTRY_FLAGS[country] || '&#x1F30D;';
-            // Use last_updated as proxy for recency
-            const diffMin = Math.floor((Date.now() - new Date(p.updated_at || Date.now()).getTime()) / 60000);
-            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
-            return {
-              username: p.username,
-              flag,
-              points: p.total_points,
-              totalPoints: p.total_points || 0,
-              accuracy: p.accuracy_pct || 0,
-              rankIcon: p.rank_icon || '⚽',
-              timeAgo,
-            };
-          });
-
-        if (tickerItems.length > 0) {
-          setItems(tickerItems);
-          setVisible(true);
-        }
+        const mapped = profiles.filter((p: any) => p.username).map((p: any) => ({
+          username: p.username,
+          flag: COUNTRY_FLAGS[p.country || ''] || '&#x1F30D;',
+          points: p.total_points,
+          accuracy: p.accuracy_pct || 0,
+          rankIcon: p.rank_icon || '⚽',
+        }));
+        setItems(mapped);
       } catch (e) { console.error('RepTicker error:', e); }
     };
-    fetch();
-    const refetch = setInterval(fetch, 90000);
-    return () => clearInterval(refetch);
+    load();
+    const t = setInterval(load, 90000);
+    return () => clearInterval(t);
   }, []);
 
-  // Rotate through items every 3s
-  useEffect(() => {
-    if (items.length === 0) return;
-    intervalRef.current = setInterval(() => {
-      setCurrentIdx(i => (i + 1) % items.length);
-      // blink effect on change
-      setBlink(false);
-      setTimeout(() => setBlink(true), 200);
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, [items]);
+  if (items.length === 0) return null;
 
-  if (!visible || items.length === 0) return null;
-
-  const item = items[currentIdx];
+  // Duplicate for seamless loop
+  const band = [...items, ...items];
 
   return (
     <div style={{
-      backgroundColor: '#03120A',
-      borderBottom: '1px solid #1A4A1A',
-      padding: '0 20px',
-      minHeight: '40px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      backgroundColor: '#020D04',
+      borderTop: '1px solid #F59E0B40',
+      borderBottom: '1px solid #F59E0B40',
+      padding: '9px 0',
+      overflow: 'hidden',
+      position: 'relative',
     }}>
+      {/* Left label — fixed, overlaid */}
       <div style={{
-        maxWidth: '800px',
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        transition: 'opacity 0.2s',
-        opacity: blink ? 1 : 0,
+        position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2,
+        display: 'flex', alignItems: 'center', gap: '6px',
+        backgroundColor: '#020D04',
+        paddingLeft: '12px', paddingRight: '14px',
+        borderRight: '1px solid #F59E0B40',
       }}>
-        {/* Label */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-          <span style={{
-            width: '7px', height: '7px', borderRadius: '50%',
-            backgroundColor: '#2E9E5E',
-            display: 'inline-block',
-            animation: 'repPulse 1s ease-in-out infinite',
-          }} />
-          <span style={{ fontSize: '9px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', flexShrink: 0 }}>REP EARNED</span>
-        </div>
-
-        <span style={{ color: '#1A4A1A', fontSize: '12px' }}>|</span>
-
-        {/* Flag */}
-        <span style={{ fontSize: '14px', flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: item.flag }} />
-
-        {/* Username */}
-        <a href={'/u/' + item.username} style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none', flexShrink: 0 }}>
-          @{item.username}
-        </a>
-
-        {/* Points flash */}
         <span style={{
-          fontSize: '14px',
-          color: '#F59E0B',
-          fontWeight: 'bold',
-          animation: 'repFlash 1s ease-in-out infinite',
+          width: '7px', height: '7px', borderRadius: '50%',
+          backgroundColor: '#F59E0B',
+          display: 'inline-block',
+          animation: 'repPulse 1s ease-in-out infinite',
           flexShrink: 0,
-        }}>
-          +{item.points} rep
-        </span>
-
-        {/* Total */}
-        <span style={{ fontSize: '11px', color: '#6B7280', flexShrink: 0 }}>
-          · {item.totalPoints} total
-        </span>
-
-        {/* Accuracy pill */}
-        {item.accuracy > 0 && (
-          <span style={{
-            fontSize: '9px',
-            backgroundColor: 'rgba(46,158,94,0.15)',
-            border: '1px solid rgba(46,158,94,0.3)',
-            color: '#2E9E5E',
-            padding: '1px 7px',
-            borderRadius: '999px',
-            fontWeight: 'bold',
-            flexShrink: 0,
-          }}>
-            {item.accuracy}% acc
+        }} />
+        <span style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap' }}>🏆 REP LIVE</span>
+      </div>
+      {/* Scrolling band */}
+      <div style={{
+        display: 'flex', gap: '0',
+        animation: 'repTicker ' + Math.max(30, items.length * 3) + 's linear infinite',
+        whiteSpace: 'nowrap', width: 'max-content',
+        willChange: 'transform', transform: 'translateZ(0)',
+        paddingLeft: '110px',
+      }}>
+        {band.map((item, i) => (
+          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '0 20px' }}>
+            <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: item.flag }} />
+            <a href={'/u/' + item.username} style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>
+              @{item.username}
+            </a>
+            <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold', animation: 'repFlash 2s ease-in-out infinite' }}>
+              {item.points} rep
+            </span>
+            {item.accuracy > 0 && (
+              <span style={{ fontSize: '10px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.12)', border: '1px solid rgba(46,158,94,0.25)', padding: '1px 6px', borderRadius: '999px', fontWeight: 'bold' }}>
+                {item.accuracy}%
+              </span>
+            )}
+            <span style={{ color: '#1A3A1A', fontSize: '10px', marginLeft: '8px' }}>·</span>
           </span>
-        )}
-
-        {/* Time */}
-        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: 'auto', flexShrink: 0 }}>{item.timeAgo}</span>
-
-        {/* Counter dots */}
-        <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
-          {items.slice(0, Math.min(items.length, 8)).map((_, i) => (
-            <span key={i} style={{
-              width: '4px', height: '4px', borderRadius: '50%',
-              backgroundColor: i === currentIdx % Math.min(items.length, 8) ? '#8B5CF6' : '#1A3A1A',
-              display: 'inline-block',
-              transition: 'background-color 0.3s',
-            }} />
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );
@@ -731,7 +660,8 @@ export default function Home() {
         @keyframes liveBadgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.95); } }
         @keyframes ctaPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
         @keyframes repPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.85); } }
-        @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes repTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
       {/* TICKER */}
       <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
