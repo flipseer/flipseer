@@ -43,52 +43,35 @@ function ReputationTicker() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        // Get recent predictions that earned points
-        const { data: preds } = await supabase
-          .from('predictions')
-          .select('user_id, points_earned, predicted_outcome, confidence_pct, created_at')
-          .eq('prediction_processed', true)
-          .gt('points_earned', 0)
-          .order('created_at', { ascending: false })
-          .limit(60);
-
-        if (!preds || preds.length === 0) return;
-
-        // Deduplicate by user, keep most recent
-        const seen = new Set<string>();
-        const unique = preds.filter((p: any) => {
-          if (seen.has(p.user_id)) return false;
-          seen.add(p.user_id);
-          return true;
-        }).slice(0, 20);
-
-        const userIds = unique.map((p: any) => p.user_id);
+        // Get ALL users with reputation points > 0, ordered by total points
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('id, username, country, total_points, rank_icon, accuracy_pct')
-          .in('id', userIds);
+          .select('id, username, country, total_points, rank_icon, accuracy_pct, prediction_count, correct_count, updated_at')
+          .gt('total_points', 0)
+          .not('username', 'is', null)
+          .order('total_points', { ascending: false })
+          .limit(100);
 
-        const profileMap: { [key: string]: any } = {};
-        (profiles || []).forEach((pr: any) => { profileMap[pr.id] = pr; });
+        if (!profiles || profiles.length === 0) return;
 
-        const tickerItems = unique
-          .filter((p: any) => profileMap[p.user_id]?.username)
+        // Shuffle so different users appear on each page load
+        const shuffled = [...profiles].sort(() => Math.random() - 0.5).slice(0, 40);
+
+        const tickerItems = shuffled
+          .filter((p: any) => p.username)
           .map((p: any) => {
-            const profile = profileMap[p.user_id];
-            const country = profile?.country || '';
+            const country = p.country || '';
             const flag = COUNTRY_FLAGS[country] || '&#x1F30D;';
-            const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+            // Use last_updated as proxy for recency
+            const diffMin = Math.floor((Date.now() - new Date(p.updated_at || Date.now()).getTime()) / 60000);
             const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
-            const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
             return {
-              username: profile.username,
+              username: p.username,
               flag,
-              points: p.points_earned,
-              totalPoints: profile.total_points || 0,
-              accuracy: profile.accuracy_pct || 0,
-              rankIcon: profile.rank_icon || '⚽',
-              pick,
-              confidence: p.confidence_pct,
+              points: p.total_points,
+              totalPoints: p.total_points || 0,
+              accuracy: p.accuracy_pct || 0,
+              rankIcon: p.rank_icon || '⚽',
               timeAgo,
             };
           });
@@ -549,15 +532,16 @@ function ClaimModal() {
         <div style={{ background: 'linear-gradient(135deg,#4C1D95,#8B5CF6)', padding: '24px', textAlign: 'center' }}>
           <div style={{ fontSize: '48px', marginBottom: '8px' }}>⚽</div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'white', margin: '0 0 6px' }}>Predict. Prove. Repeat.</h2>
-          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · Liga 1 · Ghana PL · UCL all live now.</p>
+          <p style={{ fontSize: '13px', color: '#C4B5FD', margin: 0 }}>EPL · UCL · Liga 1 · Ghana PL · ISL all live now.</p>
         </div>
         <div style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
             {[
               { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', color: '#8B5CF6' },
+              { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', color: '#A78BFA' },
               { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', color: '#CE1126' },
               { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', color: '#F59E0B' },
-              { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', color: '#A78BFA' },
+              { flag: '🇮🇳', name: 'Indian Super League', status: 'LIVE', color: '#FF6B35' },
             ].map(({ flag, name, status, color }) => (
               <div key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 12px' }}>
                 <span style={{ fontSize: '14px' }}>{flag} <span style={{ color: 'white', fontSize: '13px' }}>{name}</span></span>
@@ -815,7 +799,7 @@ export default function Home() {
             { href: '/predict', flag: '🇮🇩', name: 'Liga 1', color: '#CE1126', live: true },
             { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
             { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
-            { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: false, soon: 'Oct 10' },
+            { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: true },
           ].map(({ href, flag, name, color, live, soon }) => (
             <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s ease' }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
@@ -835,7 +819,7 @@ export default function Home() {
       <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
-            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL — all live now — Predict free forever
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · 🇮🇳 ISL — all live now — Predict free forever
           </span>
           <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
             🏆 Private leagues active · Building toward World Cup 2030
@@ -866,7 +850,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
         <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · ⭐ UCL · LIVE NOW</span>
+          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · ⭐ UCL · 🇮🇳 ISL · LIVE NOW</span>
         </div>
         <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
           {heroNation && nationRank > 0 ? (
@@ -953,12 +937,12 @@ export default function Home() {
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '32px 24px' }}>
-            <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: '12px' }}>4 COMPETITIONS · LIVE NOW</div>
+            <div style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 700, letterSpacing: '3px', marginBottom: '12px' }}>5 COMPETITIONS · LIVE NOW</div>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(22px,5vw,32px)', marginBottom: '12px', fontWeight: 800 }}>
               One reputation.<br /><span style={{ color: '#8B5CF6' }}>Every competition.</span>
             </h2>
             <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>
-              EPL · UCL · Liga 1 · Ghana PL — your predictions across all competitions build one permanent Football Reputation. Forever.
+              EPL · UCL · Liga 1 · Ghana PL · ISL — your predictions across all competitions build one permanent Football Reputation. Forever.
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
               {[
@@ -966,6 +950,7 @@ export default function Home() {
                 { flag: '⭐', name: 'UCL', color: '#A78BFA' },
                 { flag: '🇮🇩', name: 'Liga 1', color: '#CE1126' },
                 { flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B' },
+                { flag: '🇮🇳', name: 'ISL', color: '#FF6B35' },
               ].map(({ flag, name, color }) => (
                 <div key={name} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: color + '15', border: '1px solid ' + color + '50', borderRadius: '999px', padding: '5px 14px' }}>
                   <span>{flag}</span>
