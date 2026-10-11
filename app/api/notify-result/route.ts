@@ -12,6 +12,7 @@ const ACTIVE_COMPETITIONS = [
   'Liga 1 2026/27',
   'NPFL 2026/27',
   'Ghana PL 2026/27',
+  'ISL 2026/27',
 ]
 
 const COMPETITION_META: { [key: string]: { emoji: string; label: string; color: string } } = {
@@ -21,6 +22,7 @@ const COMPETITION_META: { [key: string]: { emoji: string; label: string; color: 
   'NPFL 2026/27':     { emoji: '🇳🇬',           label: 'NPFL Nigeria',             color: '#2E9E5E' },
   'Ghana PL 2026/27': { emoji: '🇬🇭',           label: 'Ghana Premier League',     color: '#F59E0B' },
   'World Cup 2026':   { emoji: '🏆',           label: 'FIFA World Cup 2026',      color: '#F59E0B' },
+  'ISL 2026/27':      { emoji: '🇮🇳',           label: 'Indian Super League',      color: '#FF6B35' },
 }
 
 export async function POST(req: NextRequest) {
@@ -147,10 +149,10 @@ export async function POST(req: NextRequest) {
       ${breakdown.length > 0 ? '<p style="color:#6B7280;font-size:11px;margin:4px 0 0">' + breakdown.join(' · ') + '</p>' : ''}
     </div>
   </div>
-  <a href="https://flipseer.com/predict" style="display:block;background:${accentColor};color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
+  <a href="https://www.flipseer.com/predict" style="display:block;background:${accentColor};color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
     ${headerEmoji} Predict Next Match →
   </a>
-  <a href="https://flipseer.com/leaderboard" style="display:block;background:transparent;color:${accentColor};padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid ${accentColor};margin-bottom:24px">
+  <a href="https://www.flipseer.com/leaderboard" style="display:block;background:transparent;color:${accentColor};padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid ${accentColor};margin-bottom:24px">
     View Leaderboard →
   </a>
   <div style="border-top:1px solid #1A3A1A;padding-top:16px;text-align:center">
