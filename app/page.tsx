@@ -800,7 +800,7 @@ export default function Home() {
             { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
             { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
             { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: true },
-          ].map(({ href, flag, name, color, live, soon }) => (
+          ].map(({ href, flag, name, color, live }) => (
             <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s ease' }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
               <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
