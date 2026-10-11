@@ -31,6 +31,93 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
+// ── TOP TICKER: national leaderboard + upcoming/current matches ──
+function TopTicker({ topNations }: { topNations: any[] }) {
+  const [matches, setMatches] = useState<any[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from('matches')
+          .select('id, home_team, away_team, kickoff, status, competition')
+          .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
+          .in('status', ['upcoming', 'live'])
+          .order('kickoff', { ascending: true })
+          .limit(8);
+        setMatches(data || []);
+      } catch (e) {}
+    };
+    load();
+    const t = setInterval(load, 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  const COMP_FLAGS: { [k: string]: string } = {
+    'EPL 2026/27': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'UCL 2026/27': '⭐', 'Liga 1 2026/27': '🇮🇩',
+    'Ghana PL 2026/27': '🇬🇭', 'ISL 2026/27': '🇮🇳',
+  };
+
+  const now = new Date();
+  const matchItems = matches.map(m => {
+    const utc = m.kickoff.endsWith('Z') ? m.kickoff : m.kickoff.replace(' ', 'T') + 'Z';
+    const diff = new Date(utc).getTime() - now.getTime();
+    const isLive = m.status === 'live' || (diff < 0 && diff > -105 * 60 * 1000);
+    const flag = COMP_FLAGS[m.competition] || '⚽';
+    let timeLabel = '';
+    if (isLive) {
+      timeLabel = '🔴 LIVE';
+    } else if (diff > 0) {
+      const h = Math.floor(diff / 3600000);
+      const min = Math.floor((diff % 3600000) / 60000);
+      timeLabel = h > 0 ? 'in ' + h + 'h ' + min + 'm' : 'in ' + min + 'm';
+    }
+    return { flag, text: m.home_team + ' vs ' + m.away_team, timeLabel, isLive };
+  });
+
+  const nationItems = topNations.map((n, i) => ({
+    icon: n.flag,
+    text: '#' + (i + 1) + ' ' + n.name + ' · ' + n.pts + ' rep',
+    color: '#F59E0B',
+  }));
+
+  // Build doubled array for seamless loop
+  const allItems: { icon: string; text: string; color: string; pill?: string; pillColor?: string }[] = [
+    ...nationItems,
+    ...matchItems.map(m => ({
+      icon: m.flag,
+      text: m.text,
+      color: m.isLive ? '#EF4444' : '#9CA3AF',
+      pill: m.timeLabel,
+      pillColor: m.isLive ? '#EF4444' : '#8B5CF6',
+    })),
+  ];
+  if (allItems.length === 0) return null;
+  const band = [...allItems, ...allItems];
+  const speed = Math.max(35, band.length * 2.5);
+
+  return (
+    <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '7px 0', contain: 'layout', position: 'relative' }}>
+      {/* Fixed left label */}
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#050E05', paddingLeft: '12px', paddingRight: '14px', borderRight: '1px solid #2D1B69' }}>
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F59E0B', display: 'inline-block', animation: 'repPulse 1s ease-in-out infinite', flexShrink: 0 }} />
+        <span style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap' }}>🌍 NATIONS</span>
+      </div>
+      <div style={{ display: 'flex', gap: '0', animation: 'ticker ' + speed + 's linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)', paddingLeft: '110px' }}>
+        {band.map((item, i) => (
+          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '0 20px' }}>
+            <span style={{ fontSize: '13px' }}>{item.icon}</span>
+            <span style={{ fontSize: '12px', color: item.color, fontWeight: 'bold' }}>{item.text}</span>
+            {item.pill && (
+              <span style={{ fontSize: '9px', backgroundColor: (item.pillColor || '#8B5CF6') + '22', color: item.pillColor || '#8B5CF6', border: '1px solid ' + (item.pillColor || '#8B5CF6') + '60', padding: '1px 6px', borderRadius: '999px', fontWeight: 'bold' }}>{item.pill}</span>
+            )}
+            <span style={{ color: '#2D1B69', marginLeft: '8px' }}>·</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── shared scrolling band renderer ──
 function ScrollBand({ items, label, labelColor, pointsColor, bgColor, borderColor, speed }: {
   items: { username: string; flag: string; points: number; accuracy?: number }[];
@@ -672,40 +759,8 @@ export default function Home() {
         @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes repTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
-      {/* TICKER */}
-      <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
-        <div style={{ display: 'flex', gap: '40px', animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
-          {(() => {
-            const staticItems = [
-              { icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', text: 'EPL · UCL · Liga 1 · Ghana PL — all live now', isUser: false, color: '#6B7280' },
-              { icon: '🌍', text: 'India vs Indonesia vs Nigeria — the Nation Battle is on', isUser: false, color: '#6B7280' },
-              { icon: '⚽', text: 'Predict exact scores for up to 108 rep per match — no betting ever', isUser: false, color: '#6B7280' },
-              { icon: '🔒', text: 'Your predictions lock at kick-off — permanent proof of your football intelligence', isUser: false, color: '#6B7280' },
-              { icon: '🏆', text: 'Represent your nation — every correct call earns reputation for your country', isUser: false, color: '#6B7280' },
-              { icon: '🆓', text: 'Build your permanent football reputation — free forever — no card required', isUser: false, color: '#6B7280' },
-            ];
-            const userItems = topUsers.map(u => ({
-              icon: u.rank_icon || '⚽',
-              text: '@' + u.username + ' · ' + u.total_points + ' rep',
-              isUser: true,
-              color: '#8B5CF6',
-            }));
-            const nationItems = topNations.map(n => ({
-              icon: n.flag,
-              text: '#' + n.rank + ' ' + n.name + ' · ' + n.pts + ' rep',
-              isUser: true,
-              color: '#F59E0B',
-            }));
-            const allItems = [...staticItems, ...userItems, ...nationItems, ...staticItems, ...userItems, ...nationItems];
-            return allItems.map((item, i) => (
-              <span key={i} style={{ fontSize: '12px', color: item.isUser ? (item.color || '#8B5CF6') : '#6B7280', display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: item.isUser ? 'bold' : 'normal' }}>
-                <span>{item.icon}</span> {item.text}
-                <span style={{ color: '#2D1B69', marginLeft: '16px' }}>|</span>
-              </span>
-            ));
-          })()}
-        </div>
-      </div>
+      {/* TOP TICKER — National leaderboard + upcoming/current matches */}
+      <TopTicker topNations={topNations} />
 
       {/* ── REPUTATION TICKER — blinking, rotates every 3s ── */}
       <AllTimeRepTicker />
