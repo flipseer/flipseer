@@ -13,9 +13,9 @@ export default function PWAInstallPrompt() {
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already installed or dismissed
+    // Check if already dismissed within last 7 days
     const alreadyDismissed = localStorage.getItem('pwa_dismissed');
-    if (alreadyDismissed) return;
+    if (alreadyDismissed && Date.now() - Number(alreadyDismissed) < 7 * 24 * 60 * 60 * 1000) return;
 
     // Check if already running as PWA
     if (window.matchMedia('(display-mode: standalone)').matches) {
@@ -27,8 +27,8 @@ export default function PWAInstallPrompt() {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after 30 seconds — user has engaged with the site
-      setTimeout(() => setShowPrompt(true), 30000);
+      // Show after 8 seconds — user has engaged with the site
+      setTimeout(() => setShowPrompt(true), 8000);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
@@ -49,7 +49,8 @@ export default function PWAInstallPrompt() {
   const handleDismiss = () => {
     setShowPrompt(false);
     setDismissed(true);
-    localStorage.setItem('pwa_dismissed', '1');
+    // Expires after 7 days — will show again after that
+    localStorage.setItem('pwa_dismissed', String(Date.now()));
   };
 
   if (!showPrompt || dismissed || installed) return null;
