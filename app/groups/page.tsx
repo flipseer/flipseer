@@ -19,6 +19,7 @@ const COMPETITIONS = [
   { key: 'UCL 2026/27',      label: 'UCL',      flag: '⭐',         color: '#A78BFA' },
   { key: 'Ghana PL 2026/27', label: 'Ghana PL', flag: '🇬🇭',        color: '#F59E0B' },
   { key: 'Liga 1 2026/27',   label: 'Liga 1',   flag: '🇮🇩',        color: '#CE1126' },
+  { key: 'ISL 2026/27',      label: 'ISL',      flag: '🇮🇳',        color: '#FF6B35' },
   { key: 'All',              label: 'All',      flag: '🌍',         color: '#2E9E5E' },
 ];
 
@@ -122,7 +123,7 @@ export default function GroupsPage() {
         .select('id, home_team, away_team, kickoff, competition, status')
         .in('status', ['upcoming'])
         .in('competition', group.competition === 'All'
-          ? ['EPL 2026/27', 'UCL 2026/27', 'Ghana PL 2026/27', 'Liga 1 2026/27']
+          ? ['EPL 2026/27', 'UCL 2026/27', 'Ghana PL 2026/27', 'Liga 1 2026/27', 'ISL 2026/27']
           : [group.competition])
         .order('kickoff', { ascending: true })
         .limit(3),
@@ -162,7 +163,6 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: false });
     await loadGroups(userId);
     setCreatedGroup({ ...group, member_count: 1 });
-    // FIX 1: was { leagueCode: code, competition: newComp }
     trackLeagueCreated({ league_code: code, league_name: newComp });
     setStep('done');
     setCreating(false);
@@ -180,7 +180,6 @@ export default function GroupsPage() {
     await supabase.from('group_members').insert({ group_id: group.id, user_id: userId, joined_via_invite: true });
     await loadGroups(userId);
     toast$('Joined ' + group.name + '!');
-    // FIX 2: was { leagueCode: ..., leagueName: ..., viaInvite: ..., isOfficial: ... }
     trackLeagueJoined({ league_code: group.invite_code, league_name: group.name });
     setJoining(false);
     setShowJoin(false);
@@ -611,18 +610,19 @@ export default function GroupsPage() {
         )}
 
         {/* OFFICIAL FLIPSEER LEAGUES */}
-        {myGroups.filter(g => ['FLIP-EPL1','FLIP-UCL1','FLIP-AFR1','FLIP-ASI1','FLIP-GLB1'].includes(g.invite_code)).length === 0 && (
+        {myGroups.filter(g => ['FLIP-EPL1','FLIP-UCL1','FLIP-AFR1','FLIP-ASI1','FLIP-ISL1','FLIP-GLB1'].includes(g.invite_code)).length === 0 && (
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>Official Flipseer Leagues</span>
               <span style={{ fontSize: '11px', color: '#2E9E5E' }}>Open to all</span>
             </div>
             {[
-              { code: 'FLIP-EPL1', name: 'Flipseer EPL League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', comp: 'EPL 2026/27', color: '#8B5CF6', desc: 'The main EPL community' },
-              { code: 'FLIP-UCL1', name: 'Flipseer UCL League', flag: '⭐', comp: 'UCL 2026/27', color: '#A78BFA', desc: 'Champions League predictions' },
-              { code: 'FLIP-AFR1', name: 'Ghana Premier League Community', flag: '🇬🇭', comp: 'Ghana PL 2026/27', color: '#F59E0B', desc: 'Predict Ghana Premier League matches' },
-              { code: 'FLIP-ASI1', name: 'Indonesia Liga 1 Community', flag: '🇮🇩', comp: 'Liga 1 2026/27', color: '#CE1126', desc: 'Predict Liga 1 Indonesia matches' },
-              { code: 'FLIP-GLB1', name: 'Global Flipseer League', flag: '🌍', comp: 'All competitions', color: '#2E9E5E', desc: 'Every competition, one league' },
+              { code: 'FLIP-EPL1', name: 'Flipseer EPL League',            flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', comp: 'EPL 2026/27',      color: '#8B5CF6', desc: 'The main EPL community' },
+              { code: 'FLIP-UCL1', name: 'Flipseer UCL League',            flag: '⭐',         comp: 'UCL 2026/27',      color: '#A78BFA', desc: 'Champions League predictions' },
+              { code: 'FLIP-AFR1', name: 'Ghana Premier League Community', flag: '🇬🇭',        comp: 'Ghana PL 2026/27', color: '#F59E0B', desc: 'Predict Ghana Premier League matches' },
+              { code: 'FLIP-ASI1', name: 'Indonesia Liga 1 Community',     flag: '🇮🇩',        comp: 'Liga 1 2026/27',   color: '#CE1126', desc: 'Predict Liga 1 Indonesia matches' },
+              { code: 'FLIP-ISL1', name: 'ISL Community',                  flag: '🇮🇳',        comp: 'ISL 2026/27',      color: '#FF6B35', desc: 'Predict Indian Super League matches' },
+              { code: 'FLIP-GLB1', name: 'Global Flipseer League',         flag: '🌍',         comp: 'All competitions', color: '#2E9E5E', desc: 'Every competition, one league' },
             ].map(league => (
               <div key={league.code} style={{ background: '#0D2214', border: '1px solid #1A3A1A', borderRadius: '12px', padding: '12px 16px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '40px', height: '40px', background: league.color + '20', border: '1px solid ' + league.color + '40', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
@@ -680,7 +680,7 @@ export default function GroupsPage() {
             <div style={{ background: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '16px', marginBottom: '14px' }}>
               <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', margin: '0 0 12px' }}>WHY CREATE A LEAGUE?</p>
               {[
-                { icon: '⚽', text: 'Compete privately across EPL, UCL, Liga 1 and Ghana PL' },
+                { icon: '⚽', text: 'Compete privately across EPL, UCL, Liga 1, Ghana PL and ISL' },
                 { icon: '📊', text: 'See who actually knows football — weekly accuracy leaderboard' },
                 { icon: '🌍', text: 'Every prediction counts globally and for your nation simultaneously' },
                 { icon: '🔒', text: 'Predictions lock at kickoff — permanent record, no edits' },
@@ -730,7 +730,7 @@ export default function GroupsPage() {
         <div style={{ background: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '18px' }}>
           <p style={{ fontSize: '10px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '2px', margin: '0 0 14px' }}>HOW IT WORKS</p>
           {[
-            { n: '1', icon: '➕', t: 'Create', d: 'Name your league. Choose EPL, UCL, Liga 1, Ghana PL or all. Get FLIP code.' },
+            { n: '1', icon: '➕', t: 'Create', d: 'Name your league. Choose EPL, UCL, Liga 1, Ghana PL, ISL or all. Get FLIP code.' },
             { n: '2', icon: '📲', t: 'Invite', d: 'Share FLIP code on WhatsApp. Friends join in one tap.' },
             { n: '3', icon: '⚽', t: 'Predict', d: 'Everyone predicts as normal. Counts in league AND globally.' },
             { n: '4', icon: '🏆', t: 'Compete', d: 'Leaderboard updates after every result. Weekly recap to share.' },
