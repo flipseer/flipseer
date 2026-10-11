@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
 const supabase = createClient();
@@ -30,6 +30,186 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'SA': '&#x1F1F8;&#x1F1E6;', 'PK': '&#x1F1F5;&#x1F1F0;',
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
+
+// ── REPUTATION TICKER ──
+// Shows real users earning points — scrolls vertically, impossible to miss
+function ReputationTicker() {
+  const [items, setItems] = useState<any[]>([]);
+  const [visible, setVisible] = useState(false);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [blink, setBlink] = useState(true);
+  const intervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        // Get recent predictions that earned points
+        const { data: preds } = await supabase
+          .from('predictions')
+          .select('user_id, points_earned, predicted_outcome, confidence_pct, created_at')
+          .eq('prediction_processed', true)
+          .gt('points_earned', 0)
+          .order('created_at', { ascending: false })
+          .limit(60);
+
+        if (!preds || preds.length === 0) return;
+
+        // Deduplicate by user, keep most recent
+        const seen = new Set<string>();
+        const unique = preds.filter((p: any) => {
+          if (seen.has(p.user_id)) return false;
+          seen.add(p.user_id);
+          return true;
+        }).slice(0, 20);
+
+        const userIds = unique.map((p: any) => p.user_id);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, country, total_points, rank_icon, accuracy_pct')
+          .in('id', userIds);
+
+        const profileMap: { [key: string]: any } = {};
+        (profiles || []).forEach((pr: any) => { profileMap[pr.id] = pr; });
+
+        const tickerItems = unique
+          .filter((p: any) => profileMap[p.user_id]?.username)
+          .map((p: any) => {
+            const profile = profileMap[p.user_id];
+            const country = profile?.country || '';
+            const flag = COUNTRY_FLAGS[country] || '&#x1F30D;';
+            const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+            const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
+            return {
+              username: profile.username,
+              flag,
+              points: p.points_earned,
+              totalPoints: profile.total_points || 0,
+              accuracy: profile.accuracy_pct || 0,
+              rankIcon: profile.rank_icon || '⚽',
+              pick,
+              confidence: p.confidence_pct,
+              timeAgo,
+            };
+          });
+
+        if (tickerItems.length > 0) {
+          setItems(tickerItems);
+          setVisible(true);
+        }
+      } catch (e) { console.error('RepTicker error:', e); }
+    };
+    fetch();
+    const refetch = setInterval(fetch, 90000);
+    return () => clearInterval(refetch);
+  }, []);
+
+  // Rotate through items every 3s
+  useEffect(() => {
+    if (items.length === 0) return;
+    intervalRef.current = setInterval(() => {
+      setCurrentIdx(i => (i + 1) % items.length);
+      // blink effect on change
+      setBlink(false);
+      setTimeout(() => setBlink(true), 200);
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, [items]);
+
+  if (!visible || items.length === 0) return null;
+
+  const item = items[currentIdx];
+
+  return (
+    <div style={{
+      backgroundColor: '#03120A',
+      borderBottom: '1px solid #1A4A1A',
+      padding: '0 20px',
+      minHeight: '40px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <div style={{
+        maxWidth: '800px',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        transition: 'opacity 0.2s',
+        opacity: blink ? 1 : 0,
+      }}>
+        {/* Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+          <span style={{
+            width: '7px', height: '7px', borderRadius: '50%',
+            backgroundColor: '#2E9E5E',
+            display: 'inline-block',
+            animation: 'repPulse 1s ease-in-out infinite',
+          }} />
+          <span style={{ fontSize: '9px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px', flexShrink: 0 }}>REP EARNED</span>
+        </div>
+
+        <span style={{ color: '#1A4A1A', fontSize: '12px' }}>|</span>
+
+        {/* Flag */}
+        <span style={{ fontSize: '14px', flexShrink: 0 }} dangerouslySetInnerHTML={{ __html: item.flag }} />
+
+        {/* Username */}
+        <a href={'/u/' + item.username} style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none', flexShrink: 0 }}>
+          @{item.username}
+        </a>
+
+        {/* Points flash */}
+        <span style={{
+          fontSize: '14px',
+          color: '#F59E0B',
+          fontWeight: 'bold',
+          animation: 'repFlash 1s ease-in-out infinite',
+          flexShrink: 0,
+        }}>
+          +{item.points} rep
+        </span>
+
+        {/* Total */}
+        <span style={{ fontSize: '11px', color: '#6B7280', flexShrink: 0 }}>
+          · {item.totalPoints} total
+        </span>
+
+        {/* Accuracy pill */}
+        {item.accuracy > 0 && (
+          <span style={{
+            fontSize: '9px',
+            backgroundColor: 'rgba(46,158,94,0.15)',
+            border: '1px solid rgba(46,158,94,0.3)',
+            color: '#2E9E5E',
+            padding: '1px 7px',
+            borderRadius: '999px',
+            fontWeight: 'bold',
+            flexShrink: 0,
+          }}>
+            {item.accuracy}% acc
+          </span>
+        )}
+
+        {/* Time */}
+        <span style={{ fontSize: '10px', color: '#4B5563', marginLeft: 'auto', flexShrink: 0 }}>{item.timeAgo}</span>
+
+        {/* Counter dots */}
+        <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
+          {items.slice(0, Math.min(items.length, 8)).map((_, i) => (
+            <span key={i} style={{
+              width: '4px', height: '4px', borderRadius: '50%',
+              backgroundColor: i === currentIdx % Math.min(items.length, 8) ? '#8B5CF6' : '#1A3A1A',
+              display: 'inline-block',
+              transition: 'background-color 0.3s',
+            }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function LiveActivity() { // CLS fix: reserve space before data loads
   const [activities, setActivities] = useState<any[]>([]);
@@ -68,7 +248,7 @@ function LiveActivity() { // CLS fix: reserve space before data loads
           .map((p: any) => {
             const profile = profileMap[p.user_id];
             const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
-            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 1440 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 60 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
             const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
             const country = profile?.country || '';
             return { username: profile.username, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', pick, confidence: p.confidence_pct, points: p.points_earned, processed: p.prediction_processed, timeAgo };
@@ -165,7 +345,6 @@ function LiveScoreCard() {
     const interval = setInterval(fetchLive, 60000);
     return () => clearInterval(interval);
   }, []);
-  // CLS fix: always reserve height — no live matches is common, keep as 0px invisible placeholder
   if (!mounted || liveMatches.length === 0) return null;
   return (
     <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
@@ -290,7 +469,6 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
-  // CLS fix: show skeleton section with fixed height while loading so content below doesn't jump
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -396,8 +574,6 @@ function ClaimModal() {
     </div>
   );
 }
-
-// ── MAIN HOME PAGE ──
 
 function PWAInstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -570,6 +746,8 @@ export default function Home() {
         @keyframes bannerPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
         @keyframes liveBadgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.75; transform: scale(0.95); } }
         @keyframes ctaPulse { 0%, 100% { opacity: 0.9; } 50% { opacity: 1; } }
+        @keyframes repPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.85); } }
+        @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
       `}</style>
       {/* TICKER */}
       <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '8px 0', contain: 'layout' }}>
@@ -605,7 +783,11 @@ export default function Home() {
           })()}
         </div>
       </div>
-      {/* BUZZ BAR — always rendered to avoid CLS; content invisible until mounted */}
+
+      {/* ── REPUTATION TICKER — blinking, rotates every 3s ── */}
+      <ReputationTicker />
+
+      {/* BUZZ BAR */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px', minHeight: '34px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', visibility: mounted ? 'visible' : 'hidden' }}>
           {totalPredictions > 0 && (
@@ -674,7 +856,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-      {/* HERO FIRST — above the fold */}
       {/* UPCOMING MATCHES */}
       <UpcomingMatches />
       {/* LIVE SCORES + ACTIVITY */}
@@ -728,7 +909,6 @@ export default function Home() {
         <p style={{ fontSize: '13px', color: '#6B7280' }}>
           Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
         </p>
-        {/* CLS fix: always render with fixed height; content invisible until data arrives */}
         <div style={{ minHeight: '80px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69', visibility: (mounted && (nationForecasters > 0 || nextMatchCountdown || totalUsers > 0)) ? 'visible' : 'hidden' }}>
           {nationForecasters > 0 && nationRank > 0 && (
             <span style={{ fontSize: '13px', color: '#6B7280' }}>
