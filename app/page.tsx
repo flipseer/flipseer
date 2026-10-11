@@ -31,96 +31,105 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
-// ── REPUTATION TICKER ──
-// Continuous scrolling marquee of all users with rep > 0 — impossible to miss
-function ReputationTicker() {
-  const [items, setItems] = useState<any[]>([]);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, username, country, total_points, rank_icon, accuracy_pct')
-          .gt('total_points', 0)
-          .not('username', 'is', null)
-          .order('total_points', { ascending: false })
-          .limit(100);
-        if (!profiles || profiles.length === 0) return;
-        const mapped = profiles.filter((p: any) => p.username).map((p: any) => ({
-          username: p.username,
-          flag: COUNTRY_FLAGS[p.country || ''] || '&#x1F30D;',
-          points: p.total_points,
-          accuracy: p.accuracy_pct || 0,
-          rankIcon: p.rank_icon || '⚽',
-        }));
-        setItems(mapped);
-      } catch (e) { console.error('RepTicker error:', e); }
-    };
-    load();
-    const t = setInterval(load, 90000);
-    return () => clearInterval(t);
-  }, []);
-
+// ── shared scrolling band renderer ──
+function ScrollBand({ items, label, labelColor, pointsColor, bgColor, borderColor, speed }: {
+  items: { username: string; flag: string; points: number; accuracy?: number }[];
+  label: string; labelColor: string; pointsColor: string;
+  bgColor: string; borderColor: string; speed: number;
+}) {
   if (items.length === 0) return null;
-
-  // Duplicate for seamless loop
   const band = [...items, ...items];
-
   return (
-    <div style={{
-      backgroundColor: '#020D04',
-      borderTop: '1px solid #F59E0B40',
-      borderBottom: '1px solid #F59E0B40',
-      padding: '9px 0',
-      overflow: 'hidden',
-      position: 'relative',
-    }}>
-      {/* Left label — fixed, overlaid */}
-      <div style={{
-        position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2,
-        display: 'flex', alignItems: 'center', gap: '6px',
-        backgroundColor: '#020D04',
-        paddingLeft: '12px', paddingRight: '14px',
-        borderRight: '1px solid #F59E0B40',
-      }}>
-        <span style={{
-          width: '7px', height: '7px', borderRadius: '50%',
-          backgroundColor: '#F59E0B',
-          display: 'inline-block',
-          animation: 'repPulse 1s ease-in-out infinite',
-          flexShrink: 0,
-        }} />
-        <span style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap' }}>🏆 REP LIVE</span>
+    <div style={{ backgroundColor: bgColor, borderTop: '1px solid ' + borderColor, borderBottom: '1px solid ' + borderColor, padding: '8px 0', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: bgColor, paddingLeft: '12px', paddingRight: '14px', borderRight: '1px solid ' + borderColor }}>
+        <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: labelColor, display: 'inline-block', animation: 'repPulse 1s ease-in-out infinite', flexShrink: 0 }} />
+        <span style={{ fontSize: '9px', color: labelColor, fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap' }}>{label}</span>
       </div>
-      {/* Scrolling band */}
-      <div style={{
-        display: 'flex', gap: '0',
-        animation: 'repTicker ' + Math.max(30, items.length * 3) + 's linear infinite',
-        whiteSpace: 'nowrap', width: 'max-content',
-        willChange: 'transform', transform: 'translateZ(0)',
-        paddingLeft: '110px',
-      }}>
+      <div style={{ display: 'flex', animation: 'repTicker ' + speed + 's linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)', paddingLeft: '120px' }}>
         {band.map((item, i) => (
-          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '0 20px' }}>
+          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '0 22px' }}>
             <span style={{ fontSize: '13px' }} dangerouslySetInnerHTML={{ __html: item.flag }} />
-            <a href={'/u/' + item.username} style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>
-              @{item.username}
-            </a>
-            <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: 'bold', animation: 'repFlash 2s ease-in-out infinite' }}>
-              {item.points} rep
-            </span>
-            {item.accuracy > 0 && (
-              <span style={{ fontSize: '10px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.12)', border: '1px solid rgba(46,158,94,0.25)', padding: '1px 6px', borderRadius: '999px', fontWeight: 'bold' }}>
-                {item.accuracy}%
-              </span>
+            <a href={'/u/' + item.username} style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>@{item.username}</a>
+            <span style={{ fontSize: '12px', color: pointsColor, fontWeight: 'bold', animation: 'repFlash 2s ease-in-out infinite' }}>{item.points} rep</span>
+            {(item.accuracy || 0) > 0 && (
+              <span style={{ fontSize: '10px', color: '#2E9E5E', backgroundColor: 'rgba(46,158,94,0.12)', border: '1px solid rgba(46,158,94,0.25)', padding: '1px 6px', borderRadius: '999px', fontWeight: 'bold' }}>{item.accuracy}%</span>
             )}
-            <span style={{ color: '#1A3A1A', fontSize: '10px', marginLeft: '8px' }}>·</span>
+            <span style={{ color: '#1A3A1A', fontSize: '10px', marginLeft: '6px' }}>·</span>
           </span>
         ))}
       </div>
     </div>
   );
+}
+
+// ── TICKER 1: All-time reputation — every user with total_points > 0 ──
+function AllTimeRepTicker() {
+  const [items, setItems] = useState<any[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('username, country, total_points, accuracy_pct')
+          .gt('total_points', 0)
+          .not('username', 'is', null)
+          .order('total_points', { ascending: false })
+          .limit(100);
+        if (!data || data.length === 0) return;
+        setItems(data.filter((p: any) => p.username).map((p: any) => ({
+          username: p.username,
+          flag: COUNTRY_FLAGS[p.country || ''] || '&#x1F30D;',
+          points: p.total_points,
+          accuracy: p.accuracy_pct || 0,
+        })));
+      } catch (e) {}
+    };
+    load();
+    const t = setInterval(load, 120000);
+    return () => clearInterval(t);
+  }, []);
+  return <ScrollBand items={items} label="🏆 ALL-TIME REP" labelColor="#F59E0B" pointsColor="#F59E0B" bgColor="#020D04" borderColor="#F59E0B30" speed={Math.max(40, items.length * 3)} />;
+}
+
+// ── TICKER 2: Today's live rep — points earned from matches today ──
+function TodayRepTicker() {
+  const [items, setItems] = useState<any[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        // Start of today UTC
+        const todayStart = new Date();
+        todayStart.setUTCHours(0, 0, 0, 0);
+        const { data: preds } = await supabase
+          .from('predictions')
+          .select('user_id, points_earned')
+          .eq('prediction_processed', true)
+          .gt('points_earned', 0)
+          .gte('updated_at', todayStart.toISOString())
+          .order('updated_at', { ascending: false })
+          .limit(200);
+        if (!preds || preds.length === 0) return;
+        // Aggregate points per user today
+        const totals: { [uid: string]: number } = {};
+        preds.forEach((p: any) => { totals[p.user_id] = (totals[p.user_id] || 0) + (p.points_earned || 0); });
+        const userIds = Object.keys(totals);
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, country, accuracy_pct')
+          .in('id', userIds);
+        if (!profiles || profiles.length === 0) return;
+        const mapped = profiles
+          .filter((p: any) => p.username)
+          .map((p: any) => ({ username: p.username, flag: COUNTRY_FLAGS[p.country || ''] || '&#x1F30D;', points: totals[p.id] || 0, accuracy: p.accuracy_pct || 0 }))
+          .sort((a: any, b: any) => b.points - a.points);
+        setItems(mapped);
+      } catch (e) {}
+    };
+    load();
+    const t = setInterval(load, 60000);
+    return () => clearInterval(t);
+  }, []);
+  return <ScrollBand items={items} label="⚡ TODAY'S REP" labelColor="#2E9E5E" pointsColor="#2E9E5E" bgColor="#020B04" borderColor="#2E9E5E30" speed={Math.max(30, items.length * 4)} />;
 }
 
 function LiveActivity() { // CLS fix: reserve space before data loads
@@ -699,7 +708,8 @@ export default function Home() {
       </div>
 
       {/* ── REPUTATION TICKER — blinking, rotates every 3s ── */}
-      <ReputationTicker />
+      <AllTimeRepTicker />
+      <TodayRepTicker />
 
       {/* BUZZ BAR */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px', minHeight: '34px' }}>
