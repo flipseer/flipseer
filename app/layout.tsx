@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
-  metadataBase: new URL('https://flipseer.com'),
+  metadataBase: new URL('https://www.flipseer.com'),
   alternates: {
-    canonical: 'https://flipseer.com',
+    canonical: 'https://www.flipseer.com',
   },
   manifest: '/manifest.json',
   appleWebApp: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Flipseer — Football Reputation Platform',
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free private leagues for your WhatsApp group.',
-    url: 'https://flipseer.com',
+    url: 'https://www.flipseer.com',
     siteName: 'Flipseer',
     images: [{ url: '/api/og/home', width: 1200, height: 630 }],
     locale: 'en_US',
@@ -128,6 +128,7 @@ export default function RootLayout({
             src="https://www.facebook.com/tr?id=1791829218318412&ev=PageView&noscript=1"
           />
         </noscript>
+
         {/* ── MICROSOFT CLARITY ── */}
         <script
           dangerouslySetInnerHTML={{
