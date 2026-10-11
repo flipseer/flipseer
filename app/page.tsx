@@ -804,10 +804,7 @@ export default function Home() {
             <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s ease' }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
               <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
-              {live
-                ? <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold', animation: 'liveBadgePulse 1.5s ease-in-out infinite' }}>10/day</span>
-                : <span style={{ fontSize: '9px', color: '#4B5563', fontStyle: 'italic' }}>{soon}</span>
-              }
+              <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold', animation: 'liveBadgePulse 1.5s ease-in-out infinite' }}>LIVE</span>
             </a>
           ))}
           <a href="/predict" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#2E9E5E', color: 'white', borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, fontSize: '11px', fontWeight: 'bold', animation: 'ctaPulse 1.5s ease-in-out infinite', boxShadow: '0 0 16px rgba(46,158,94,0.4)' }}>
