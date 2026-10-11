@@ -60,20 +60,22 @@ export async function GET(request: NextRequest) {
     const fixtures = data?.response || []
 
     // ── Active competitions on Flipseer ──
-    // EPL = league 39, season 2026
-    // UCL = league 2, season 2026 (group stage Sep 17+)
-    // World Cup = league 1, season 2026 (completed but keep for safety)
+    // Season note: Ghana PL and Liga 1 use season 2025 in API-Football
+    // even though Flipseer calls them 2026/27.
+    // If live scores are missing for those two, change their season to 2025.
     const ACTIVE_LEAGUES = [
-      { id: 39, season: 2026, name: 'EPL 2026/27' },       // Premier League
-      { id: 2,  season: 2026, name: 'UCL 2026/27' },       // Champions League
-      { id: 1,  season: 2026, name: 'World Cup 2026' },    // World Cup (completed)
+      { id: 39,  season: 2026, name: 'EPL 2026/27' },       // Premier League
+      { id: 2,   season: 2026, name: 'UCL 2026/27' },       // Champions League
+      { id: 323, season: 2026, name: 'ISL 2026/27' },       // Indian Super League
+      { id: 253, season: 2026, name: 'Liga 1 2026/27' },    // Liga 1 Indonesia
+      { id: 169, season: 2025, name: 'Ghana PL 2026/27' },  // Ghana Premier League
+      { id: 1,   season: 2026, name: 'World Cup 2026' },    // World Cup (completed)
     ]
 
     const live = fixtures
       .filter((f: any) => {
         const leagueId = f.league?.id
         const season = f.league?.season
-        // Match against active league IDs
         return ACTIVE_LEAGUES.some(l => l.id === leagueId && l.season === season)
       })
       .map((f: any) => ({
