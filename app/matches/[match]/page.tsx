@@ -17,7 +17,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { home, away } = parseSlug(params.match);
   if (!home || !away) return { title: 'Match Not Found | Flipseer' };
 
-  // Fetch match to get competition name for metadata
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -82,7 +81,6 @@ export default async function MatchPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Find the match
   const { data: matches } = await supabase
     .from('matches')
     .select('*')
@@ -92,13 +90,12 @@ export default async function MatchPage({ params }: Props) {
 
   const match = matches?.[0] || null;
 
-  // Get predictions for this match
+  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
+
   let predictions: any[] = [];
   let communityStats = { home: 0, draw: 0, away: 0, total: 0 };
 
   if (match) {
-    // Show all predictions — not filtered by processed status
-    // This ensures completed match pages have content for Google
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome, confidence_pct, predicted_home_score, predicted_away_score, profiles(username, country, total_points)')
@@ -108,7 +105,6 @@ export default async function MatchPage({ params }: Props) {
 
     predictions = preds || [];
 
-    // Community stats — all predictions
     const { data: allPreds } = await supabase
       .from('predictions')
       .select('predicted_outcome')
@@ -121,13 +117,19 @@ export default async function MatchPage({ params }: Props) {
   }
 
   return (
-    <MatchPageClient
-      home={home}
-      away={away}
-      slug={params.match}
-      match={match}
-      predictions={predictions}
-      communityStats={communityStats}
-    />
+    <>
+      {/* SEO H1 — server-rendered, visually hidden, read by Google */}
+      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        {home} vs {away} Prediction — {competition} | Flipseer
+      </h1>
+      <MatchPageClient
+        home={home}
+        away={away}
+        slug={params.match}
+        match={match}
+        predictions={predictions}
+        communityStats={communityStats}
+      />
+    </>
   );
 }
