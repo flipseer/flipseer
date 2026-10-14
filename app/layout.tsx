@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Flipseer' }],
   creator: 'Flipseer',
   publisher: 'Flipseer',
-  metadataBase: new URL('https://www.flipseer.com'),
+  metadataBase: new URL('https://flipseer.com'),
   alternates: {
-    canonical: 'https://www.flipseer.com',
+    canonical: 'https://flipseer.com',
   },
   manifest: '/manifest.json',
   appleWebApp: {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Flipseer — Football Reputation Platform',
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free private leagues for your WhatsApp group.',
-    url: 'https://www.flipseer.com',
+    url: 'https://flipseer.com',
     siteName: 'Flipseer',
     images: [{ url: '/api/og/home', width: 1200, height: 630 }],
     locale: 'en_US',
