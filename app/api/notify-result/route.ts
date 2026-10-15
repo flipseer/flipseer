@@ -61,19 +61,24 @@ export async function POST(req: NextRequest) {
     const headerEmoji = meta.emoji
 
     // Get predictions
-    const { data: predictions, error: predError } = await supabaseAdmin
+    const { data: predictionsRaw, error: predError } = await supabaseAdmin
       .from('predictions')
       .select('*')
       .eq('match_id', match_id)
       .eq('prediction_processed', true);
-    if (!predictions || predictions.length === 0) {
+    const predictions = predictionsRaw || [];
+    if (predictions.length === 0) {
       return NextResponse.json({
         success: true,
         message: 'No processed predictions',
         sent: 0,
-        debug: { match_id, pred_count: predictions?.length || 0, error: predError?.message }
+        debug: { match_id, pred_count: 0, error: predError?.message }
       });
     }
+
+    // ── Email notifications disabled ──
+    return NextResponse.json({ success: true, message: 'Email notifications disabled', sent: 0 });
+
     // Get profiles
     const userIds = predictions.map((p: any) => p.user_id);
     const { data: profiles } = await supabaseAdmin
@@ -97,9 +102,6 @@ export async function POST(req: NextRequest) {
     const matchName = match.home_team + ' vs ' + match.away_team;
     const actualScore = match.home_score + '-' + match.away_score;
     const isUpset = match.is_upset === true;
-
-    // ── Email notifications disabled ──
-    return NextResponse.json({ success: true, message: 'Email notifications disabled', sent: 0 });
 
     for (const pred of predictions) {
       const email = emailMap[pred.user_id];
