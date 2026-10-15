@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const points   = searchParams.get('points')   || '0'
   const correct  = searchParams.get('correct')  || '0'
   const accuracy = searchParams.get('accuracy') || '0'
-  const country  = searchParams.get('country')  || 'WC 2026'
+  const country  = searchParams.get('country')  || 'Global'
   const rank     = searchParams.get('rank')      || ''
 
   return new ImageResponse(
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'flex' }} />
           <span style={{ fontSize: '16px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '2px' }}>
-            FLIPSEER &middot; WORLD CUP 2026
+            FLIPSEER &middot; FOOTBALL REPUTATION
           </span>
         </div>
         {/* Username */}
