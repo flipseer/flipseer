@@ -883,18 +883,7 @@ export default function Home() {
           </a>
         </div>
       </div>
-      {/* NATION TICKER */}
-      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '8px 0', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', gap: '6px', animation: 'ticker 35s linear infinite', whiteSpace: 'nowrap', width: 'max-content', willChange: 'transform', transform: 'translateZ(0)' }}>
-          {[...NATION_TICKERS, ...NATION_TICKERS].map((n, i) => (
-            <a key={i} href={'/auth?nation=' + n.code} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '999px', border: '1px solid ' + (heroNation === n.name ? '#8B5CF6' : '#1A3A1A'), backgroundColor: heroNation === n.name ? 'rgba(139,92,246,0.15)' : 'transparent', textDecoration: 'none', flexShrink: 0 }}>
-              <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: n.flag }} />
-              <span style={{ fontSize: '11px', color: heroNation === n.name ? '#8B5CF6' : '#8895A3', fontWeight: heroNation === n.name ? 'bold' : 'normal' }}>{n.name}</span>
-            </a>
-          ))}
-        </div>
-      </div>
-      {/* UPCOMING MATCHES */}
+       {/* UPCOMING MATCHES */}
       <UpcomingMatches />
       {/* LIVE SCORES + ACTIVITY */}
       <LiveScoreCard />
