@@ -98,6 +98,9 @@ export async function POST(req: NextRequest) {
     const actualScore = match.home_score + '-' + match.away_score;
     const isUpset = match.is_upset === true;
 
+    // ── Email notifications disabled ──
+    return NextResponse.json({ success: true, message: 'Email notifications disabled', sent: 0 });
+
     for (const pred of predictions) {
       const email = emailMap[pred.user_id];
       if (!email) continue;
