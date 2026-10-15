@@ -31,6 +31,64 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'BD': '&#x1F1E7;&#x1F1E9;', 'EG': '&#x1F1EA;&#x1F1EC;',
 };
 
+// ── TELEGRAM BANNER — dismissible, shows once per session ──
+function TelegramBanner() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    try {
+      const dismissed = localStorage.getItem('flipseer_tg_banner');
+      if (!dismissed) setShow(true);
+    } catch (e) { setShow(true); }
+  }, []);
+  const dismiss = () => {
+    setShow(false);
+    try { localStorage.setItem('flipseer_tg_banner', '1'); } catch (e) {}
+  };
+  if (!show) return null;
+  return (
+    <div style={{ backgroundColor: '#0A1929', borderBottom: '1px solid #1E3A5F', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', position: 'relative' }}>
+      <span style={{ fontSize: '20px', flexShrink: 0 }}>📣</span>
+      <span style={{ fontSize: '13px', color: '#93C5FD', fontWeight: 'bold' }}>
+        Get pre-match predictions &amp; live results on Telegram →
+      </span>
+      <a
+        href="https://t.me/flipseer"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: '#2AABEE', color: 'white', padding: '6px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '13px', fontWeight: 'bold', flexShrink: 0 }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.829.941z"/></svg>
+        Join @flipseer
+      </a>
+      <button
+        onClick={dismiss}
+        aria-label="Dismiss"
+        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#4B6A8A', fontSize: '18px', cursor: 'pointer', lineHeight: 1, padding: '4px' }}
+      >×</button>
+    </div>
+  );
+}
+
+// ── TELEGRAM FLOATING BUTTON — always visible ──
+function TelegramFloatingButton() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+  return (
+    <a
+      href="https://t.me/flipseer"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Join Flipseer on Telegram"
+      style={{ position: 'fixed', bottom: '24px', right: '20px', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '52px', height: '52px', borderRadius: '50%', backgroundColor: '#2AABEE', boxShadow: '0 4px 20px rgba(42,171,238,0.5)', textDecoration: 'none', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1.1)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 6px 28px rgba(42,171,238,0.7)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)'; (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 20px rgba(42,171,238,0.5)'; }}
+    >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.829.941z"/></svg>
+    </a>
+  );
+}
+
 // ── TOP TICKER: national leaderboard + upcoming/current matches ──
 function TopTicker({ topNations }: { topNations: any[] }) {
   const [matches, setMatches] = useState<any[]>([]);
@@ -748,6 +806,8 @@ export default function Home() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
       <ClaimModal />
+      {/* ── TELEGRAM FLOATING BUTTON ── */}
+      <TelegramFloatingButton />
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         @keyframes flicker { 0%, 100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.8; } 94% { opacity: 1; } }
@@ -759,6 +819,8 @@ export default function Home() {
         @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes repTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
+      {/* ── TELEGRAM BANNER — dismissible, shows once ── */}
+      <TelegramBanner />
       {/* TOP TICKER — National leaderboard + upcoming/current matches */}
       <TopTicker topNations={topNations} />
 
@@ -987,6 +1049,12 @@ export default function Home() {
             ))}
           </div>
           <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>Free forever · No betting · No gambling · Pure football intelligence</p>
+          {/* Telegram channel link in footer */}
+          <p style={{ marginBottom: 8 }}>
+            <a href="https://t.me/flipseer" target="_blank" rel="noopener noreferrer" style={{ color: '#2AABEE', fontSize: 13, textDecoration: 'none', fontWeight: 'bold' }}>
+              📣 Join us on Telegram → t.me/flipseer
+            </a>
+          </p>
           <p style={{ color: '#2E4A2E', fontSize: 11 }}>© 2026 Flipseer · Global Football Reputation Network</p>
         </div>
       </footer>
