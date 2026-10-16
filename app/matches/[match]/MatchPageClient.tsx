@@ -33,7 +33,9 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const isLive = match?.status === 'live';
   const isUpcoming = match?.status === 'upcoming' || match?.status === 'locked';
 
-  const shareText = `⚽ ${home} vs ${away} — World Cup 2026\n\n${communityStats.total > 0 ? `${homePct}% predict ${home} win · ${drawPct}% Draw · ${awayPct}% ${away} win\n\n` : ''}What's your prediction? → flipseer.com/matches/${slug}\n\nFree. No betting. Pure football. #WorldCup2026 #Flipseer`;
+  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
+
+  const shareText = `⚽ ${home} vs ${away} — ${competition}\n\n${communityStats.total > 0 ? `${homePct}% predict ${home} win · ${drawPct}% Draw · ${awayPct}% ${away} win\n\n` : ''}What's your prediction? → flipseer.com/matches/${slug}\n\nFree. No betting. Pure football. #Flipseer`;
 
   const formatKickoff = (kickoff: string) => {
     if (!kickoff) return '';
@@ -49,7 +51,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
       {/* MATCH HERO */}
       <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '48px 20px 32px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
         <p style={{ fontSize: '11px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '16px' }}>
-          WORLD CUP 2026 {match?.league ? '· ' + match.league : ''}
+          FLIPSEER · FOOTBALL REPUTATION {match?.competition ? '· ' + competition : ''}
         </p>
 
         {/* Teams */}
@@ -181,13 +183,13 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         {/* SEO CONTENT */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '12px', color: '#2E9E5E' }}>
-            {home} vs {away} — World Cup 2026
+            {home} vs {away} — {competition}
           </h2>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.8', marginBottom: '10px' }}>
             Football fans worldwide are predicting {home} vs {away} on Flipseer before kickoff. Predictions lock permanently — no editing after the whistle.
           </p>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: '1.8' }}>
-            Flipseer is a free football prediction platform. No betting. No gambling. Predict exact scores, set your confidence, and build your permanent football reputation across World Cup 2026, EPL, Champions League and more.
+            Flipseer is a free football prediction platform. No betting. No gambling. Predict exact scores, set your confidence, and build your permanent football reputation across EPL, Champions League, Liga 1, Ghana Premier League and more.
           </p>
         </div>
 
