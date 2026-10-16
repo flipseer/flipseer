@@ -1,115 +1,142 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const TELEGRAM_CHANNEL = '@flipseer';
-const CRON_SECRET = process.env.CRON_SECRET!;
+export const runtime = 'edge';
 
-async function sendTelegramMessage(text: string) {
-  const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: TELEGRAM_CHANNEL,
-      text,
-      parse_mode: 'HTML',
-      disable_web_page_preview: false,
-    }),
-  });
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
+const CHANNEL = '@flipseer';
+
+function slugify(str: string) {
+  return str
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+const COMP_EMOJI: { [k: string]: string } = {
+  'EPL 2026/27': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'UCL 2026/27': '⭐',
+  'Liga 1 2026/27': '🇮🇩',
+  'Ghana PL 2026/27': '🇬🇭',
+  'ISL 2026/27': '🇮🇳',
+};
+
+const COMP_SHORT: { [k: string]: string } = {
+  'EPL 2026/27': 'EPL',
+  'UCL 2026/27': 'UCL',
+  'Liga 1 2026/27': 'Liga 1',
+  'Ghana PL 2026/27': 'Ghana PL',
+  'ISL 2026/27': 'ISL',
+};
+
+async function sendTelegram(text: string) {
+  const res = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: CHANNEL,
+        text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: false,
+      }),
+    }
+  );
   return res.json();
 }
 
-function toSlug(name: string) {
-  return name.toLowerCase().replace(/\s+/g, '-');
-}
-
-function formatKickoffIST(kickoff: string): string {
-  const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
-  return new Date(utc).toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-}
-
-export async function GET(req: Request) {
-  // Verify cron secret
-  const auth = req.headers.get('authorization');
-  if (auth !== `Bearer ${CRON_SECRET}`) {
+export async function GET(req: NextRequest) {
+  // Auth check
+  const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
+  if (secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  // Find matches kicking off in the next 60–90 minutes
+  // Find matches starting in the next 2–3 hours that haven't been announced yet
   const now = new Date();
-  const from = new Date(now.getTime() + 55 * 60 * 1000);  // 55 min from now
-  const to = new Date(now.getTime() + 90 * 60 * 1000);    // 90 min from now
+  const windowStart = new Date(now.getTime() + 90 * 60 * 1000);   // 1.5h from now
+  const windowEnd   = new Date(now.getTime() + 180 * 60 * 1000);  // 3h from now
 
   const { data: matches, error } = await supabase
     .from('matches')
-    .select('id, home_team, away_team, kickoff, competition, telegram_matchday_sent')
-    .in('status', ['upcoming', 'locked'])
-    .gte('kickoff', from.toISOString())
-    .lte('kickoff', to.toISOString())
-    .eq('telegram_matchday_sent', false);
+    .select('id, home_team, away_team, kickoff, competition, tg_prematch_posted')
+    .in('competition', ['EPL 2026/27', 'UCL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'ISL 2026/27'])
+    .eq('status', 'upcoming')
+    .eq('tg_prematch_posted', false)
+    .gte('kickoff', windowStart.toISOString())
+    .lte('kickoff', windowEnd.toISOString())
+    .order('kickoff', { ascending: true });
 
-  if (error || !matches || matches.length === 0) {
-    return NextResponse.json({ sent: 0, message: 'No upcoming matches in window' });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!matches || matches.length === 0) return NextResponse.json({ posted: 0 });
 
-  const results = [];
+  const posted: number[] = [];
 
   for (const match of matches) {
-    // Get community prediction stats
+    // Get community prediction breakdown
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome')
       .eq('match_id', match.id);
 
-    const stats = { home: 0, draw: 0, away: 0, total: 0 };
+    const total = preds?.length || 0;
+    let homeW = 0, draw = 0, awayW = 0;
     (preds || []).forEach((p: any) => {
-      stats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
-      stats.total++;
+      if (p.predicted_outcome === 'home') homeW++;
+      else if (p.predicted_outcome === 'draw') draw++;
+      else if (p.predicted_outcome === 'away') awayW++;
     });
 
-    const getPct = (n: number) => stats.total === 0 ? 0 : Math.round((n / stats.total) * 100);
-    const homePct = getPct(stats.home);
-    const drawPct = getPct(stats.draw);
-    const awayPct = getPct(stats.away);
+    const homePct  = total > 0 ? Math.round((homeW / total) * 100) : 0;
+    const drawPct  = total > 0 ? Math.round((draw  / total) * 100) : 0;
+    const awayPct  = total > 0 ? Math.round((awayW / total) * 100) : 0;
 
-    const competition = match.competition?.replace(' 2026/27', '') || 'Football';
-    const slug = `${toSlug(match.home_team)}-vs-${toSlug(match.away_team)}`;
-    const kickoffStr = formatKickoffIST(match.kickoff);
+    const utc = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
+    const diffMs = new Date(utc).getTime() - now.getTime();
+    const diffH  = Math.floor(diffMs / 3600000);
+    const diffM  = Math.floor((diffMs % 3600000) / 60000);
+    const timeStr = diffH > 0 ? `${diffH}h ${diffM}m` : `${diffM}m`;
+
+    const flag  = COMP_EMOJI[match.competition]  || '⚽';
+    const comp  = COMP_SHORT[match.competition]  || match.competition;
+    const slug  = slugify(match.home_team) + '-vs-' + slugify(match.away_team);
+    const url   = `https://flipseer.com/matches/${slug}`;
 
     let predLine = '';
-    if (stats.total > 0) {
-      predLine = `\n\n🔮 <b>Community says (${stats.total} predictions):</b>\n🟢 ${match.home_team} Win — ${homePct}%\n⚪ Draw — ${drawPct}%\n🔵 ${match.away_team} Win — ${awayPct}%`;
+    if (total > 0) {
+      predLine = `\n🔮 <b>Community prediction</b> (${total} forecasters)\n` +
+        `🏠 ${match.home_team} Win — <b>${homePct}%</b>\n` +
+        `🤝 Draw — <b>${drawPct}%</b>\n` +
+        `✈️ ${match.away_team} Win — <b>${awayPct}%</b>`;
+    } else {
+      predLine = `\n🔮 No predictions yet — be the first!`;
     }
 
-    const message = `⚽ <b>MATCHDAY — ${competition}</b>\n\n<b>${match.home_team} vs ${match.away_team}</b>\n🕐 ${kickoffStr} IST${predLine}\n\n🔒 Predict before kickoff 👇\nhttps://flipseer.com/matches/${slug}\n\n<i>Free. No betting. Pure football.</i>`;
+    const text =
+      `${flag} <b>${comp} · MATCHDAY</b>\n\n` +
+      `⚽ <b>${match.home_team} vs ${match.away_team}</b>\n` +
+      `⏱ Kicks off in <b>${timeStr}</b>${predLine}\n\n` +
+      `👉 Lock your prediction → ${url}\n\n` +
+      `<i>Free forever · No betting · Pure football</i>`;
 
-    const tgResult = await sendTelegramMessage(message);
+    const result = await sendTelegram(text);
 
-    if (tgResult.ok) {
-      // Mark as sent so we don't double-post
+    if (result.ok) {
       await supabase
         .from('matches')
-        .update({ telegram_matchday_sent: true })
+        .update({ tg_prematch_posted: true })
         .eq('id', match.id);
-
-      results.push({ match: slug, sent: true });
-    } else {
-      results.push({ match: slug, sent: false, error: tgResult });
+      posted.push(match.id);
     }
   }
 
-  return NextResponse.json({ sent: results.filter(r => r.sent).length, results });
+  return NextResponse.json({ posted: posted.length, match_ids: posted });
 }
