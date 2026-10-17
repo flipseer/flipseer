@@ -62,8 +62,8 @@ export async function GET(req: NextRequest) {
 
   // Find matches starting in the next 2–3 hours that haven't been announced yet
   const now = new Date();
-  const windowStart = new Date(now.getTime() + 90 * 60 * 1000);   // 1.5h from now
-  const windowEnd   = new Date(now.getTime() + 180 * 60 * 1000);  // 3h from now
+  const windowStart = new Date(now.getTime() + 60 * 60 * 1000);   // 1h from now
+  const windowEnd   = new Date(now.getTime() + 240 * 60 * 1000);  // 4h from now
 
   const { data: matches, error } = await supabase
     .from('matches')
