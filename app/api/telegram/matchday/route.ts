@@ -52,17 +52,18 @@ async function sendTelegram(text: string) {
   );
   return res.json();
 }
-  export async function GET(req: NextRequest) {
+
+export async function GET(req: NextRequest) {
+  // Auth check — allow Vercel cron signature OR manual secret
   const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
   const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null;
   if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Find matches starting in the next 2–3 hours that haven't been announced yet
   const now = new Date();
-  const windowStart = new Date(now.getTime() + 60 * 60 * 1000);   // 1h from now
-  const windowEnd   = new Date(now.getTime() + 240 * 60 * 1000);  // 4h from now
+  const windowStart = new Date(now.getTime() + 60 * 60 * 1000);
+  const windowEnd   = new Date(now.getTime() + 240 * 60 * 1000);
 
   const { data: matches, error } = await supabase
     .from('matches')
@@ -79,7 +80,6 @@ async function sendTelegram(text: string) {
   const posted: number[] = [];
 
   for (const match of matches) {
-    // Get community prediction breakdown
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome')
