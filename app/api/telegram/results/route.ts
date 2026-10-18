@@ -54,17 +54,18 @@ async function sendTelegram(text: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Auth check
+  // Auth check — allow Vercel cron signature OR manual secret
   const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
-  if (secret !== process.env.CRON_SECRET) {
+  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null;
+  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Find finished matches not yet posted
+  // Both 'finished' and 'completed' are done statuses in this DB
   const { data: matches, error } = await supabase
     .from('matches')
     .select('id, home_team, away_team, competition, home_score, away_score, tg_result_posted')
-    .eq('status', 'finished')
+    .in('status', ['finished', 'completed'])
     .eq('tg_result_posted', false)
     .not('home_score', 'is', null)
     .not('away_score', 'is', null)
@@ -77,7 +78,6 @@ export async function GET(req: NextRequest) {
   const posted: number[] = [];
 
   for (const match of matches) {
-    // Get community prediction breakdown
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome, points_earned, prediction_processed')
@@ -95,7 +95,6 @@ export async function GET(req: NextRequest) {
     const drawPct = total > 0 ? Math.round((draw  / total) * 100) : 0;
     const awayPct = total > 0 ? Math.round((awayW / total) * 100) : 0;
 
-    // Determine actual result
     const hs = match.home_score ?? 0;
     const as_ = match.away_score ?? 0;
     let actualResult = '';
@@ -103,7 +102,6 @@ export async function GET(req: NextRequest) {
     else if (as_ > hs)  actualResult = 'away';
     else                actualResult = 'draw';
 
-    // Which outcome had the most community votes?
     let communityCall = '';
     let communityPct = 0;
     if (homeW >= draw && homeW >= awayW) { communityCall = 'home'; communityPct = homePct; }
