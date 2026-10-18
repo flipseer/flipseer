@@ -15,29 +15,31 @@ export default function ResultsPage() {
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
-    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#F59E0B' },
-    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',      color: '#CE1126' },
-    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',    color: '#2E9E5E' },
-    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',         color: '#FF6B00' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
+    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
+    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
+    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',        color: '#FF6B35' },
   ];
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      const dateFrom = activeCompetition === 'UCL 2026/27' ? '2026-10-13'
+        : activeCompetition === 'ISL 2026/27' ? '2026-10-10'
+        : '2000-01-01';
+
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
-          .eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', '2000-01-01')
+          .eq('status', 'finished').eq('competition', activeCompetition)
+          .gte('kickoff', dateFrom)
           .order('kickoff', { ascending: false }),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', '2000-01-01'),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', dateFrom),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
 
       const completedMatches = matchRes.data || [];
-      setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
       if (completedMatches.length > 0) {
@@ -53,6 +55,11 @@ export default function ResultsPage() {
           counts[p.match_id] = (counts[p.match_id] || 0) + 1;
         });
         setPredictionCounts(counts);
+
+        const matchesWithPredictions = completedMatches.filter((m: any) => counts[m.id] > 0);
+        setMatches(matchesWithPredictions);
+      } else {
+        setMatches([]);
       }
 
       setLoading(false);
@@ -131,7 +138,6 @@ export default function ResultsPage() {
 
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '24px 20px 0' }}>
 
-        {/* TOP PREDICTORS PANEL */}
         {activeMatch && (
           <div style={{ backgroundColor: '#0D2B14', border: '2px solid ' + activeComp.color, borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -185,7 +191,6 @@ export default function ResultsPage() {
           </div>
         )}
 
-        {/* MATCH LIST */}
         {matches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', borderRadius: '16px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
