@@ -30,11 +30,11 @@ export default function ResultsPage() {
 
       const [matchRes, totalRes, completedRes, cancelledRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
-          .eq('status', 'finished').eq('competition', activeCompetition)
+          .in('status', ['finished', 'completed']).eq('competition', activeCompetition)
           .gte('kickoff', dateFrom)
           .order('kickoff', { ascending: false }),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', dateFrom),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition).gte('kickoff', dateFrom),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['finished', 'completed']).eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition).gte('kickoff', dateFrom),
