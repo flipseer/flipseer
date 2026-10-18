@@ -24,20 +24,22 @@ export default function ResultsPage() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      const dateFrom = activeCompetition === 'UCL 2026/27' ? '2026-10-13'
+        : activeCompetition === 'ISL 2026/27' ? '2026-10-10'
+        : '2000-01-01';
+
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'finished').eq('competition', activeCompetition)
-          .gte('kickoff', '2000-01-01')
+          .gte('kickoff', dateFrom)
           .order('kickoff', { ascending: false }),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition)
-          .gte('kickoff', '2000-01-01'),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', dateFrom),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
 
       const completedMatches = matchRes.data || [];
-      setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
       if (completedMatches.length > 0) {
@@ -53,6 +55,11 @@ export default function ResultsPage() {
           counts[p.match_id] = (counts[p.match_id] || 0) + 1;
         });
         setPredictionCounts(counts);
+
+        const matchesWithPredictions = completedMatches.filter((m: any) => counts[m.id] > 0);
+        setMatches(matchesWithPredictions);
+      } else {
+        setMatches([]);
       }
 
       setLoading(false);
