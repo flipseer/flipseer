@@ -15,9 +15,10 @@ export default function ResultsPage() {
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
-    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
-    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
-    { key: 'World Cup 2026',   label: '🏆 World Cup',   color: '#F59E0B' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#F59E0B' },
+    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',      color: '#CE1126' },
+    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',    color: '#2E9E5E' },
+    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',         color: '#FF6B00' },
   ];
 
   useEffect(() => {
@@ -39,7 +40,6 @@ export default function ResultsPage() {
       setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
-      // Fetch prediction counts for completed matches
       if (completedMatches.length > 0) {
         const matchIds = completedMatches.map((m: any) => m.id);
         const { data: predData } = await supabase
@@ -188,7 +188,7 @@ export default function ResultsPage() {
         {/* MATCH LIST */}
         {matches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', borderRadius: '16px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
             <h3 style={{ fontFamily: 'Georgia, serif', color: activeComp.color, marginBottom: '8px' }}>No results yet</h3>
             <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Match results will appear here after kick-off.</p>
             <a href="/predict" style={{ backgroundColor: activeComp.color, color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
