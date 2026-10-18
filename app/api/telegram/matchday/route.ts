@@ -68,7 +68,6 @@ export async function GET(req: NextRequest) {
   const { data: matches, error } = await supabase
     .from('matches')
     .select('id, home_team, away_team, kickoff, competition, tg_prematch_posted')
-    .in('competition', ['EPL 2026/27', 'UCL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'ISL 2026/27'])
     .eq('status', 'upcoming')
     .eq('tg_prematch_posted', false)
     .gte('kickoff', windowStart.toISOString())
