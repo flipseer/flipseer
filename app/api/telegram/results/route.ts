@@ -64,7 +64,6 @@ export async function GET(req: NextRequest) {
   const { data: matches, error } = await supabase
     .from('matches')
     .select('id, home_team, away_team, competition, home_score, away_score, tg_result_posted')
-    .in('competition', ['EPL 2026/27', 'UCL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'ISL 2026/27'])
     .eq('status', 'finished')
     .eq('tg_result_posted', false)
     .not('home_score', 'is', null)
