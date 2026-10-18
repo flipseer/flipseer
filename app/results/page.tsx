@@ -10,7 +10,7 @@ export default function ResultsPage() {
   const [activeMatch, setActiveMatch] = useState<any>(null);
   const [topPredictors, setTopPredictors] = useState<any[]>([]);
   const [loadingPredictors, setLoadingPredictors] = useState(false);
-  const [stats, setStats] = useState({ total: 0, completed: 0, live: 0, upcoming: 0 });
+  const [stats, setStats] = useState({ total: 0, completed: 0, cancelled: 0, live: 0, upcoming: 0 });
   const [activeCompetition, setActiveCompetition] = useState('EPL 2026/27');
 
   const COMPETITIONS = [
@@ -28,19 +28,20 @@ export default function ResultsPage() {
         : activeCompetition === 'ISL 2026/27' ? '2026-10-10'
         : '2000-01-01';
 
-      const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
+      const [matchRes, totalRes, completedRes, cancelledRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
           .eq('status', 'finished').eq('competition', activeCompetition)
           .gte('kickoff', dateFrom)
           .order('kickoff', { ascending: false }),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', dateFrom),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition).gte('kickoff', dateFrom),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'cancelled').eq('competition', activeCompetition).gte('kickoff', dateFrom),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition).gte('kickoff', dateFrom),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition).gte('kickoff', dateFrom),
       ]);
 
       const completedMatches = matchRes.data || [];
-      setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
+      setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, cancelled: cancelledRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
       if (completedMatches.length > 0) {
         const matchIds = completedMatches.map((m: any) => m.id);
@@ -125,6 +126,7 @@ export default function ResultsPage() {
           {[
             { label: 'Total', value: stats.total, color: '#9CA3AF' },
             { label: 'Completed', value: stats.completed, color: '#2E9E5E' },
+            ...(stats.cancelled > 0 ? [{ label: 'Cancelled', value: stats.cancelled, color: '#6B7280' }] : []),
             ...(stats.live > 0 ? [{ label: 'Live', value: stats.live, color: '#EF4444' }] : []),
             { label: 'Upcoming', value: stats.upcoming, color: activeComp.color },
           ].map(({ label, value, color }) => (
