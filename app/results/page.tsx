@@ -15,10 +15,10 @@ export default function ResultsPage() {
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
-    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#A78BFA' },
-    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',    color: '#CE1126' },
-    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',   color: '#F59E0B' },
-    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',        color: '#FF6B35' },
+    { key: 'UCL 2026/27',      label: '⭐ UCL',          color: '#F59E0B' },
+    { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',      color: '#CE1126' },
+    { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',    color: '#2E9E5E' },
+    { key: 'ISL 2026/27',      label: '🇮🇳 ISL',         color: '#FF6B00' },
   ];
 
   useEffect(() => {
@@ -26,20 +26,20 @@ export default function ResultsPage() {
       setLoading(true);
       const [matchRes, totalRes, completedRes, liveRes, upcomingRes] = await Promise.all([
         supabase.from('matches').select('id, home_team, away_team, home_score, away_score, kickoff, league, is_upset, winner, status, competition')
-          .eq('status', 'completed').eq('competition', activeCompetition)
-          .gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01')
+          .eq('status', 'finished').eq('competition', activeCompetition)
+          .gte('kickoff', '2000-01-01')
           .order('kickoff', { ascending: false }),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01'),
-        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'completed').eq('competition', activeCompetition).gte('kickoff', activeCompetition === 'UCL 2026/27' ? '2026-10-13' : activeCompetition === 'ISL 2026/27' ? '2026-10-10' : '2000-01-01')
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('competition', activeCompetition),
+        supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'finished').eq('competition', activeCompetition)
           .gte('kickoff', '2000-01-01'),
         supabase.from('matches').select('*', { count: 'exact', head: true }).eq('status', 'live').eq('competition', activeCompetition),
         supabase.from('matches').select('*', { count: 'exact', head: true }).in('status', ['upcoming', 'locked']).eq('competition', activeCompetition),
       ]);
 
       const completedMatches = matchRes.data || [];
+      setMatches(completedMatches);
       setStats({ total: totalRes.count || 0, completed: completedRes.count || 0, live: liveRes.count || 0, upcoming: upcomingRes.count || 0 });
 
-      // Only show matches that have at least one prediction on Flipseer
       if (completedMatches.length > 0) {
         const matchIds = completedMatches.map((m: any) => m.id);
         const { data: predData } = await supabase
@@ -53,12 +53,6 @@ export default function ResultsPage() {
           counts[p.match_id] = (counts[p.match_id] || 0) + 1;
         });
         setPredictionCounts(counts);
-
-        // Only show matches with at least one prediction
-        const matchesWithPredictions = completedMatches.filter((m: any) => counts[m.id] > 0);
-        setMatches(matchesWithPredictions);
-      } else {
-        setMatches([]);
       }
 
       setLoading(false);
@@ -194,7 +188,7 @@ export default function ResultsPage() {
         {/* MATCH LIST */}
         {matches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#0D2B14', borderRadius: '16px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📅</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
             <h3 style={{ fontFamily: 'Georgia, serif', color: activeComp.color, marginBottom: '8px' }}>No results yet</h3>
             <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Match results will appear here after kick-off.</p>
             <a href="/predict" style={{ backgroundColor: activeComp.color, color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
