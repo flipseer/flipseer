@@ -52,11 +52,10 @@ async function sendTelegram(text: string) {
   );
   return res.json();
 }
-
-export async function GET(req: NextRequest) {
-  // Auth check
+  export async function GET(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
-  if (secret !== process.env.CRON_SECRET) {
+  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null;
+  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
