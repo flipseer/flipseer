@@ -6,16 +6,6 @@ export const dynamic = 'force-dynamic';
 
 type Props = { params: { match: string } };
 
-// Normalize slug for DB comparison — strip accents, lowercase, replace non-alphanum with dash
-function slugify(str: string) {
-  return str
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = params.match;
 
@@ -24,18 +14,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Fetch all recent matches and find the one whose slugified names match
-  const { data: allMatches } = await supabase
+  const { data: matches } = await supabase
     .from('matches')
     .select('home_team, away_team, competition, kickoff, home_score, away_score, status')
-    .order('kickoff', { ascending: false })
-    .limit(200);
+    .eq('slug', slug)
+    .limit(1);
 
-  const match = (allMatches || []).find((m: any) => {
-    const s = slugify(m.home_team) + '-vs-' + slugify(m.away_team);
-    return s === slug;
-  });
-
+  const match = matches?.[0];
   const home = match?.home_team || '';
   const away = match?.away_team || '';
 
@@ -81,17 +66,13 @@ export default async function MatchPage({ params }: Props) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Find match by slugifying team names from DB — handles accents, special chars
-  const { data: allMatches } = await supabase
+  const { data: matches } = await supabase
     .from('matches')
     .select('*')
-    .order('kickoff', { ascending: false })
-    .limit(200);
+    .eq('slug', slug)
+    .limit(1);
 
-  const match = (allMatches || []).find((m: any) => {
-    const s = slugify(m.home_team) + '-vs-' + slugify(m.away_team);
-    return s === slug;
-  }) || null;
+  const match = matches?.[0] || null;
 
   if (!match) {
     return (
