@@ -145,4 +145,53 @@ export async function GET(req: NextRequest) {
       ).getTime()
 
       const isInPlay = ['1H', 'HT', '2H', 'ET', 'P', 'BT'].includes(status)
-      const isFinished = ['FT', 'AET',
+      const isFinished = ['FT', 'AET', 'PEN'].includes(status)
+      const isAbandoned = ['CANC', 'ABD', 'AWD', 'WO'].includes(status)
+      const isHalftime = status === 'HT'
+      const isPastKickoff = now.getTime() >= kickoffTime
+
+      const flag = COMP_EMOJI[match.competition] || '⚽'
+      const comp = COMP_SHORT[match.competition] || match.competition
+      const slug = slugify(match.home_team) + '-vs-' + slugify(match.away_team)
+      const url = `https://flipseer.com/matches/${slug}`
+
+      if ((isInPlay || isPastKickoff) && match.status === 'upcoming') {
+        await supabase.from('matches').update({ status: 'locked' }).eq('id', match.id)
+        log.push('LOCKED: ' + match.home_team + ' vs ' + match.away_team)
+        match.status = 'locked'
+      }
+
+      if (isInPlay && !match.tg_kickoff_posted) {
+        const { data: preds } = await supabase
+          .from('predictions')
+          .select('predicted_outcome')
+          .eq('match_id', match.id)
+
+        const total = preds?.length || 0
+        let homeW = 0, draw = 0, awayW = 0
+        ;(preds || []).forEach((p: any) => {
+          if (p.predicted_outcome === 'home') homeW++
+          else if (p.predicted_outcome === 'draw') draw++
+          else if (p.predicted_outcome === 'away') awayW++
+        })
+        const homePct = total > 0 ? Math.round((homeW / total) * 100) : 0
+        const drawPct = total > 0 ? Math.round((draw / total) * 100) : 0
+        const awayPct = total > 0 ? Math.round((awayW / total) * 100) : 0
+
+        const predLine = total > 0
+          ? `\n\n🔮 <b>Community split</b> (${total} forecasters)\n🏠 ${match.home_team} — <b>${homePct}%</b>  🤝 Draw — <b>${drawPct}%</b>  ✈️ ${match.away_team} — <b>${awayPct}%</b>`
+          : ''
+
+        const text =
+          `${flag} <b>KICK OFF · ${comp}</b>\n\n` +
+          `⚽ <b>${match.home_team} vs ${match.away_team}</b>\n` +
+          `🟢 The match has started!${predLine}\n\n` +
+          `👉 Watch live → ${url}`
+
+        const ok = await sendTelegram(text, botToken)
+        if (ok) {
+          await supabase.from('matches').update({ tg_kickoff_posted: true }).eq('id', match.id)
+          match.tg_kickoff_posted = true
+          log.push('TG KICKOFF: ' + match.home_team + ' vs ' + match.away_team)
+        }
+      }
