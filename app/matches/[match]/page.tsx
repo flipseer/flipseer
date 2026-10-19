@@ -6,29 +6,41 @@ export const dynamic = 'force-dynamic';
 
 type Props = { params: { match: string } };
 
-function parseSlug(slug: string): { home: string; away: string } {
-  const parts = slug.split('-vs-');
-  if (parts.length !== 2) return { home: '', away: '' };
-  const toName = (s: string) => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  return { home: toName(parts[0]), away: toName(parts[1]) };
+// Normalize slug for DB comparison — strip accents, lowercase, replace non-alphanum with dash
+function slugify(str: string) {
+  return str
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { home, away } = parseSlug(params.match);
-  if (!home || !away) return { title: 'Match Not Found | Flipseer' };
+  const slug = params.match;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('competition, kickoff, home_score, away_score, status')
-    .ilike('home_team', home)
-    .ilike('away_team', away)
-    .limit(1);
 
-  const match = matches?.[0];
+  // Fetch all recent matches and find the one whose slugified names match
+  const { data: allMatches } = await supabase
+    .from('matches')
+    .select('home_team, away_team, competition, kickoff, home_score, away_score, status')
+    .order('kickoff', { ascending: false })
+    .limit(200);
+
+  const match = (allMatches || []).find((m: any) => {
+    const s = slugify(m.home_team) + '-vs-' + slugify(m.away_team);
+    return s === slug;
+  });
+
+  const home = match?.home_team || '';
+  const away = match?.away_team || '';
+
+  if (!home || !away) return { title: 'Match Not Found | Flipseer' };
+
   const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
   const isCompleted = match?.status === 'completed';
   const resultStr = isCompleted && match?.home_score !== null
@@ -45,12 +57,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: desc,
     keywords: `${home} vs ${away} prediction, ${home} ${away} ${competition}, ${home} vs ${away} forecast, football prediction`,
     alternates: {
-      canonical: `https://flipseer.com/matches/${params.match}`,
+      canonical: `https://flipseer.com/matches/${slug}`,
     },
     openGraph: {
       title,
       description: desc,
-      url: `https://flipseer.com/matches/${params.match}`,
+      url: `https://flipseer.com/matches/${slug}`,
       images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
     },
     twitter: {
@@ -62,9 +74,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function MatchPage({ params }: Props) {
-  const { home, away } = parseSlug(params.match);
+  const slug = params.match;
 
-  if (!home || !away) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Find match by slugifying team names from DB — handles accents, special chars
+  const { data: allMatches } = await supabase
+    .from('matches')
+    .select('*')
+    .order('kickoff', { ascending: false })
+    .limit(200);
+
+  const match = (allMatches || []).find((m: any) => {
+    const s = slugify(m.home_team) + '-vs-' + slugify(m.away_team);
+    return s === slug;
+  }) || null;
+
+  if (!match) {
     return (
       <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Arial, sans-serif' }}>
         <div style={{ textAlign: 'center' }}>
@@ -76,45 +105,31 @@ export default async function MatchPage({ params }: Props) {
     );
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('*')
-    .ilike('home_team', home)
-    .ilike('away_team', away)
-    .limit(1);
-
-  const match = matches?.[0] || null;
-
+  const home = match.home_team;
+  const away = match.away_team;
   const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
 
   let predictions: any[] = [];
   let communityStats = { home: 0, draw: 0, away: 0, total: 0 };
 
-  if (match) {
-    const { data: preds } = await supabase
-      .from('predictions')
-      .select('predicted_outcome, confidence_pct, predicted_home_score, predicted_away_score, profiles(username, country, total_points)')
-      .eq('match_id', match.id)
-      .order('confidence_pct', { ascending: false })
-      .limit(10);
+  const { data: preds } = await supabase
+    .from('predictions')
+    .select('predicted_outcome, confidence_pct, predicted_home_score, predicted_away_score, profiles(username, country, total_points)')
+    .eq('match_id', match.id)
+    .order('confidence_pct', { ascending: false })
+    .limit(10);
 
-    predictions = preds || [];
+  predictions = preds || [];
 
-    const { data: allPreds } = await supabase
-      .from('predictions')
-      .select('predicted_outcome')
-      .eq('match_id', match.id);
+  const { data: allPreds } = await supabase
+    .from('predictions')
+    .select('predicted_outcome')
+    .eq('match_id', match.id);
 
-    (allPreds || []).forEach((p: any) => {
-      communityStats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
-      communityStats.total++;
-    });
-  }
+  (allPreds || []).forEach((p: any) => {
+    communityStats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
+    communityStats.total++;
+  });
 
   return (
     <>
@@ -125,7 +140,7 @@ export default async function MatchPage({ params }: Props) {
       <MatchPageClient
         home={home}
         away={away}
-        slug={params.match}
+        slug={slug}
         match={match}
         predictions={predictions}
         communityStats={communityStats}
