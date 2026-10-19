@@ -1,131 +1,148 @@
-import { Metadata } from 'next';
-import { createClient } from '@supabase/supabase-js';
-import MatchPageClient from './MatchPageClient';
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
-export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs'
+export const maxDuration = 60
 
-type Props = { params: { match: string } };
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const slug = params.match;
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('home_team, away_team, competition, kickoff, home_score, away_score, status')
-    .eq('slug', slug)
-    .limit(1);
-
-  const match = matches?.[0];
-  const home = match?.home_team || '';
-  const away = match?.away_team || '';
-
-  if (!home || !away) return { title: 'Match Not Found | Flipseer' };
-
-  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
-  const isCompleted = match?.status === 'completed';
-  const resultStr = isCompleted && match?.home_score !== null
-    ? ` | Result: ${match.home_score}-${match.away_score}`
-    : '';
-
-  const title = `${home} vs ${away} Prediction | ${competition} | Flipseer`;
-  const desc = isCompleted
-    ? `${home} ${match?.home_score}-${match?.away_score} ${away}${resultStr}. See what Flipseer fans predicted before kickoff. Build your own football reputation. Free.`
-    : `Predict ${home} vs ${away} before kickoff. Lock your ${competition} prediction permanently. Build your football reputation on Flipseer. Free. No betting.`;
-
-  return {
-    title,
-    description: desc,
-    keywords: `${home} vs ${away} prediction, ${home} ${away} ${competition}, ${home} vs ${away} forecast, football prediction`,
-    alternates: {
-      canonical: `https://flipseer.com/matches/${slug}`,
-    },
-    openGraph: {
-      title,
-      description: desc,
-      url: `https://flipseer.com/matches/${slug}`,
-      images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description: desc,
-    },
-  };
+const COMP_EMOJI: { [k: string]: string } = {
+  'EPL 2026/27': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'UCL 2026/27': '⭐',
+  'Liga 1 2026/27': '🇮🇩',
+  'Ghana PL 2026/27': '🇬🇭',
+  'ISL 2026/27': '🇮🇳',
 }
 
-export default async function MatchPage({ params }: Props) {
-  const slug = params.match;
+const COMP_SHORT: { [k: string]: string } = {
+  'EPL 2026/27': 'EPL',
+  'UCL 2026/27': 'UCL',
+  'Liga 1 2026/27': 'Liga 1',
+  'Ghana PL 2026/27': 'Ghana PL',
+  'ISL 2026/27': 'ISL',
+}
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+function slugify(str: string) {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
 
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('*')
-    .eq('slug', slug)
-    .limit(1);
+async function sendTelegram(text: string, botToken: string) {
+  try {
+    const res = await fetch(
+      `https://api.telegram.org/bot${botToken}/sendMessage`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: '@flipseer',
+          text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        }),
+      }
+    )
+    const data = await res.json()
+    return data.ok === true
+  } catch (e) {
+    return false
+  }
+}
 
-  const match = matches?.[0] || null;
+export async function GET(req: NextRequest) {
+  const secret = req.headers.get('x-cron-secret') || req.nextUrl.searchParams.get('secret')
+  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null
+    || req.headers.get('user-agent')?.includes('vercel')
 
-  if (!match) {
-    return (
-      <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontFamily: 'Arial, sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚽</div>
-          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '8px' }}>Match not found</h1>
-          <a href="/predict" style={{ color: '#2E9E5E' }}>View all matches →</a>
-        </div>
-      </main>
-    );
+  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const home = match.home_team;
-  const away = match.away_team;
-  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
 
-  let predictions: any[] = [];
-  let communityStats = { home: 0, draw: 0, away: 0, total: 0 };
+  const apiKey = process.env.API_FOOTBALL_KEY
+  if (!apiKey) return NextResponse.json({ error: 'No API key' }, { status: 500 })
 
-  const { data: preds } = await supabase
-    .from('predictions')
-    .select('predicted_outcome, confidence_pct, predicted_home_score, predicted_away_score, profiles(username, country, total_points)')
-    .eq('match_id', match.id)
-    .order('confidence_pct', { ascending: false })
-    .limit(10);
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || ''
 
-  predictions = preds || [];
+  const log: string[] = []
+  const now = new Date()
+  log.push('Cron started: ' + now.toISOString())
 
-  const { data: allPreds } = await supabase
-    .from('predictions')
-    .select('predicted_outcome')
-    .eq('match_id', match.id);
+  try {
+    const windowStart = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
+    const windowEnd = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
 
-  (allPreds || []).forEach((p: any) => {
-    communityStats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
-    communityStats.total++;
-  });
+    const { data: windowMatches } = await supabase
+      .from('matches')
+      .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score, competition, tg_kickoff_posted, tg_halftime_posted, tg_last_home_score, tg_last_away_score')
+      .in('status', ['upcoming', 'locked', 'live'])
+      .gte('kickoff', windowStart)
+      .lte('kickoff', windowEnd)
 
-  return (
-    <>
-      {/* SEO H1 — server-rendered, visually hidden, read by Google */}
-      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        {home} vs {away} Prediction — {competition} | Flipseer
-      </h1>
-      <MatchPageClient
-        home={home}
-        away={away}
-        slug={slug}
-        match={match}
-        predictions={predictions}
-        communityStats={communityStats}
-      />
-    </>
-  );
-}
+    const stuckCutoff = new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString()
+    const { data: stuckMatches } = await supabase
+      .from('matches')
+      .select('id, api_id, home_team, away_team, kickoff, status, home_score, away_score, competition, tg_kickoff_posted, tg_halftime_posted, tg_last_home_score, tg_last_away_score')
+      .in('status', ['locked', 'live', 'upcoming'])
+      .lt('kickoff', stuckCutoff)
+
+    const allMatches = [...(windowMatches || []), ...(stuckMatches || [])]
+    const seen = new Set<number>()
+    const matches = allMatches.filter((m: any) => {
+      if (seen.has(m.id)) return false
+      seen.add(m.id)
+      return true
+    })
+
+    if (matches.length === 0) {
+      log.push('No matches to process')
+      return NextResponse.json({ ok: true, log })
+    }
+
+    log.push('Matches to process: ' + matches.length)
+
+    const BATCH_SIZE = 20
+    const fixtures: any[] = []
+
+    for (let i = 0; i < matches.length; i += BATCH_SIZE) {
+      const batch = matches.slice(i, i + BATCH_SIZE)
+      const apiIds = batch.map((m: any) => m.api_id).join('-')
+      const res = await fetch(
+        'https://v3.football.api-sports.io/fixtures?ids=' + apiIds,
+        { headers: { 'x-apisports-key': apiKey }, cache: 'no-store' }
+      )
+      if (!res.ok) {
+        log.push('API-Football error: ' + res.status)
+        continue
+      }
+      const data = await res.json()
+      fixtures.push(...(data?.response || []))
+    }
+
+    log.push('Fixtures from API: ' + fixtures.length)
+
+    for (const fixture of fixtures) {
+      const apiId = fixture.fixture?.id
+      const status = fixture.fixture?.status?.short
+      const elapsed = fixture.fixture?.status?.elapsed || 0
+      const homeScore = fixture.goals?.home ?? 0
+      const awayScore = fixture.goals?.away ?? 0
+      const events: any[] = fixture.events || []
+
+      const match = matches.find((m: any) => m.api_id === apiId)
+      if (!match) continue
+
+      log.push(match.home_team + ' vs ' + match.away_team + ' | API: ' + status + ' | DB: ' + match.status)
+
+      const kickoffTime = new Date(
+        match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z'
+      ).getTime()
+
+      const isInPlay = ['1H', 'HT', '2H', 'ET', 'P', 'BT'].includes(status)
+      const isFinished = ['FT', 'AET',
