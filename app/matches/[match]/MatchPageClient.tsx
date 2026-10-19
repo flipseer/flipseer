@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
   'IN': '&#x1F1EE;&#x1F1F3;', 'BR': '&#x1F1E7;&#x1F1F7;',
@@ -24,14 +24,63 @@ type Props = {
 export default function MatchPageClient({ home, away, slug, match, predictions, communityStats }: Props) {
   const [copied, setCopied] = useState(false);
 
+  // Live score state — initialised from server-rendered match data
+  const [liveScore, setLiveScore] = useState<{ home: number; away: number } | null>(
+    match?.status === 'live' || match?.status === 'completed'
+      ? { home: match.home_score ?? 0, away: match.away_score ?? 0 }
+      : null
+  );
+  const [liveStatus, setLiveStatus] = useState<string>(match?.status || 'upcoming');
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  // Poll /api/live-scores every 30s while match is live
+  useEffect(() => {
+    if (match?.status !== 'live') return;
+
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/live-scores', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const fixtures: any[] = data?.fixtures || data?.response || data || [];
+        // Match by api_id if available, else by team names
+        const found = fixtures.find((f: any) => {
+          const apiId = f.fixture?.id;
+          if (match?.api_id && apiId === match.api_id) return true;
+          const h = f.teams?.home?.name || '';
+          const a = f.teams?.away?.name || '';
+          return h.toLowerCase().includes(home.toLowerCase()) ||
+                 a.toLowerCase().includes(away.toLowerCase());
+        });
+        if (found) {
+          setLiveScore({
+            home: found.goals?.home ?? 0,
+            away: found.goals?.away ?? 0,
+          });
+          const s = found.fixture?.status?.short;
+          if (['FT', 'AET', 'PEN'].includes(s)) setLiveStatus('completed');
+          else if (['1H', 'HT', '2H', 'ET', 'P', 'BT'].includes(s)) setLiveStatus('live');
+          setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        }
+      } catch (_) {}
+    };
+
+    poll(); // immediate first call
+    const interval = setInterval(poll, 30_000);
+    return () => clearInterval(interval);
+  }, [match?.status, match?.api_id, home, away]);
+
   const getPct = (n: number) => communityStats.total === 0 ? 0 : Math.round((n / communityStats.total) * 100);
   const homePct = getPct(communityStats.home);
   const drawPct = getPct(communityStats.draw);
   const awayPct = getPct(communityStats.away);
 
-  const isCompleted = match?.status === 'completed';
-  const isLive = match?.status === 'live';
-  const isUpcoming = match?.status === 'upcoming' || match?.status === 'locked';
+  const isCompleted = liveStatus === 'completed';
+  const isLive = liveStatus === 'live';
+  const isUpcoming = liveStatus === 'upcoming' || liveStatus === 'locked';
+
+  const displayHomeScore = liveScore?.home ?? match?.home_score ?? 0;
+  const displayAwayScore = liveScore?.away ?? match?.away_score ?? 0;
 
   const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
 
@@ -61,16 +110,19 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
             {isCompleted ? (
               <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '8px 20px' }}>
                 <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>
-                  {match.home_score} - {match.away_score}
+                  {displayHomeScore} - {displayAwayScore}
                 </span>
                 <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '4px' }}>FULL TIME</div>
               </div>
             ) : isLive ? (
               <div style={{ backgroundColor: '#0D2B14', border: '1px solid #EF4444', borderRadius: '10px', padding: '8px 20px' }}>
                 <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#EF4444', fontFamily: 'Georgia, serif' }}>
-                  {match?.home_score ?? 0} - {match?.away_score ?? 0}
+                  {displayHomeScore} - {displayAwayScore}
                 </span>
                 <div style={{ fontSize: '10px', color: '#EF4444', marginTop: '4px' }}>LIVE</div>
+                {lastUpdated && (
+                  <div style={{ fontSize: '9px', color: '#4B5563', marginTop: '2px' }}>Updated {lastUpdated}</div>
+                )}
               </div>
             ) : (
               <div style={{ fontSize: '28px', color: '#4B5563', fontWeight: 'bold' }}>vs</div>
