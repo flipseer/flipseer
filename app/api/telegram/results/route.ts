@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,6 +36,15 @@ const COMP_SHORT: { [k: string]: string } = {
   'ISL 2026/27': 'ISL',
 };
 
+// Only post results for active competitions — old/finished tournaments are excluded
+const ACTIVE_COMPETITIONS = new Set([
+  'EPL 2026/27',
+  'UCL 2026/27',
+  'Liga 1 2026/27',
+  'Ghana PL 2026/27',
+  'ISL 2026/27',
+]);
+
 async function sendTelegram(text: string) {
   const res = await fetch(
     `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
@@ -54,30 +63,41 @@ async function sendTelegram(text: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Auth check — allow Vercel cron signature OR manual secret
   const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
   const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null;
   if (secret !== process.env.CRON_SECRET && !isVercelCron) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Both 'finished' and 'completed' are done statuses in this DB
+  // Only look at matches completed in the last 24 hours
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   const { data: matches, error } = await supabase
     .from('matches')
-    .select('id, home_team, away_team, competition, home_score, away_score, tg_result_posted')
+    .select('id, home_team, away_team, competition, home_score, away_score, tg_result_posted, kickoff')
     .in('status', ['finished', 'completed'])
     .eq('tg_result_posted', false)
     .not('home_score', 'is', null)
     .not('away_score', 'is', null)
-    .order('id', { ascending: true })
+    .gte('kickoff', since)
+    .order('kickoff', { ascending: true })
     .limit(10);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!matches || matches.length === 0) return NextResponse.json({ posted: 0 });
 
   const posted: number[] = [];
+  const skipped: number[] = [];
 
   for (const match of matches) {
+    // Skip competitions that are no longer active (e.g. World Cup 2026)
+    if (!ACTIVE_COMPETITIONS.has(match.competition)) {
+      // Mark as posted so it never fires again
+      await supabase.from('matches').update({ tg_result_posted: true }).eq('id', match.id);
+      skipped.push(match.id);
+      continue;
+    }
+
     const { data: preds } = await supabase
       .from('predictions')
       .select('predicted_outcome, points_earned, prediction_processed')
@@ -98,9 +118,9 @@ export async function GET(req: NextRequest) {
     const hs = match.home_score ?? 0;
     const as_ = match.away_score ?? 0;
     let actualResult = '';
-    if (hs > as_)       actualResult = 'home';
-    else if (as_ > hs)  actualResult = 'away';
-    else                actualResult = 'draw';
+    if (hs > as_)      actualResult = 'home';
+    else if (as_ > hs) actualResult = 'away';
+    else               actualResult = 'draw';
 
     let communityCall = '';
     let communityPct = 0;
@@ -142,13 +162,10 @@ export async function GET(req: NextRequest) {
     const result = await sendTelegram(text);
 
     if (result.ok) {
-      await supabase
-        .from('matches')
-        .update({ tg_result_posted: true })
-        .eq('id', match.id);
+      await supabase.from('matches').update({ tg_result_posted: true }).eq('id', match.id);
       posted.push(match.id);
     }
   }
 
-  return NextResponse.json({ posted: posted.length, match_ids: posted });
+  return NextResponse.json({ posted: posted.length, match_ids: posted, skipped });
 }
