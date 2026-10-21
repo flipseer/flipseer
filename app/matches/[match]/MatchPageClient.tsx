@@ -28,8 +28,11 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    if (match?.status !== 'live' && match?.status !== 'locked') return;
+const kickoffPassed = match?.kickoff 
+  ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
+  : false;
 
+if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
     const poll = async () => {
       try {
         const res = await fetch('/api/live-scores', { cache: 'no-store' });
