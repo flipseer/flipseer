@@ -6,31 +6,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const cleanTeam = (name: string) => name
-  .toLowerCase()
-  .replace(/&/g, 'and')
-  .replace(/[^a-z0-9\s-]/g, '')
-  .replace(/\s+/g, '-')
-  .replace(/-+/g, '-')
-  .replace(/^-|-$/g, '')
-
 async function fetchMatchPages(competition: string, priority: number): Promise<MetadataRoute.Sitemap> {
   try {
     const { data: matches } = await supabase
       .from('matches')
-      .select('home_team, away_team, kickoff')
+      .select('slug, kickoff')
       .eq('competition', competition)
       .eq('status', 'completed')
-      .not('home_team', 'is', null)
-      .not('away_team', 'is', null)
+      .not('slug', 'is', null)
       .order('kickoff', { ascending: false })
 
-    return (matches ?? []).map((m) => ({
-      url: `https://www.flipseer.com/matches/${cleanTeam(m.home_team)}-vs-${cleanTeam(m.away_team)}`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority,
-    }))
+    return (matches ?? [])
+      .filter((m) => m.slug)
+      .map((m) => ({
+        url: `https://flipseer.com/matches/${m.slug}`,
+        lastModified: new Date(m.kickoff),
+        changeFrequency: 'weekly' as const,
+        priority,
+      }))
   } catch (e) {
     console.error(`Sitemap fetch error for ${competition}:`, e)
     return []
@@ -38,7 +31,7 @@ async function fetchMatchPages(competition: string, priority: number): Promise<M
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://www.flipseer.com'
+  const baseUrl = 'https://flipseer.com'
   const now = new Date()
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -48,8 +41,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/result`,                              lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
     { url: `${baseUrl}/groups`,                              lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
     { url: `${baseUrl}/nations`,                             lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-
-    // Competition hub pages
     { url: `${baseUrl}/premier-league`,                      lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/champions-league`,                    lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/indian-super-league`,                 lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
@@ -59,8 +50,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/ghana`,                               lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
     { url: `${baseUrl}/indonesia`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
     { url: `${baseUrl}/india`,                               lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-
-    // Content / SEO pages
     { url: `${baseUrl}/how-to-predict-football`,             lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/football-reputation`,                 lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/how-to-play`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
@@ -70,7 +59,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`,                               lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
   ]
 
-  // Match pages — all active competitions in parallel
   const [eplMatchPages, uclMatchPages, islMatchPages, ghanaMatchPages, ligaMatchPages] =
     await Promise.all([
       fetchMatchPages('EPL 2026/27',      0.7),
@@ -80,7 +68,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       fetchMatchPages('Liga 1 2026/27',   0.6),
     ])
 
-  // Public profile pages
   let profilePages: MetadataRoute.Sitemap = []
   try {
     const { data: profiles } = await supabase
