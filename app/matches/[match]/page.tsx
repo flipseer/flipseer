@@ -48,8 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description: desc,
       url: `https://flipseer.com/matches/${slug}`,
-      images: [{ url: `https://flipseer.com/api/og/home`, width: 1200, height: 630 }],
-    },
+images: [{ url: `https://flipseer.com/api/og/match?slug=${slug}`, width: 1200, height: 630 }],    },
     twitter: {
       card: 'summary_large_image',
       title,
