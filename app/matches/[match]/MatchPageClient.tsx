@@ -21,52 +21,68 @@ type Props = {
   communityStats: { home: number; draw: number; away: number; total: number };
 };
 
+type MatchEvent = {
+  minute: number;
+  type: string; // 'Goal' | 'Card' | 'subst'
+  detail: string;
+  team: string;
+  player: string;
+  assist?: string;
+};
+
 export default function MatchPageClient({ home, away, slug, match, predictions, communityStats }: Props) {
   const [copied, setCopied] = useState(false);
 
-  // Live score state — initialised from server-rendered match data
   const [liveScore, setLiveScore] = useState<{ home: number; away: number } | null>(
-    match?.status === 'live' || match?.status === 'completed'
+    match?.status === 'live' || match?.status === 'locked' || match?.status === 'completed'
       ? { home: match.home_score ?? 0, away: match.away_score ?? 0 }
       : null
   );
   const [liveStatus, setLiveStatus] = useState<string>(match?.status || 'upcoming');
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [events, setEvents] = useState<MatchEvent[]>([]);
 
-  // Poll /api/live-scores every 30s while match is live
+  // Poll /api/live-scores every 30s while match is live or locked
   useEffect(() => {
-    if (match?.status !== 'live') return;
+    if (match?.status !== 'live' && match?.status !== 'locked') return;
 
     const poll = async () => {
       try {
         const res = await fetch('/api/live-scores', { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
-        const fixtures: any[] = data?.fixtures || data?.response || data || [];
-        // Match by api_id if available, else by team names
-        const found = fixtures.find((f: any) => {
-          const apiId = f.fixture?.id;
-          if (match?.api_id && apiId === match.api_id) return true;
-          const h = f.teams?.home?.name || '';
-          const a = f.teams?.away?.name || '';
-          return h.toLowerCase().includes(home.toLowerCase()) ||
-                 a.toLowerCase().includes(away.toLowerCase());
+        const live: any[] = data?.live || [];
+
+        // Match by api_id or team name
+        const found = live.find((f: any) => {
+          if (match?.api_id && f.api_id === match.api_id) return true;
+          return f.home?.toLowerCase().includes(home.toLowerCase()) ||
+                 f.away?.toLowerCase().includes(away.toLowerCase());
         });
+
         if (found) {
-          setLiveScore({
-            home: found.goals?.home ?? 0,
-            away: found.goals?.away ?? 0,
-          });
-          const s = found.fixture?.status?.short;
-          if (['FT', 'AET', 'PEN'].includes(s)) setLiveStatus('completed');
-          else if (['1H', 'HT', '2H', 'ET', 'P', 'BT'].includes(s)) setLiveStatus('live');
+          setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
+          if (['completed'].includes(found.status)) setLiveStatus('completed');
+          else setLiveStatus('live');
           setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
         }
       } catch (_) {}
     };
 
-    poll(); // immediate first call
-    const interval = setInterval(poll, 30_000);
+    // Fetch match events from API-Football
+    const fetchEvents = async () => {
+      if (!match?.api_id) return;
+      try {
+        const res = await fetch(`/api/match-events?api_id=${match.api_id}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setEvents(data?.events || []);
+      } catch (_) {}
+    };
+
+    poll();
+    fetchEvents();
+    const interval = setInterval(() => { poll(); fetchEvents(); }, 30_000);
     return () => clearInterval(interval);
   }, [match?.status, match?.api_id, home, away]);
 
@@ -76,8 +92,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const awayPct = getPct(communityStats.away);
 
   const isCompleted = liveStatus === 'completed';
-  const isLive = liveStatus === 'live';
-  const isUpcoming = liveStatus === 'upcoming' || liveStatus === 'locked';
+  const isLive = liveStatus === 'live' || liveStatus === 'locked';
+  const isUpcoming = liveStatus === 'upcoming';
 
   const displayHomeScore = liveScore?.home ?? match?.home_score ?? 0;
   const displayAwayScore = liveScore?.away ?? match?.away_score ?? 0;
@@ -94,6 +110,21 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
     });
   };
 
+  const getEventIcon = (type: string, detail: string) => {
+    if (type === 'Goal') {
+      if (detail === 'Own Goal') return '⚽🔴';
+      if (detail === 'Penalty') return '⚽ (P)';
+      return '⚽';
+    }
+    if (type === 'Card') {
+      if (detail === 'Yellow Card') return '🟨';
+      if (detail === 'Red Card') return '🟥';
+      if (detail === 'Yellow Red Card') return '🟨🟥';
+    }
+    if (type === 'subst') return '🔄';
+    return '•';
+  };
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
 
@@ -103,7 +134,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           FLIPSEER · FOOTBALL REPUTATION {match?.competition ? '· ' + competition : ''}
         </p>
 
-        {/* Teams */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginBottom: '20px', flexWrap: 'wrap' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '120px' }}>{home}</h2>
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -134,15 +164,12 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '120px' }}>{away}</h2>
         </div>
 
-        {/* Status badge */}
         <div style={{ marginBottom: '20px' }}>
           {isCompleted && <span style={{ backgroundColor: '#1A3A1A', color: '#6B7280', padding: '4px 14px', borderRadius: '999px', fontSize: '12px' }}>Match Completed</span>}
           {isLive && <span style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#EF4444', padding: '4px 14px', borderRadius: '999px', fontSize: '12px', border: '1px solid #EF4444' }}>&#x1F534; Live Now</span>}
           {isUpcoming && <span style={{ backgroundColor: 'rgba(46,158,94,0.15)', color: '#2E9E5E', padding: '4px 14px', borderRadius: '999px', fontSize: '12px', border: '1px solid #2E9E5E' }}>&#x1F7E2; Upcoming</span>}
-          {!match && <span style={{ backgroundColor: '#1A3A1A', color: '#6B7280', padding: '4px 14px', borderRadius: '999px', fontSize: '12px' }}>Match data loading...</span>}
         </div>
 
-        {/* Share + Predict CTAs */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {isUpcoming && (
             <a href="/predict" style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
@@ -162,13 +189,33 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
 
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 20px 0' }}>
 
+        {/* LIVE EVENTS FEED */}
+        {(isLive || isCompleted) && events.length > 0 && (
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '16px' }}>
+              ⚡ Match Events
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {events.map((e, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px' }}>
+                  <span style={{ color: '#6B7280', minWidth: '32px', textAlign: 'right', fontSize: '12px' }}>{e.minute}'</span>
+                  <span style={{ fontSize: '16px' }}>{getEventIcon(e.type, e.detail)}</span>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ color: 'white', fontWeight: 'bold' }}>{e.player}</span>
+                    {e.assist && <span style={{ color: '#6B7280' }}> (assist: {e.assist})</span>}
+                    <span style={{ color: '#4B5563', marginLeft: '6px', fontSize: '11px' }}>{e.team}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* COMMUNITY PREDICTION SPLIT */}
         {communityStats.total > 0 && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '4px' }}>&#x1F30D; Community Prediction</h2>
             <p style={{ color: '#6B7280', fontSize: '12px', marginBottom: '20px' }}>{communityStats.total} Flipseer forecasters have predicted this match</p>
-
-            {/* Bar */}
             <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', height: '12px', marginBottom: '12px' }}>
               {homePct > 0 && <div style={{ width: homePct + '%', backgroundColor: '#2E9E5E', transition: 'width 1s ease' }} />}
               {drawPct > 0 && <div style={{ width: drawPct + '%', backgroundColor: '#6B7280' }} />}
@@ -191,7 +238,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </div>
         )}
 
-        {/* NO PREDICTIONS YET */}
         {communityStats.total === 0 && (
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>&#x1F3AF;</div>
@@ -202,7 +248,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </div>
         )}
 
-        {/* TOP FORECASTERS FOR THIS MATCH */}
         {predictions.length > 0 && (
           <div style={{ marginBottom: '24px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '4px' }}>&#x1F3AF; Forecasters Who Called It</h2>
@@ -232,7 +277,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </div>
         )}
 
-        {/* SEO CONTENT */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '12px', color: '#2E9E5E' }}>
             {home} vs {away} — {competition}
@@ -245,7 +289,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </p>
         </div>
 
-        {/* FINAL CTA */}
         <div style={{ textAlign: 'center', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '28px' }}>
           <div style={{ fontSize: '36px', marginBottom: '12px' }}>&#x26BD;</div>
           <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '8px' }}>
