@@ -488,6 +488,7 @@ function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(new Date());
+  const [copied, setCopied] = useState<number | null>(null);
   useEffect(() => {
     const fetchMatches = async () => {
       const { data } = await supabase
@@ -535,6 +536,20 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
+  const handleShare = (match: any) => {
+    const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const url = `https://flipseer.com/matches/${slug}`;
+    const comp = match.competition?.replace(/ 202\d\/\d\d$/, '') || 'Football';
+    const shareText = `⚽ ${match.home_team} vs ${match.away_team} · ${comp}\n\nPredict the winner before kickoff 🔒\n👉 ${url}\n\n📲 Get live alerts → t.me/flipseer\n#Flipseer #Football`;
+    if (navigator.share) {
+      navigator.share({ title: `${match.home_team} vs ${match.away_team} — Flipseer`, text: shareText, url });
+    } else {
+      navigator.clipboard.writeText(shareText).then(() => {
+        setCopied(match.id);
+        setTimeout(() => setCopied(null), 2000);
+      });
+    }
+  };
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -579,23 +594,17 @@ function UpcomingMatches() {
                     <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
                     <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
-<div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(' 2026/27', '') || ''}</div>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
                 </div>
-                <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {kickoffPast ? 'Locked' : 'Predict →'}
-                </a>
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL · ISL →</a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                  <button
+                    onClick={() => handleShare(match)}
+                    title="Share this match"
+                    style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                  >
+                    {copied === match.id ? '✓ Copied' : '📤'}
+                  </button>
+                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ?
 function ClaimModal() {
   const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
