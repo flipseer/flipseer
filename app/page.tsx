@@ -548,8 +548,6 @@ function UpcomingMatches() {
       </div>
     </section>
   );
-    </section>
-  );
   if (matches.length === 0) return null;
   return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
