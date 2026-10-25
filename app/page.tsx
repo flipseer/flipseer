@@ -532,11 +532,8 @@ function UpcomingMatches() {
   };
   const isLive = (kickoff: string, status: string) => {
     if (status === 'live') return true;
-    const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
-        });
-    }
   };
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
