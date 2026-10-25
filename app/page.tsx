@@ -535,19 +535,7 @@ function UpcomingMatches() {
     const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
-  };
-  const handleShare = (match: any) => {
-    const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const url = `https://flipseer.com/matches/${slug}`;
-    const comp = match.competition?.replace(/ 202\d\/\d\d$/, '') || 'Football';
-    const shareText = `⚽ ${match.home_team} vs ${match.away_team} · ${comp}\n\nPredict the winner before kickoff 🔒\n👉 ${url}\n\n📲 Get live alerts → t.me/flipseer\n#Flipseer #Football`;
-    if (navigator.share) {
-      navigator.share({ title: `${match.home_team} vs ${match.away_team} — Flipseer`, text: shareText, url });
-    } else {
-      navigator.clipboard.writeText(shareText).then(() => {
-        setCopied(match.id);
-        setTimeout(() => setCopied(null), 2000);
-      });
+        });
     }
   };
   if (loading) return (
@@ -561,6 +549,8 @@ function UpcomingMatches() {
           ))}
         </div>
       </div>
+    </section>
+  );
     </section>
   );
   if (matches.length === 0) return null;
