@@ -28,11 +28,12 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-const kickoffPassed = match?.kickoff 
-  ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
-  : false;
+    const kickoffPassed = match?.kickoff
+      ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
+      : false;
 
-if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
+    if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
+
     const poll = async () => {
       try {
         const res = await fetch('/api/live-scores', { cache: 'no-store' });
@@ -175,6 +176,49 @@ if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) re
       </div>
 
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 20px 0' }}>
+
+        {/* TELEGRAM CTA BANNER */}
+        <a
+          href="https://t.me/flipseer"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: '#0D2B14',
+            border: '1px solid #1A4A2A',
+            borderRadius: '14px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            textDecoration: 'none',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '24px' }}>✈️</span>
+            <div>
+              <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                Get live scores &amp; results on Telegram
+              </div>
+              <div style={{ color: '#6B7280', fontSize: '12px', marginTop: '2px' }}>
+                Instant alerts for EPL · UCL · Liga 1 · ISL · Ghana PL
+              </div>
+            </div>
+          </div>
+          <span style={{
+            backgroundColor: '#229ED9',
+            color: 'white',
+            padding: '8px 14px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}>
+            Join Free →
+          </span>
+        </a>
 
         {/* LIVE EVENTS FEED */}
         {(isLive || isCompleted) && events.length > 0 && (
