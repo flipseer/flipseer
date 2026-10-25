@@ -619,6 +619,12 @@ function UpcomingMatches() {
     </section>
   );
 }
+
+function ClaimModal() {
+  const [show, setShow] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) return;
       const seen = sessionStorage.getItem('flipseer_welcome_modal');
@@ -659,7 +665,6 @@ function UpcomingMatches() {
     </div>
   );
 }
-
 function PWAInstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
