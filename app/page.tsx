@@ -532,8 +532,23 @@ function UpcomingMatches() {
   };
   const isLive = (kickoff: string, status: string) => {
     if (status === 'live') return true;
+    const utcString = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
+  };
+  const handleShare = (match: any) => {
+    const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const url = `https://flipseer.com/matches/${slug}`;
+    const comp = match.competition?.replace(/ 202\d\/\d\d$/, '') || 'Football';
+    const shareText = `⚽ ${match.home_team} vs ${match.away_team} · ${comp}\n\nPredict the winner before kickoff 🔒\n👉 ${url}\n\n📲 Get live alerts → t.me/flipseer\n#Flipseer #Football`;
+    if (navigator.share) {
+      navigator.share({ title: `${match.home_team} vs ${match.away_team} — Flipseer`, text: shareText, url });
+    } else {
+      navigator.clipboard.writeText(shareText).then(() => {
+        setCopied(match.id);
+        setTimeout(() => setCopied(null), 2000);
+      });
+    }
   };
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
@@ -585,16 +600,25 @@ function UpcomingMatches() {
                   <button
                     onClick={() => handleShare(match)}
                     title="Share this match"
-                    style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                    style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >
-                    {copied === match.id ? '✓ Copied' : '📤'}
+                    {copied === match.id ? '✓' : '📤'}
                   </button>
-                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ?
-function ClaimModal() {
-  const [show, setShow] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
+                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                    {kickoffPast ? 'Locked' : 'Predict →'}
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <a href="/predict" style={{ color: '#8B5CF6', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}>Predict EPL · UCL · Liga 1 · Ghana PL · ISL →</a>
+        </div>
+      </div>
+    </section>
+  );
+}
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) return;
       const seen = sessionStorage.getItem('flipseer_welcome_modal');
