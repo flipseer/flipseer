@@ -551,8 +551,7 @@ function UpcomingMatches() {
         }).catch(() => {});
       }
     } catch (e) {}
-  };
-  };
+    };
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
