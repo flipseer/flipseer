@@ -20,7 +20,7 @@ export async function generateMetadata({
   searchParams: SearchParams
 }): Promise<Metadata> {
   const query = buildImageQuery(searchParams)
-  const imageUrl = `https://flipseer.com/api/og/prediction?${query}`
+  const imageUrl = `https://flipseer.com/og-image.png`
 
   const home = (searchParams.home as string) || 'Home'
   const away = (searchParams.away as string) || 'Away'
@@ -53,7 +53,7 @@ export default function SharePredictionPage({
   searchParams: SearchParams
 }) {
   const query = buildImageQuery(searchParams)
-  const imageUrl = `/api/og/prediction?${query}`
+  const imageUrl = `/og-image.png`
 
   const home = (searchParams.home as string) || 'Home'
   const away = (searchParams.away as string) || 'Away'
