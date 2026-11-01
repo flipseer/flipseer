@@ -40,7 +40,10 @@ export const metadata: Metadata = {
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free private leagues for your WhatsApp group.',
     url: 'https://flipseer.com',
     siteName: 'Flipseer',
-    images: [{ url: '/api/og/home', width: 1200, height: 630 }],
+    // FROM:
+images: [{ url: '/api/og/home', width: 1200, height: 630 }],
+// TO:
+images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Flipseer — Football Reputation Platform' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -48,7 +51,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Flipseer — Football Reputation Platform',
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free forever.',
-    images: ['/api/og/home'],
+    // FROM:
+images: ['/api/og/home'],
+// TO:
+images: ['/og-image.png'],
   },
   icons: {
     icon: [
