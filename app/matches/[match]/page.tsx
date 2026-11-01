@@ -111,13 +111,27 @@ export default async function MatchPage({ params }: Props) {
     communityStats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
     communityStats.total++;
   });
+  const isCompleted = match.status === 'completed';
+  const homePct = communityStats.total > 0 ? Math.round((communityStats.home / communityStats.total) * 100) : 0;
+  const drawPct = communityStats.total > 0 ? Math.round((communityStats.draw / communityStats.total) * 100) : 0;
+  const awayPct = communityStats.total > 0 ? Math.round((communityStats.away / communityStats.total) * 100) : 0;
 
   return (
     <>
-      {/* SEO H1 — server-rendered, visually hidden, read by Google */}
-      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        {home} vs {away} Prediction — {competition} | Flipseer
-      </h1>
+      {/* SERVER-RENDERED SEO CONTENT — visible to Google, hidden to users */}
+      <div style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>
+        <h1>{home} vs {away} Prediction — {competition} | Flipseer</h1>
+        {isCompleted ? (
+          <p>Final result: {home} {match.home_score} - {match.away_score} {away}. {communityStats.total} Flipseer fans predicted this {competition} match. {homePct}% backed {home}, {drawPct}% predicted a draw, {awayPct}% backed {away}.</p>
+        ) : (
+          <p>Predict {home} vs {away} in {competition} before kickoff. {communityStats.total > 0 ? `${communityStats.total} predictions so far: ${homePct}% back ${home}, ${drawPct}% draw, ${awayPct}% back ${away}.` : 'Be the first to predict this match.'} Lock your prediction permanently on Flipseer. Free. No betting.</p>
+        )}
+        <ul>
+          {predictions.slice(0, 5).map((p: any, i: number) => (
+            <li key={i}>{p.profiles?.username || 'Forecaster'} ({p.profiles?.country || ''}): {p.predicted_outcome === 'home' ? home : p.predicted_outcome === 'away' ? away : 'Draw'} — {p.confidence_pct}% confidence{p.predicted_home_score !== null ? `, score: ${p.predicted_home_score}-${p.predicted_away_score}` : ''}</li>
+          ))}
+        </ul>
+      </div>
       <MatchPageClient
         home={home}
         away={away}
