@@ -41,8 +41,8 @@ export const metadata: Metadata = {
     url: 'https://flipseer.com',
     siteName: 'Flipseer',
     // FROM:
-images: [{ url: '/api/og/home', width: 1200, height: 630 }],
-// TO:
+images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+    // TO:
 images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Flipseer — Football Reputation Platform' }],
     locale: 'en_US',
     type: 'website',
@@ -52,7 +52,7 @@ images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Flipseer — Fo
     title: 'Flipseer — Football Reputation Platform',
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free forever.',
     // FROM:
-images: ['/api/og/home'],
+images: ['/og-image.png'],
 // TO:
 images: ['/og-image.png'],
   },
