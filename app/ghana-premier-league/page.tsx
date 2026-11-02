@@ -6,13 +6,13 @@ export const metadata: Metadata = {
   description: 'Predict every Ghana Premier League 2026/27 match before kickoff. Asante Kotoko, Hearts of Oak, Medeama, Aduana Stars and more. Build your Ghana football reputation. Free forever.',
   keywords: 'Ghana Premier League predictions, GPL predictions 2026, Ghana football prediction, Asante Kotoko predictions, Hearts of Oak predictions',
   alternates: { canonical: 'https://flipseer.com/ghana-premier-league' },
-  openGraph: {
+    openGraph: {
     title: 'Ghana Premier League Predictions 2026/27 | Flipseer',
     description: 'Predict every GPL match before kickoff. Build your Ghana football reputation. Free forever.',
     url: 'https://flipseer.com/ghana-premier-league',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
-
 export const dynamic = 'force-dynamic'
 
 async function getUpcomingMatches() {
