@@ -34,26 +34,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://flipseer.com'
   const now = new Date()
 
-  // Only include pages that actually exist and don't redirect
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl,                                          lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/predict`,                             lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/leaderboard`,                         lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
-    { url: `${baseUrl}/premier-league`,                      lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${baseUrl}/champions-league`,                    lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${baseUrl}/indian-super-league`,                 lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${baseUrl}/ghana-premier-league`,                lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/indonesia`,                           lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/india`,                               lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-    { url: `${baseUrl}/ghana`,                               lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-    { url: `${baseUrl}/nations`,                             lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-    { url: `${baseUrl}/how-to-predict-football`,             lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/football-reputation`,                 lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/how-to-play`,                         lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/about`,                               lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/faq`,                                 lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/privacy`,                             lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
-    { url: `${baseUrl}/terms`,                               lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: baseUrl,                              lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/predict`,                 lastModified: now, changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/leaderboard`,             lastModified: now, changeFrequency: 'hourly',  priority: 0.9 },
+    { url: `${baseUrl}/epl`,                     lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/champions-league`,        lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
+    { url: `${baseUrl}/ghana-premier-league`,    lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/indonesia`,               lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
+    { url: `${baseUrl}/india`,                   lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${baseUrl}/ghana`,                   lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${baseUrl}/nigeria`,                 lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${baseUrl}/argentina`,               lastModified: now, changeFrequency: 'daily',   priority: 0.6 },
+    { url: `${baseUrl}/nations`,                 lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
+    { url: `${baseUrl}/how-to-predict-football`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/football-reputation`,     lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/how-to-play`,             lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/about`,                   lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/faq`,                     lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/privacy`,                 lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
+    { url: `${baseUrl}/terms`,                   lastModified: now, changeFrequency: 'monthly', priority: 0.3 },
   ]
 
   const [eplMatchPages, uclMatchPages, islMatchPages, ghanaMatchPages, ligaMatchPages] =
