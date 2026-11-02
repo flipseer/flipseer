@@ -8,9 +8,9 @@ export const metadata: Metadata = {
     title: 'Argentina Football Predictions | EPL & UCL | Flipseer',
     description: 'Argentine football fans predict EPL, UCL on Flipseer. Represent Argentina in the global Nation Battle. World Cup 2030 co-host. Free forever.',
     url: 'https://flipseer.com/argentina',
-  },
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
+  },  
 }
-
 export default function ArgentinaPage() {
   const steps = [
     { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
@@ -21,7 +21,7 @@ export default function ArgentinaPage() {
     { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/epl', color: '#8B5CF6' },
     { flag: '⭐', name: 'UCL 2026/27', status: 'Live Oct 13', href: '/ucl', color: '#A78BFA' },
     { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', href: '/indonesia', color: '#CE1126' },
-    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana', color: '#F59E0B' },
+    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana-premier-league', color: '#F59E0B' },
   ]
   const links = [
     { href: '/predict', label: '⚽ Predict Matches' },
