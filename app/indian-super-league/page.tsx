@@ -6,10 +6,11 @@ export const metadata: Metadata = {
   description: 'Predict every ISL 2026/27 match before kickoff. Bengaluru, Goa, Mumbai City, Kerala Blasters, ATK Mohun Bagan and more. Build your Indian football reputation. Free forever.',
   keywords: 'ISL predictions, Indian Super League predictions 2026, football prediction India, ISL match predictions',
   alternates: { canonical: 'https://flipseer.com/indian-super-league' },
-  openGraph: {
+    openGraph: {
     title: 'Indian Super League Predictions 2026/27 | Flipseer',
     description: 'Predict every ISL match. Build your Indian football reputation. Free forever.',
     url: 'https://flipseer.com/indian-super-league',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
 
