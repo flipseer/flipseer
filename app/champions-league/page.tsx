@@ -117,13 +117,13 @@ export default async function ChampionsLeaguePage() {
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '14px' }}>More on Flipseer</h2>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
-              { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
-              { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
-              { href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
-              { href: '/football-reputation', label: '📊 Football Reputation' },
-              { href: '/leaderboard', label: '🏆 Leaderboard' },
-              { href: '/groups', label: '👥 Private Leagues' },
-            ].map(({ href, label }) => (
+{ href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
+{ href: '/india', label: '🇮🇳 Indian Super League' },
+{ href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
+{ href: '/football-reputation', label: '📊 Football Reputation' },
+{ href: '/leaderboard', label: '🏆 Leaderboard' },
+{ href: '/groups', label: '👥 Private Leagues' },
+    ].map(({ href, label }) => (
               <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', color: '#9CA3AF', padding: '8px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px' }}>
                 {label}
               </a>
