@@ -6,10 +6,11 @@ export const metadata: Metadata = {
   description: 'Predict every Premier League 2026/27 match before kickoff. Lock your EPL predictions, build your football reputation and compete in private leagues. Free forever.',
   keywords: 'premier league predictions, EPL predictions 2026, football prediction, premier league match predictions',
   alternates: { canonical: 'https://flipseer.com/premier-league' },
-  openGraph: {
+    openGraph: {
     title: 'Premier League Predictions 2026/27 | Flipseer',
     description: 'Predict every EPL match before kickoff. Build your permanent football reputation.',
     url: 'https://flipseer.com/premier-league',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
 
