@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,10 +54,11 @@ async function sendTelegram(text: string) {
 }
 
 export async function GET(req: NextRequest) {
-  // Auth check — allow Vercel cron signature OR manual secret
-  const secret = req.headers.get('x-cron-secret') ?? new URL(req.url).searchParams.get('secret');
-  const isVercelCron = req.headers.get('x-vercel-cron-signature') !== null;
-  if (secret !== process.env.CRON_SECRET && !isVercelCron) {
+  const authHeader = req.headers.get('authorization');
+  const secret = new URL(req.url).searchParams.get('secret');
+  const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const isManual = secret === process.env.CRON_SECRET;
+  if (!isVercelCron && !isManual) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
