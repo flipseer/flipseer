@@ -1,16 +1,15 @@
 import type { Metadata } from 'next'
-
 export const metadata: Metadata = {
   title: 'Morocco Football Predictions | EPL & UCL | Flipseer',
   description: 'Moroccan football fans predict EPL, UCL and African football on Flipseer. Represent Morocco in the global Nation Battle. Free forever.',
   alternates: { canonical: 'https://flipseer.com/morocco' },
-    openGraph: {
+  openGraph: {
     title: 'Morocco Football Predictions | EPL & UCL | Flipseer',
     description: 'Moroccan football fans predict EPL, UCL and African football on Flipseer. Represent Morocco in the global Nation Battle. Free forever.',
     url: 'https://flipseer.com/morocco',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
-)
+}
 export default function MoroccoPage() {
   const steps = [
     { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
