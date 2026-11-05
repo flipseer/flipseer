@@ -33,13 +33,9 @@
       "schedule": "0 10 * * 1"
     },
     {
-      "path": "/api/telegram/matchday?secret=flipseer2026",      
+      "path": "/api/telegram/matchday",
       "schedule": "*/30 * * * *"
     },
-   {
-  "path": "/api/telegram/matchday?secret=flipseer2026",
-  "schedule": "0 7 * * *"
-}
     {
       "path": "/api/telegram/prematch",
       "schedule": "*/15 * * * *"
