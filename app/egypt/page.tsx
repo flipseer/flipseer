@@ -8,9 +8,9 @@ export const metadata: Metadata = {
     title: 'Egypt Football Predictions | EPL & UCL | Flipseer',
     description: 'Egyptian football fans predict EPL, UCL and African football on Flipseer. Represent Egypt in the global Nation Battle. Free forever.',
     url: 'https://flipseer.com/egypt',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
-
 export default function EgyptPage() {
   const steps = [
     { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
