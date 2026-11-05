@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     title: 'World Cup 2030 Predictions | Flipseer',
     description: 'Build your verified football record now. 4 years before World Cup 2030 begins.',
     url: 'https://flipseer.com/world-cup-2030',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
 
