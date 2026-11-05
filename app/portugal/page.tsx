@@ -8,9 +8,9 @@ export const metadata: Metadata = {
     title: 'Portugal Football Predictions | EPL & UCL | Flipseer',
     description: 'Portuguese football fans predict EPL, UCL on Flipseer. Represent Portugal in the global Nation Battle. World Cup 2030 host. Free forever.',
     url: 'https://flipseer.com/portugal',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
-
 export default function PortugalPage() {
   const steps = [
     { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
