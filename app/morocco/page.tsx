@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     url: 'https://flipseer.com/morocco',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
-
+)
 export default function MoroccoPage() {
   const steps = [
     { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
