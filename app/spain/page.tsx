@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     title: 'Spain Football Predictions | EPL & UCL | Flipseer',
     description: 'Spanish football fans predict EPL, UCL and La Liga on Flipseer. Represent Spain in the global Nation Battle. World Cup 2030 host. Free forever.',
     url: 'https://flipseer.com/spain',
+    images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
 
