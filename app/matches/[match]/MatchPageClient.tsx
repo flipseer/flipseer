@@ -122,19 +122,19 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           FLIPSEER · FOOTBALL REPUTATION {match?.competition ? '· ' + competition : ''}
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '120px' }}>{home}</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'nowrap' }}>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '80px' }}>{home}</h2>
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             {isCompleted ? (
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '8px 20px' }}>
-                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '8px 16px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#2E9E5E', fontFamily: 'Georgia, serif' }}>
                   {displayHomeScore} - {displayAwayScore}
                 </span>
                 <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '4px' }}>FULL TIME</div>
               </div>
             ) : isLive ? (
-              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #EF4444', borderRadius: '10px', padding: '8px 20px' }}>
-                <span style={{ fontSize: '32px', fontWeight: 'bold', color: '#EF4444', fontFamily: 'Georgia, serif' }}>
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #EF4444', borderRadius: '10px', padding: '8px 16px' }}>
+                <span style={{ fontSize: '28px', fontWeight: 'bold', color: '#EF4444', fontFamily: 'Georgia, serif' }}>
                   {displayHomeScore} - {displayAwayScore}
                 </span>
                 <div style={{ fontSize: '10px', color: '#EF4444', marginTop: '4px' }}>● LIVE</div>
@@ -143,13 +143,13 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
                 )}
               </div>
             ) : (
-              <div style={{ fontSize: '28px', color: '#4B5563', fontWeight: 'bold' }}>vs</div>
+              <div style={{ fontSize: '24px', color: '#4B5563', fontWeight: 'bold' }}>vs</div>
             )}
             {match?.kickoff && !isCompleted && !isLive && (
-              <div style={{ fontSize: '12px', color: '#6B7280', marginTop: '8px' }}>{formatKickoff(match.kickoff)}</div>
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px', whiteSpace: 'nowrap' }}>{formatKickoff(match.kickoff)}</div>
             )}
           </div>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(24px, 5vw, 40px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '120px' }}>{away}</h2>
+          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '80px' }}>{away}</h2>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
