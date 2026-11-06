@@ -14,9 +14,11 @@ async function tg(text: string, token: string){
 }
 
 export async function GET(req: NextRequest){
-  const secret=req.headers.get('x-cron-secret')||req.nextUrl.searchParams.get('secret')
-  const isVercel=req.headers.get('x-vercel-cron-signature')!==null||req.headers.get('user-agent')?.includes('vercel')
-  if(secret!==process.env.CRON_SECRET&&!isVercel)return NextResponse.json({error:'Unauthorized'},{status:401})
+  const authHeader = req.headers.get('authorization');
+const secret = req.nextUrl.searchParams.get('secret');
+const isVercelCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+const isManual = secret === process.env.CRON_SECRET;
+if (!isVercelCron && !isManual) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const apiKey=process.env.API_FOOTBALL_KEY
