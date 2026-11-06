@@ -28,82 +28,67 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-  const kickoffPassed = match?.kickoff
-    ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
-    : false;
+    const kickoffPassed = match?.kickoff
+      ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
+      : false;
 
-  // Kickoff passed but page cached as upcoming — fetch real status from DB
-  if (kickoffPassed && match?.status === 'upcoming') {
-    fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
-      .then(r => r.json())
-      .then(data => {
-        if (data?.status === 'completed') {
-          setLiveStatus('completed');
-          setLiveScore({ home: data.home_score ?? 0, away: data.away_score ?? 0 });
-        } else if (data?.status === 'live' || data?.status === 'locked') {
-          setLiveStatus('live');
-          setLiveScore({ home: data.home_score ?? 0, away: data.away_score ?? 0 });
+    // If kickoff has passed but page was cached as upcoming, fetch real status from DB
+    if (kickoffPassed && match?.status === 'upcoming') {
+      fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => {
+          if (data?.status === 'completed') {
+            setLiveStatus('completed');
+            setLiveScore({ home: data.home_score ?? 0, away: data.away_score ?? 0 });
+          } else if (data?.status === 'live' || data?.status === 'locked') {
+            setLiveStatus('live');
+            setLiveScore({ home: data.home_score ?? 0, away: data.away_score ?? 0 });
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
+
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/live-scores', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const live: any[] = data?.live || [];
+        const found = live.find((f: any) => {
+          if (match?.api_id && f.api_id === match.api_id) return true;
+          return (
+            f.home?.toLowerCase().includes(home.toLowerCase()) ||
+            f.away?.toLowerCase().includes(away.toLowerCase())
+          );
+        });
+        if (found) {
+          setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
+          setLiveStatus(found.status === 'completed' ? 'completed' : 'live');
+          setLastUpdated(
+            new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          );
         }
-      })
-      .catch(() => {});
-  }
+      } catch (_) {}
+    };
 
-  if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
+    const fetchEvents = async () => {
+      if (!match?.api_id) return;
+      try {
+        const res = await fetch(`/api/match-events?fixture=${match.api_id}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        setEvents(data?.events || []);
+      } catch (_) {}
+    };
 
-  const poll = async () => {
-    try {
-      const res = await fetch('/api/live-scores', { cache: 'no-store' });
-      if (!res.ok) return;
-      const data = await res.json();
-      const live: any[] = data?.live || [];
-      const found = live.find((f: any) => {
-        if (match?.api_id && f.api_id === match.api_id) return true;
-        return (
-          f.home?.toLowerCase().includes(home.toLowerCase()) ||
-          f.away?.toLowerCase().includes(away.toLowerCase())
-        );
-      });
-      if (found) {
-        setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
-        setLiveStatus(found.status === 'completed' ? 'completed' : 'live');
-        setLastUpdated(
-          new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-        );
-      }
-    } catch (_) {}
-  };
+    poll();
+    fetchEvents();
+    const interval = setInterval(() => { poll(); fetchEvents(); }, 30_000);
+    return () => clearInterval(interval);
+  }, [match?.status, match?.api_id, home, away, slug]);
 
-  const fetchEvents = async () => {
-    if (!match?.api_id) return;
-    try {
-      const res = await fetch(`/api/match-events?fixture=${match.api_id}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const data = await res.json();
-      setEvents(data?.events || []);
-    } catch (_) {}
-  };
-
-  poll();
-  fetchEvents();
-  const interval = setInterval(() => { poll(); fetchEvents(); }, 30_000);
-  return () => clearInterval(interval);
-}, [match?.status, match?.api_id, home, away, slug]);
-
-  const fetchEvents = async () => {
-    if (!match?.api_id) return;
-    try {
-      const res = await fetch(`/api/match-events?fixture=${match.api_id}`, { cache: 'no-store' });
-      if (!res.ok) return;
-      const data = await res.json();
-      setEvents(data?.events || []);
-    } catch (_) {}
-  };
-
-  poll();
-  fetchEvents();
-  const interval = setInterval(() => { poll(); fetchEvents(); }, 30_000);
-  return () => clearInterval(interval);
-}, [match?.status, match?.api_id, home, away, slug]);
   const getPct = (n: number) =>
     communityStats.total === 0 ? 0 : Math.round((n / communityStats.total) * 100);
   const homePct = getPct(communityStats.home);
