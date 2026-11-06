@@ -32,7 +32,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
     ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
     : false;
 
-  // If kickoff passed but status still upcoming, fetch fresh status from server
+  // Kickoff passed but page cached as upcoming — fetch real status from DB
   if (kickoffPassed && match?.status === 'upcoming') {
     fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
       .then(r => r.json())
@@ -72,6 +72,22 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
       }
     } catch (_) {}
   };
+
+  const fetchEvents = async () => {
+    if (!match?.api_id) return;
+    try {
+      const res = await fetch(`/api/match-events?fixture=${match.api_id}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      setEvents(data?.events || []);
+    } catch (_) {}
+  };
+
+  poll();
+  fetchEvents();
+  const interval = setInterval(() => { poll(); fetchEvents(); }, 30_000);
+  return () => clearInterval(interval);
+}, [match?.status, match?.api_id, home, away, slug]);
 
   const fetchEvents = async () => {
     if (!match?.api_id) return;
