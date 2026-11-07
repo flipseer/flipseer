@@ -22,11 +22,6 @@ function outcomeState(pred: any): 'correct' | 'wrong' | 'pending' {
   return pred.points_earned > 0 ? 'correct' : 'wrong';
 }
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-}
-
 function formatDateKey(dateStr: string): string {
   const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
   return d.toISOString().split('T')[0];
@@ -64,6 +59,69 @@ function actualScore(pred: any): string {
   return '';
 }
 
+// Build the share URL for a single prediction result card
+function buildResultShareText(pred: any, username: string, country: string): string {
+  const m = pred.matches;
+  if (!m) return `flipseer.com/u/${username}`;
+  const state = outcomeState(pred);
+  const isExact = pred.exact_bonus > 0;
+  const pick = pickLabel(pred);
+  const predicted = scoreDisplay(pred);
+  const actual = actualScore(pred);
+  const comp = (m.competition || 'Football').replace(' 2026/27', '');
+  const pts = pred.points_earned || 0;
+
+  let line1 = '';
+  if (state === 'correct') {
+    line1 = isExact
+      ? `⚽ Exact score! ${predicted} · ${m.home_team} vs ${m.away_team}`
+      : `✅ Correct call! ${pick} · ${m.home_team} vs ${m.away_team}`;
+  } else if (state === 'wrong') {
+    line1 = `❌ Wrong this time — ${m.home_team} vs ${m.away_team}`;
+  } else {
+    line1 = `🔒 Predicted ${pick} — ${m.home_team} vs ${m.away_team}`;
+  }
+
+  const lines = [
+    line1,
+    comp,
+    actual ? `Result: ${m.home_team} ${actual} ${m.away_team}` : '',
+    predicted && state !== 'pending' ? `My call: ${predicted}` : '',
+    pts > 0 ? `+${pts} REP earned` : '',
+    '',
+    `See my full record → flipseer.com/u/${username}`,
+    'Free · No betting · Pure football',
+  ].filter(Boolean);
+
+  return lines.join('\n');
+}
+
+// Build OG image URL for a prediction result
+function buildOgUrl(pred: any, username: string, country: string): string {
+  const m = pred.matches;
+  if (!m) return '';
+  const state = outcomeState(pred);
+  if (state === 'pending') return '';
+  const params = new URLSearchParams({
+    user: username,
+    home: m.home_team || '',
+    away: m.away_team || '',
+    hs: String(m.home_score ?? 0),
+    as: String(m.away_score ?? 0),
+    outcome: pred.predicted_outcome || 'draw',
+    correct: String(state === 'correct'),
+    exact: String(pred.exact_bonus > 0),
+    country: country || '',
+    comp: (m.competition || 'Football').replace(' 2026/27', ''),
+    pts: String(pred.points_earned || 0),
+  });
+  if (pred.predicted_home_score !== null && pred.predicted_home_score !== undefined)
+    params.set('pred_h', String(pred.predicted_home_score));
+  if (pred.predicted_away_score !== null && pred.predicted_away_score !== undefined)
+    params.set('pred_a', String(pred.predicted_away_score));
+  return `/api/og/result?${params.toString()}`;
+}
+
 type JournalProps = {
   username: string;
   profile: any;
@@ -73,11 +131,11 @@ type JournalProps = {
 export default function JournalClient({ username, profile, predictions }: JournalProps) {
   const [filter, setFilter] = useState<'all' | 'correct' | 'wrong' | 'pending'>('all');
   const [copied, setCopied] = useState(false);
+  const [copiedPredId, setCopiedPredId] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [showRepCard, setShowRepCard] = useState(false);
 
   useEffect(() => {
-    // Check if current user owns this journal
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.id === profile.id) setIsOwner(true);
     });
@@ -103,6 +161,20 @@ export default function JournalClient({ username, profile, predictions }: Journa
     }
   };
 
+  const sharePrediction = (pred: any) => {
+    const text = buildResultShareText(pred, username, profile?.country || '');
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  const copyPredLink = (pred: any) => {
+    const text = buildResultShareText(pred, username, profile?.country || '');
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedPredId(pred.id);
+      setTimeout(() => setCopiedPredId(null), 2000);
+    });
+  };
+
   return (
     <main style={{
       backgroundColor: '#0D1F0F', minHeight: '100vh',
@@ -115,6 +187,8 @@ export default function JournalClient({ username, profile, predictions }: Journa
         .pred-card:hover{border-color:#2E9E5E!important}
         .pred-card{transition:border-color 0.15s}
         .filter-btn:hover{background:rgba(46,158,94,0.1)!important}
+        .share-btn:hover{background:rgba(37,211,102,0.15)!important}
+        .copy-btn:hover{background:rgba(46,158,94,0.1)!important}
       `}</style>
 
       {/* ── PROFILE HEADER ── */}
@@ -128,7 +202,6 @@ export default function JournalClient({ username, profile, predictions }: Journa
           {/* Top row */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              {/* Avatar */}
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
                 backgroundColor: '#1A7A4A', border: '2px solid #2E9E5E',
@@ -219,11 +292,11 @@ export default function JournalClient({ username, profile, predictions }: Journa
             backgroundColor: 'rgba(46,158,94,0.06)', border: '1px solid #1A3A1A',
             borderRadius: 8, fontSize: 13, color: '#8895A3', lineHeight: 1.6,
           }}>
-            📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>'s permanent football forecasting record.
+            📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>&apos;s permanent football forecasting record.
             Every prediction is locked before kickoff. No edits. No deletions. Forever.
           </div>
 
-          {/* Reputation Progress Bar */}
+          {/* Reputation Progress Bar (bottom) */}
           <ReputationProgressBar
             totalPoints={profile?.total_points || 0}
             username={username}
@@ -326,6 +399,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                     const stateColor = state === 'correct' ? '#2E9E5E' : state === 'wrong' ? '#EF4444' : '#6B7280';
                     const stateIcon = state === 'correct' ? '✓' : state === 'wrong' ? '✗' : '⏳';
                     const stateLabel = state === 'correct' ? 'Correct' : state === 'wrong' ? 'Wrong' : 'Pending';
+                    const isCopied = copiedPredId === pred.id;
 
                     return (
                       <div key={i} className="pred-card" style={{
@@ -342,7 +416,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                         }}/>
 
                         <div style={{ paddingLeft: 10 }}>
-                          {/* Match name + competition */}
+                          {/* Match name + competition + state badge */}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                             <div>
                               {slug ? (
@@ -413,7 +487,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
 
                           {/* Bonus badges */}
                           {(isExact || isUpset) && (
-                            <div style={{ display: 'flex', gap: 6 }}>
+                            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
                               {isExact && (
                                 <span style={{ fontSize: 11, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.1)', padding: '2px 8px', borderRadius: 999, fontWeight: 700 }}>
                                   🎯 Exact Score +{pred.exact_bonus}pts
@@ -424,6 +498,59 @@ export default function JournalClient({ username, profile, predictions }: Journa
                                   😱 Upset Caller +{pred.upset_bonus}pts
                                 </span>
                               )}
+                            </div>
+                          )}
+
+                          {/* Share row — only for completed predictions */}
+                          {state !== 'pending' && (
+                            <div style={{ display: 'flex', gap: 6, marginTop: 10, paddingTop: 10, borderTop: '1px solid #1A3A1A' }}>
+                              <button
+                                className="share-btn"
+                                onClick={() => sharePrediction(pred)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 5,
+                                  backgroundColor: 'rgba(37,211,102,0.08)',
+                                  color: '#25D366',
+                                  border: '1px solid rgba(37,211,102,0.2)',
+                                  padding: '5px 12px', borderRadius: 6,
+                                  fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                                  transition: 'all 0.15s',
+                                }}
+                              >
+                                📱 WhatsApp
+                              </button>
+                              <button
+                                className="copy-btn"
+                                onClick={() => copyPredLink(pred)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 5,
+                                  backgroundColor: 'transparent',
+                                  color: isCopied ? '#2E9E5E' : '#6B7280',
+                                  border: '1px solid #1A3A1A',
+                                  padding: '5px 12px', borderRadius: 6,
+                                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                                  transition: 'all 0.15s',
+                                }}
+                              >
+                                {isCopied ? '✓ Copied' : '🔗 Copy'}
+                              </button>
+                              <a
+                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(buildResultShareText(pred, username, profile?.country || ''))}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 5,
+                                  backgroundColor: 'transparent',
+                                  color: '#6B7280',
+                                  border: '1px solid #1A3A1A',
+                                  padding: '5px 12px', borderRadius: 6,
+                                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                                  textDecoration: 'none',
+                                  transition: 'all 0.15s',
+                                }}
+                              >
+                                𝕏 Post
+                              </a>
                             </div>
                           )}
                         </div>
@@ -447,8 +574,8 @@ export default function JournalClient({ username, profile, predictions }: Journa
             This record is permanent.
           </h3>
           <p style={{ color: '#6B7280', fontSize: 14, lineHeight: 1.7, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
-            @{username}'s predictions are locked before kickoff and archived forever.
-            World Cup 2026 → EPL → Champions League. One record. One reputation.
+            @{username}&apos;s predictions are locked before kickoff and archived forever.
+            EPL · UCL · ISL · Ghana PL · Liga 1. One record. One reputation.
           </p>
           <a href="/auth" style={{
             display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white',
