@@ -78,11 +78,35 @@ export default async function JournalPage({ params }: Props) {
     matches: matchMap[String(p.match_id)] || null,
   }));
 
+  // Fetch badges earned by this user
+  const { data: rawBadges } = await supabase
+    .from('user_badges')
+    .select('badge_type, badge_label, badge_icon, match_id, created_at')
+    .eq('user_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  // Deduplicate: keep only the most recent badge of each type
+  // (streak badges keep highest N version)
+  const badgeMap: Record<string, any> = {};
+  for (const b of (rawBadges || [])) {
+    const key = b.badge_type.startsWith('hot_streak') ? 'hot_streak' : b.badge_type;
+    if (!badgeMap[key]) {
+      badgeMap[key] = b;
+    } else if (b.badge_type.startsWith('hot_streak')) {
+      // Keep the highest streak number
+      const existingN = parseInt(badgeMap[key].badge_type.replace('hot_streak_', ''), 10) || 0;
+      const newN = parseInt(b.badge_type.replace('hot_streak_', ''), 10) || 0;
+      if (newN > existingN) badgeMap[key] = b;
+    }
+  }
+  const badges = Object.values(badgeMap);
+
   return (
     <JournalClient
       username={params.username}
       profile={profile}
       predictions={predictions}
+      badges={badges}
     />
   );
 }
