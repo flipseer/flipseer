@@ -31,7 +31,7 @@ function generateCode() {
 }
 
 function getWhatsAppMessage(group: any, leaders: any[], userRank: number) {
-  const url = `https://flipseer.com/groups?join=${group.invite_code}`;
+  const url = `https://flipseer.com/groups/invite/${group.invite_code}`;
   const leader = leaders[0];
   const comp = group.competition || 'All competitions';
   const memberCount = group.member_count || 1;
@@ -344,7 +344,7 @@ export default function GroupsPage() {
                   style={{ width: '100%', padding: '12px', background: '#25D366', color: 'white', border: 'none', borderRadius: '9px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '8px' }}>
                   📲 Share on WhatsApp
                 </button>
-                <button onClick={() => copyToClipboard('https://flipseer.com/groups?join=' + createdGroup.invite_code, 'invite link')}
+                <button onClick={() => copyToClipboard('https://flipseer.com/groups/invite/' + createdGroup.invite_code, 'invite link')}
                   style={{ width: '100%', padding: '11px', background: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', borderRadius: '9px', fontSize: '13px', cursor: 'pointer', marginBottom: '8px' }}>
                   Copy Invite Link
                 </button>
@@ -549,7 +549,7 @@ export default function GroupsPage() {
                                 style={{ flex: 1, padding: '9px', background: '#25D366', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
                                 📲 WhatsApp
                               </button>
-                              <button onClick={() => copyToClipboard('https://flipseer.com/groups?join=' + group.invite_code, 'invite link')}
+                              <button onClick={() => copyToClipboard('https://flipseer.com/groups/invite/' + group.invite_code, 'invite link')}
                                 style={{ flex: 1, padding: '9px', background: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>
                                 Copy Link
                               </button>
@@ -580,7 +580,7 @@ export default function GroupsPage() {
                                 recap += `${medal} @${l.username} · ${l.total_points} REP\n`;
                               });
                               recap += `\nWho proved their football knowledge this week?\n`;
-                              recap += `Join: flipseer.com/groups?join=${group.invite_code}`;
+                              recap += `Join: flipseer.com/groups/invite/${group.invite_code}`;
                               window.open('https://wa.me/?text=' + encodeURIComponent(recap), '_blank');
                             }}
                               style={{ width: '100%', padding: '9px', background: 'rgba(139,92,246,.15)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,.4)', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
