@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReputationCard from '@/components/ReputationCard';
 import ReputationProgressBar from '@/components/ReputationProgressBar';
 import { createClient } from '@supabase/supabase-js';
@@ -59,76 +59,50 @@ function actualScore(pred: any): string {
   return '';
 }
 
-// Build the share URL for a single prediction result card
-function buildResultShareText(pred: any, username: string, country: string): string {
+function buildResultShareText(pred: any, username: string): string {
   const m = pred.matches;
-  if (!m) return `flipseer.com/u/${username}`;
-  const state = outcomeState(pred);
-  const isExact = pred.exact_bonus > 0;
-  const pick = pickLabel(pred);
-  const predicted = scoreDisplay(pred);
+  const matchName = m ? `${m.home_team} vs ${m.away_team}` : 'Match';
   const actual = actualScore(pred);
-  const comp = (m.competition || 'Football').replace(' 2026/27', '');
+  const predicted = scoreDisplay(pred);
+  const isExact = pred.exact_bonus > 0;
   const pts = pred.points_earned || 0;
 
-  let line1 = '';
-  if (state === 'correct') {
-    line1 = isExact
-      ? `⚽ Exact score! ${predicted} · ${m.home_team} vs ${m.away_team}`
-      : `✅ Correct call! ${pick} · ${m.home_team} vs ${m.away_team}`;
-  } else if (state === 'wrong') {
-    line1 = `❌ Wrong this time — ${m.home_team} vs ${m.away_team}`;
-  } else {
-    line1 = `🔒 Predicted ${pick} — ${m.home_team} vs ${m.away_team}`;
+  if (isExact) {
+    return `🎯 Exact Score! I called ${matchName} ${predicted} and nailed it!\n\nResult: ${actual} ✅\n+${pts} REP earned\n\nMy prediction record 👉 https://flipseer.com/u/${username}`;
   }
-
-  const lines = [
-    line1,
-    comp,
-    actual ? `Result: ${m.home_team} ${actual} ${m.away_team}` : '',
-    predicted && state !== 'pending' ? `My call: ${predicted}` : '',
-    pts > 0 ? `+${pts} REP earned` : '',
-    '',
-    `See my full record → flipseer.com/u/${username}`,
-    'Free · No betting · Pure football',
-  ].filter(Boolean);
-
-  return lines.join('\n');
+  if (pts > 0) {
+    return `✅ Correct call! ${matchName} · ${actual}\n\nI predicted ${pickLabel(pred)} and got it right.\n+${pts} REP earned\n\nMy record 👉 https://flipseer.com/u/${username}`;
+  }
+  return `❌ I called ${pickLabel(pred)} in ${matchName} but the result was ${actual}.\n\nStill building my forecast record 👉 https://flipseer.com/u/${username}`;
 }
 
-// Build OG image URL for a prediction result
-function buildOgUrl(pred: any, username: string, country: string): string {
+function buildOgUrl(pred: any, username: string): string {
   const m = pred.matches;
-  if (!m) return '';
-  const state = outcomeState(pred);
-  if (state === 'pending') return '';
   const params = new URLSearchParams({
     user: username,
-    home: m.home_team || '',
-    away: m.away_team || '',
-    hs: String(m.home_score ?? 0),
-    as: String(m.away_score ?? 0),
-    outcome: pred.predicted_outcome || 'draw',
-    correct: String(state === 'correct'),
+    home: m?.home_team || '',
+    away: m?.away_team || '',
+    hs: String(m?.home_score ?? ''),
+    as: String(m?.away_score ?? ''),
+    pred_h: String(pred.predicted_home_score ?? ''),
+    pred_a: String(pred.predicted_away_score ?? ''),
+    outcome: pred.predicted_outcome || '',
+    correct: String(pred.points_earned > 0),
     exact: String(pred.exact_bonus > 0),
-    country: country || '',
-    comp: (m.competition || 'Football').replace(' 2026/27', ''),
+    comp: m?.competition || '',
     pts: String(pred.points_earned || 0),
   });
-  if (pred.predicted_home_score !== null && pred.predicted_home_score !== undefined)
-    params.set('pred_h', String(pred.predicted_home_score));
-  if (pred.predicted_away_score !== null && pred.predicted_away_score !== undefined)
-    params.set('pred_a', String(pred.predicted_away_score));
-  return `/api/og/result?${params.toString()}`;
+  return `https://flipseer.com/api/og/result?${params.toString()}`;
 }
 
 type JournalProps = {
   username: string;
   profile: any;
   predictions: any[];
+  badges?: any[];
 };
 
-export default function JournalClient({ username, profile, predictions }: JournalProps) {
+export default function JournalClient({ username, profile, predictions, badges = [] }: JournalProps) {
   const [filter, setFilter] = useState<'all' | 'correct' | 'wrong' | 'pending'>('all');
   const [copied, setCopied] = useState(false);
   const [copiedPredId, setCopiedPredId] = useState<string | null>(null);
@@ -152,6 +126,10 @@ export default function JournalClient({ username, profile, predictions }: Journa
   const accuracy = processedCount > 0 ? Math.round((correctCount / processedCount) * 100) : 0;
   const exactScores = predictions.filter(p => p.exact_bonus > 0).length;
 
+  // Current streak from profile (DB-tracked)
+  const currentStreak = profile?.streak || 0;
+  const bestStreak = profile?.best_streak || 0;
+
   const share = () => {
     const url = `https://flipseer.com/u/${username}`;
     if (navigator.share) {
@@ -162,14 +140,14 @@ export default function JournalClient({ username, profile, predictions }: Journa
   };
 
   const sharePrediction = (pred: any) => {
-    const text = buildResultShareText(pred, username, profile?.country || '');
+    const text = buildResultShareText(pred, username);
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank');
   };
 
   const copyPredLink = (pred: any) => {
-    const text = buildResultShareText(pred, username, profile?.country || '');
-    navigator.clipboard.writeText(text).then(() => {
+    const ogUrl = buildOgUrl(pred, username);
+    navigator.clipboard.writeText(ogUrl).then(() => {
       setCopiedPredId(pred.id);
       setTimeout(() => setCopiedPredId(null), 2000);
     });
@@ -184,11 +162,17 @@ export default function JournalClient({ username, profile, predictions }: Journa
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes popIn{0%{transform:scale(0.7);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+        @keyframes streakGlow{0%,100%{box-shadow:0 0 8px rgba(249,115,22,0.4)}50%{box-shadow:0 0 20px rgba(249,115,22,0.8)}}
         .pred-card:hover{border-color:#2E9E5E!important}
         .pred-card{transition:border-color 0.15s}
         .filter-btn:hover{background:rgba(46,158,94,0.1)!important}
-        .share-btn:hover{background:rgba(37,211,102,0.15)!important}
-        .copy-btn:hover{background:rgba(46,158,94,0.1)!important}
+        .share-btn{background:#25D366;color:white;border:none;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity 0.15s}
+        .share-btn:hover{opacity:0.85}
+        .copy-btn{background:transparent;color:#9CA3AF;border:1px solid #1A3A1A;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s}
+        .copy-btn:hover{border-color:#2E9E5E;color:#2E9E5E}
+        .badge-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid;animation:fadeUp 0.3s ease both}
+        .streak-banner{animation:streakGlow 2s ease-in-out infinite}
       `}</style>
 
       {/* ── PROFILE HEADER ── */}
@@ -200,8 +184,9 @@ export default function JournalClient({ username, profile, predictions }: Journa
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
           {/* Top row */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {/* Avatar */}
               <div style={{
                 width: 64, height: 64, borderRadius: '50%',
                 backgroundColor: '#1A7A4A', border: '2px solid #2E9E5E',
@@ -258,6 +243,79 @@ export default function JournalClient({ username, profile, predictions }: Journa
             </div>
           </div>
 
+          {/* ── STREAK BANNER (shown if streak ≥ 2) ── */}
+          {currentStreak >= 2 && (
+            <div className="streak-banner" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              backgroundColor: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.4)',
+              borderRadius: 12, padding: '12px 18px', marginBottom: 16,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 28 }}>🔥</span>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: '#F97316' }}>
+                    {currentStreak} Match Streak
+                  </div>
+                  <div style={{ fontSize: 12, color: '#9CA3AF' }}>
+                    {currentStreak >= 10
+                      ? 'On absolute fire 🔥🔥🔥'
+                      : currentStreak >= 5
+                      ? 'Hot streak! Keep it going 🔥'
+                      : 'On a roll — don\'t stop now'}
+                  </div>
+                </div>
+              </div>
+              {bestStreak > 0 && (
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 11, color: '#6B7280', letterSpacing: 1 }}>BEST EVER</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: '#F59E0B' }}>{bestStreak} 🔥</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── BADGES ROW (shown if any badges earned) ── */}
+          {badges.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 10, color: '#6B7280', letterSpacing: 2, marginBottom: 8 }}>ACHIEVEMENTS</div>
+              <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                {badges.map((b, i) => {
+                  // Color by badge type
+                  const isStreak = b.badge_type?.startsWith('hot_streak');
+                  const isExact = b.badge_type === 'score_master';
+                  const isUpset = b.badge_type === 'upset_king';
+                  const isBold = b.badge_type === 'bold_caller';
+                  const isHero = b.badge_type === 'match_hero';
+
+                  const badgeColor = isStreak ? '#F97316'
+                    : isExact ? '#F59E0B'
+                    : isUpset ? '#8B5CF6'
+                    : isBold ? '#06B6D4'
+                    : isHero ? '#2E9E5E'
+                    : '#9CA3AF';
+                  const badgeBg = `${badgeColor}18`;
+
+                  return (
+                    <span
+                      key={i}
+                      className="badge-pill"
+                      title={b.badge_label}
+                      style={{
+                        color: badgeColor,
+                        backgroundColor: badgeBg,
+                        borderColor: `${badgeColor}40`,
+                        animationDelay: `${i * 60}ms`,
+                      }}
+                    >
+                      <span>{b.badge_icon || '🏅'}</span>
+                      <span>{b.badge_label}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Reputation Progress Bar */}
           <ReputationProgressBar
             totalPoints={profile?.total_points || 0}
@@ -272,11 +330,12 @@ export default function JournalClient({ username, profile, predictions }: Journa
               { v: predictions.length, l: 'Predictions', c: '#9CA3AF' },
               { v: correctCount, l: 'Correct', c: '#2E9E5E' },
               { v: exactScores, l: 'Exact Scores', c: '#F59E0B' },
-              { v: profile?.best_streak || 0, l: 'Best Streak', c: '#8B5CF6' },
+              { v: currentStreak > 0 ? `${currentStreak} 🔥` : bestStreak || 0, l: currentStreak > 0 ? 'Current Streak' : 'Best Streak', c: currentStreak >= 3 ? '#F97316' : '#8B5CF6' },
             ].map(({ v, l, c }) => (
               <div key={l} style={{
                 backgroundColor: '#0D2B14', border: '1px solid #1A3A1A',
                 borderRadius: 10, padding: '14px 12px', textAlign: 'center',
+                ...(l.includes('Streak') && currentStreak >= 3 ? { borderColor: 'rgba(249,115,22,0.4)' } : {}),
               }}>
                 <div style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 800, color: c, letterSpacing: '-0.5px', marginBottom: 3 }}>
                   {v}
@@ -292,15 +351,9 @@ export default function JournalClient({ username, profile, predictions }: Journa
             backgroundColor: 'rgba(46,158,94,0.06)', border: '1px solid #1A3A1A',
             borderRadius: 8, fontSize: 13, color: '#8895A3', lineHeight: 1.6,
           }}>
-            📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>&apos;s permanent football forecasting record.
+            📖 This is <strong style={{ color: '#9CA3AF' }}>@{username}</strong>'s permanent football forecasting record.
             Every prediction is locked before kickoff. No edits. No deletions. Forever.
           </div>
-
-          {/* Reputation Progress Bar (bottom) */}
-          <ReputationProgressBar
-            totalPoints={profile?.total_points || 0}
-            username={username}
-          />
         </div>
       </div>
 
@@ -394,12 +447,12 @@ export default function JournalClient({ username, profile, predictions }: Journa
                     const slug = match
                       ? `${match.home_team.toLowerCase().replace(/\s+/g,'-')}-vs-${match.away_team.toLowerCase().replace(/\s+/g,'-')}`
                       : '';
+                    const isCopied = copiedPredId === pred.id;
 
                     const borderColor = state === 'correct' ? '#1A7A4A' : state === 'wrong' ? 'rgba(239,68,68,0.3)' : '#1A3A1A';
                     const stateColor = state === 'correct' ? '#2E9E5E' : state === 'wrong' ? '#EF4444' : '#6B7280';
                     const stateIcon = state === 'correct' ? '✓' : state === 'wrong' ? '✗' : '⏳';
-                    const stateLabel = state === 'correct' ? 'Correct' : state === 'wrong' ? 'Wrong' : 'Pending';
-                    const isCopied = copiedPredId === pred.id;
+                    const stateLabel = state === 'correct' ? (isExact ? '🎯 Exact Score!' : 'Correct') : state === 'wrong' ? 'Wrong' : 'Pending';
 
                     return (
                       <div key={i} className="pred-card" style={{
@@ -408,6 +461,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                         borderRadius: 12,
                         padding: '16px 18px',
                         position: 'relative', overflow: 'hidden',
+                        ...(isExact ? { boxShadow: '0 0 16px rgba(245,158,11,0.15)' } : {}),
                       }}>
                         {/* Left accent */}
                         <div style={{
@@ -416,7 +470,7 @@ export default function JournalClient({ username, profile, predictions }: Journa
                         }}/>
 
                         <div style={{ paddingLeft: 10 }}>
-                          {/* Match name + competition + state badge */}
+                          {/* Match name + competition */}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
                             <div>
                               {slug ? (
@@ -501,52 +555,34 @@ export default function JournalClient({ username, profile, predictions }: Journa
                             </div>
                           )}
 
-                          {/* Share row — only for completed predictions */}
+                          {/* ── POST-MATCH SHARE ROW (only on settled predictions) ── */}
                           {state !== 'pending' && (
-                            <div style={{ display: 'flex', gap: 6, marginTop: 10, paddingTop: 10, borderTop: '1px solid #1A3A1A' }}>
-                              <button
-                                className="share-btn"
-                                onClick={() => sharePrediction(pred)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: 5,
-                                  backgroundColor: 'rgba(37,211,102,0.08)',
-                                  color: '#25D366',
-                                  border: '1px solid rgba(37,211,102,0.2)',
-                                  padding: '5px 12px', borderRadius: 6,
-                                  fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                                  transition: 'all 0.15s',
-                                }}
-                              >
+                            <div style={{
+                              display: 'flex', gap: 7, marginTop: 10,
+                              paddingTop: 10, borderTop: '1px solid #1A3A1A',
+                              alignItems: 'center', flexWrap: 'wrap',
+                            }}>
+                              <span style={{ fontSize: 11, color: '#4B5563', marginRight: 2 }}>Share:</span>
+                              <button className="share-btn" onClick={() => sharePrediction(pred)}>
                                 📱 WhatsApp
                               </button>
                               <button
                                 className="copy-btn"
                                 onClick={() => copyPredLink(pred)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: 5,
-                                  backgroundColor: 'transparent',
-                                  color: isCopied ? '#2E9E5E' : '#6B7280',
-                                  border: '1px solid #1A3A1A',
-                                  padding: '5px 12px', borderRadius: 6,
-                                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                                  transition: 'all 0.15s',
-                                }}
+                                style={{ color: isCopied ? '#2E9E5E' : undefined, borderColor: isCopied ? '#2E9E5E' : undefined }}
                               >
                                 {isCopied ? '✓ Copied' : '🔗 Copy'}
                               </button>
                               <a
-                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(buildResultShareText(pred, username, profile?.country || ''))}`}
+                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(buildResultShareText(pred, username))}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{
-                                  display: 'flex', alignItems: 'center', gap: 5,
-                                  backgroundColor: 'transparent',
-                                  color: '#6B7280',
-                                  border: '1px solid #1A3A1A',
-                                  padding: '5px 12px', borderRadius: 6,
-                                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                                  textDecoration: 'none',
-                                  transition: 'all 0.15s',
+                                  display: 'inline-block',
+                                  background: 'transparent', color: '#9CA3AF',
+                                  border: '1px solid #1A3A1A', padding: '7px 13px',
+                                  borderRadius: 7, fontSize: 12, fontWeight: 600,
+                                  textDecoration: 'none', lineHeight: 1,
                                 }}
                               >
                                 𝕏 Post
@@ -574,8 +610,8 @@ export default function JournalClient({ username, profile, predictions }: Journa
             This record is permanent.
           </h3>
           <p style={{ color: '#6B7280', fontSize: 14, lineHeight: 1.7, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
-            @{username}&apos;s predictions are locked before kickoff and archived forever.
-            EPL · UCL · ISL · Ghana PL · Liga 1. One record. One reputation.
+            @{username}'s predictions are locked before kickoff and archived forever.
+            World Cup 2026 → EPL → Champions League. One record. One reputation.
           </p>
           <a href="/auth" style={{
             display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white',
