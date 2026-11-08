@@ -17,13 +17,6 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // www → non-www (canonical domain consolidation)
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.flipseer.com' }],
-        destination: 'https://flipseer.com/:path*',
-        permanent: true,
-      },
       // Old world cup sub-pages → nations hub
       {
         source: '/world-cup-2026/:country',
