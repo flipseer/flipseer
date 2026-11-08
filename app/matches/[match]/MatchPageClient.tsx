@@ -76,6 +76,17 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           setLastUpdated(
             new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
           );
+        } else {
+          // Match not in live-scores — may have just finished. Fetch final score from Supabase.
+          fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
+            .then(r => r.json())
+            .then(data => {
+              if (data?.status === 'completed') {
+                setLiveStatus('completed');
+                setLiveScore({ home: data.home_score ?? 0, away: data.away_score ?? 0 });
+              }
+            })
+            .catch(() => {});
         }
       } catch (_) {}
     };
