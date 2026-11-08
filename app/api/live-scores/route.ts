@@ -31,16 +31,16 @@ export async function GET(request: NextRequest) {
 
   const now = new Date().toISOString()
 
-  // Include live/locked matches AND upcoming matches whose kickoff has passed
+  // Only return live/locked matches — never completed ones
   const { data: matches } = await supabase
     .from('matches')
     .select('id, api_id, home_team, away_team, home_score, away_score, status, competition, kickoff')
-    .or(`status.in.(live,locked),and(status.eq.upcoming,kickoff.lte.${now})`)
+    .in('status', ['live', 'locked'])
 
   const live = (matches || []).map((m: any) => ({
     id: m.api_id,
     api_id: m.api_id,
-    status: m.status === 'live' ? '1H' : 'NS',
+    status: '1H',
     elapsed: null,
     home: m.home_team,
     away: m.away_team,
