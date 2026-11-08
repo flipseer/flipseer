@@ -17,16 +17,39 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // Old world cup pages
+      // Old world cup sub-pages → nations hub
       {
         source: '/world-cup-2026/:country',
         destination: '/nations',
         permanent: true,
       },
-      // Stale matchweek page → premier league hub
+      // Old matchweek sub-pages (broken chains) → competition hubs
       {
-        source: '/epl/matchweek-1',
+        source: '/epl/matchweek-:num',
         destination: '/premier-league',
+        permanent: true,
+      },
+      {
+        source: '/epl/:path*',
+        destination: '/premier-league',
+        permanent: true,
+      },
+      // /champions-league duplicates /ucl — consolidate to /ucl
+      {
+        source: '/champions-league',
+        destination: '/ucl',
+        permanent: true,
+      },
+      // /ghana-premier-league duplicates — consolidate
+      {
+        source: '/ghana-premier-league',
+        destination: '/leaderboard/ghana-pl',
+        permanent: true,
+      },
+      // /leagues page doesn't exist
+      {
+        source: '/leagues',
+        destination: '/leaderboard',
         permanent: true,
       },
     ]
