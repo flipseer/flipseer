@@ -50,7 +50,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
 
     // Don't poll if already completed — Supabase data is authoritative
     if (match?.status === 'completed' || match?.status === 'finished') return;
-    if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
+    if (match?.status === 'completed' || match?.status === 'finished') return;
+if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
 
     const poll = async () => {
       try {
