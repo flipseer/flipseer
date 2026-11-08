@@ -29,9 +29,7 @@ export async function GET(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const now = new Date().toISOString()
-
-  // Only return live/locked matches — never completed ones
+  // Only return matches currently live or locked — never completed or upcoming
   const { data: matches } = await supabase
     .from('matches')
     .select('id, api_id, home_team, away_team, home_score, away_score, status, competition, kickoff')
