@@ -1,4 +1,4 @@
-'use client';
+use client';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-browser';
 import InviteBanner from '@/components/InviteBanner';
@@ -375,18 +375,115 @@ function LiveActivity() { // CLS fix: reserve space before data loads
   );
 }
 
-const fetchLive = async () => {
-  try {
-    const res = await fetch('/api/live-scores');
-    const data = await res.json();
-    if (data.live && data.live.length > 0) {
-      setLiveMatches(data.live);  // ✅ updates when live
-      ...
-    } else {
-      setLiveMatches([]);  // ✅ clears the list when no live matches
-    }
-  } catch (e) { setLiveMatches([]); }
-};
+function LiveScoreCard() {
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [matchEvents, setMatchEvents] = useState<{ [key: number]: any[] }>({});
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const fetchLive = async () => {
+    try {
+      const res = await fetch('/api/live-scores');
+      const data = await res.json();
+      if (data.live && data.live.length > 0) {
+        setLiveMatches(data.live);
+        setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        const evMap: { [key: number]: any[] } = {};
+        await Promise.all(data.live.map(async (match: any) => {
+          if (!match.api_id && !match.id) return;
+          const fixtureId = match.api_id || match.id;
+          try {
+            const evRes = await fetch('/api/match-events?fixture=' + fixtureId);
+            if (evRes.ok) {
+              const evData = await evRes.json();
+              if (evData?.events) evMap[fixtureId] = evData.events;
+            }
+          } catch (e) {}
+        }));
+        setMatchEvents(evMap);
+      } else {
+        setLiveMatches([]);
+      }
+    } catch (e) { setLiveMatches([]); }
+  };
+  useEffect(() => {
+    setMounted(true);
+    fetchLive();
+    const interval = setInterval(fetchLive, 60000);
+    return () => clearInterval(interval);
+  }, []);
+  if (!mounted || liveMatches.length === 0) return null;
+  return (
+    <section style={{ backgroundColor: '#0A1A0A', borderTop: '2px solid #EF4444', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#EF4444', letterSpacing: '2px' }}>LIVE NOW</span>
+          </div>
+          {lastUpdated && <span style={{ fontSize: '10px', color: '#4B5563' }}>Updated {lastUpdated}</span>}
+        </div>
+        {liveMatches.map((match) => {
+          const fixtureId = match.api_id || match.id;
+          const evs = matchEvents[fixtureId] || [];
+          return (
+            <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #EF444440', borderRadius: '12px', padding: '14px 16px', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: evs.length > 0 ? '12px' : '0' }}>
+                <div style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold', minWidth: '44px', textAlign: 'center' }}>{match.elapsed ? match.elapsed + "'" : 'LIVE'}</div>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1, textAlign: 'right' }}>{match.home}</span>
+                  <div style={{ backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '6px', padding: '4px 12px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>{match.home_score} - {match.away_score}</span>
+                  </div>
+                  <span style={{ fontSize: '14px', fontWeight: 'bold', flex: 1 }}>{match.away}</span>
+                </div>
+              </div>
+              {evs.length > 0 && (
+                <div style={{ borderTop: '1px solid #1A3A1A', paddingTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {evs.map((ev: any, i: number) => {
+                    const isGoal = ev.type === 'Goal';
+                    const isYellow = ev.detail === 'Yellow Card';
+                    const isRed = ev.detail === 'Red Card';
+                    const isSub = ev.type === 'subst';
+                    const isPenalty = ev.detail === 'Penalty';
+                    const isOwnGoal = ev.detail === 'Own Goal';
+                    const isMissedPen = ev.detail === 'Missed Penalty';
+                    const icon = isGoal ? '⚽' : isYellow ? '🟨' : isRed ? '🟥' : isSub ? '🔄' : '📣';
+                    const color = isGoal ? '#2E9E5E' : isYellow ? '#F59E0B' : isRed ? '#EF4444' : isSub ? '#8B5CF6' : '#6B7280';
+                    const player = ev.player?.name?.split(' ').pop() || '';
+                    const assist = ev.assist?.name?.split(' ').pop() || '';
+                    const team = ev.team?.name || '';
+                    let text = '';
+                    if (isGoal && isPenalty) text = `GOAL! ${player} converts from the spot — ${team}`;
+                    else if (isGoal && isOwnGoal) text = `Own goal by ${player} — ${team}`;
+                    else if (isGoal) text = `GOAL! ${player}${assist ? ' (assist: ' + assist + ')' : ''} — ${team}`;
+                    else if (isMissedPen) text = `${player} misses the penalty — ${team}`;
+                    else if (isRed) text = `${player} is sent off — ${team}`;
+                    else if (isYellow) text = `${player} booked — ${team}`;
+                    else if (isSub) text = `${player} on${assist ? ' for ' + assist : ''} — ${team}`;
+                    else text = `${player} — ${ev.detail}`;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
+                        <span style={{ fontSize: '10px', color: '#8895A3', minWidth: '28px', fontWeight: 'bold' }}>{ev.time?.elapsed}&apos;</span>
+                        <span style={{ fontSize: '14px' }}>{icon}</span>
+                        <span style={{ fontSize: '12px', color, fontWeight: isGoal ? 'bold' : 'normal', lineHeight: 1.4 }}>{text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+          <a href="/predict" style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', textDecoration: 'none' }}>
+            🎯 Predict upcoming matches →
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function UpcomingMatches() {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
