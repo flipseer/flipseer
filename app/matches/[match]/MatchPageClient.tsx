@@ -48,6 +48,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         .catch(() => {});
     }
 
+    // Don't poll if already completed — Supabase data is authoritative
+    if (match?.status === 'completed' || match?.status === 'finished') return;
     if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
 
     const poll = async () => {
@@ -64,7 +66,10 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           );
         });
         if (found) {
-          setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
+          // Only update score from live-scores API if Supabase doesn't have a final score
+          if (match?.home_score === null || match?.home_score === undefined) {
+            setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
+          }
           setLiveStatus(found.status === 'completed' ? 'completed' : 'live');
           setLastUpdated(
             new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
