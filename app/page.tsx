@@ -385,21 +385,42 @@ function LiveScoreCard() {
       const res = await fetch('/api/live-scores');
       const data = await res.json();
       if (data.live && data.live.length > 0) {
-        setLiveMatches(data.live);
-        setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-        const evMap: { [key: number]: any[] } = {};
-        await Promise.all(data.live.map(async (match: any) => {
-          if (!match.api_id && !match.id) return;
-          const fixtureId = match.api_id || match.id;
-          try {
-            const evRes = await fetch('/api/match-events?fixture=' + fixtureId);
-            if (evRes.ok) {
-              const evData = await evRes.json();
-              if (evData?.events) evMap[fixtureId] = evData.events;
-            }
-          } catch (e) {}
-        }));
-        setMatchEvents(evMap);
+        // Cross-check against Supabase — remove any match Supabase marks completed
+        const slugs = data.live.map((m: any) =>
+          (m.home || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') +
+          '-vs-' +
+          (m.away || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        );
+        const checks = await Promise.all(
+          slugs.map((slug: string) =>
+            fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
+              .then(r => r.json())
+              .catch(() => null)
+          )
+        );
+        const stillLive = data.live.filter((_: any, i: number) => {
+          const check = checks[i];
+          return !check || check.status !== 'completed';
+        });
+        if (stillLive.length > 0) {
+          setLiveMatches(stillLive);
+          setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          const evMap: { [key: number]: any[] } = {};
+          await Promise.all(stillLive.map(async (match: any) => {
+            if (!match.api_id && !match.id) return;
+            const fixtureId = match.api_id || match.id;
+            try {
+              const evRes = await fetch('/api/match-events?fixture=' + fixtureId);
+              if (evRes.ok) {
+                const evData = await evRes.json();
+                if (evData?.events) evMap[fixtureId] = evData.events;
+              }
+            } catch (e) {}
+          }));
+          setMatchEvents(evMap);
+        } else {
+          setLiveMatches([]);
+        }
       } else {
         setLiveMatches([]);
       }
