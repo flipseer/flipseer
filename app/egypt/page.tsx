@@ -13,14 +13,13 @@ export const metadata: Metadata = {
 }
 export default function EgyptPage() {
   const steps = [
-    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
+    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL and Ghana PL.' },
     { num: '2', title: 'Lock', desc: 'Your prediction locks at kickoff. Permanent record — no edits ever.' },
     { num: '3', title: 'Earn REP', desc: 'Correct predictions earn REP points for you and for Egypt in the Nation Battle.' },
   ]
   const competitions = [
-    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/epl', color: '#8B5CF6' },
-    { flag: '⭐', name: 'UCL 2026/27', status: 'Live Oct 13', href: '/ucl', color: '#A78BFA' },
-    { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', href: '/indonesia', color: '#CE1126' },
+    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/premier-league', color: '#8B5CF6' },
+    { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', href: '/ucl', color: '#A78BFA' },
     { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana', color: '#F59E0B' },
   ]
   const links = [
