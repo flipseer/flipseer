@@ -115,8 +115,8 @@ export default async function ISLPage() {
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
               { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
-              { href: '/champions-league', label: '⭐ Champions League' },
-              { href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
+              { href: '/ucl', label: '⭐ Champions League' },
+              { href: '/leaderboard/ghana-pl', label: '🇬🇭 Ghana Premier League' },
               { href: '/india', label: '🇮🇳 India Football' },
               { href: '/football-reputation', label: '📊 Football Reputation' },
               { href: '/leaderboard', label: '🏆 Leaderboard' },
