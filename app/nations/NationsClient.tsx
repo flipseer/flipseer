@@ -1,0 +1,259 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase-browser';
+const supabase = createClient();
+const COUNTRY_FLAGS: { [key: string]: string } = {
+  'IN': '&#x1F1EE;&#x1F1F3;', 'BR': '&#x1F1E7;&#x1F1F7;',
+  'AR': '&#x1F1E6;&#x1F1F7;', 'FR': '&#x1F1EB;&#x1F1F7;',
+  'DE': '&#x1F1E9;&#x1F1EA;', 'GB': '&#x1F3F4;',
+  'ES': '&#x1F1EA;&#x1F1F8;', 'PT': '&#x1F1F5;&#x1F1F9;',
+  'NL': '&#x1F1F3;&#x1F1F1;', 'IT': '&#x1F1EE;&#x1F1F9;',
+  'MX': '&#x1F1F2;&#x1F1FD;', 'US': '&#x1F1FA;&#x1F1F8;',
+  'NG': '&#x1F1F3;&#x1F1EC;', 'SN': '&#x1F1F8;&#x1F1F3;',
+  'MA': '&#x1F1F2;&#x1F1E6;', 'JP': '&#x1F1EF;&#x1F1F5;',
+  'ID': '&#x1F1EE;&#x1F1E9;', 'ZA': '&#x1F1FF;&#x1F1E6;',
+  'TR': '&#x1F1F9;&#x1F1F7;', 'SA': '&#x1F1F8;&#x1F1E6;',
+  'KR': '&#x1F1F0;&#x1F1F7;', 'CO': '&#x1F1E8;&#x1F1F4;',
+  'CA': '&#x1F1E8;&#x1F1E6;', 'AU': '&#x1F1E6;&#x1F1FA;',
+  'PK': '&#x1F1F5;&#x1F1F0;', 'BD': '&#x1F1E7;&#x1F1E9;',
+  'GH': '&#x1F1EC;&#x1F1ED;', 'EG': '&#x1F1EA;&#x1F1EC;',
+  'OTHER': '&#x1F30D;',
+};
+const COUNTRY_NAMES: { [key: string]: string } = {
+  'IN': 'India', 'BR': 'Brazil', 'AR': 'Argentina',
+  'FR': 'France', 'DE': 'Germany', 'GB': 'England',
+  'ES': 'Spain', 'PT': 'Portugal', 'NL': 'Netherlands',
+  'IT': 'Italy', 'MX': 'Mexico', 'US': 'USA',
+  'NG': 'Nigeria', 'SN': 'Senegal', 'MA': 'Morocco',
+  'JP': 'Japan', 'ID': 'Indonesia', 'ZA': 'South Africa',
+  'TR': 'Turkey', 'SA': 'Saudi Arabia', 'KR': 'South Korea',
+  'CO': 'Colombia', 'CA': 'Canada', 'AU': 'Australia',
+  'PK': 'Pakistan', 'BD': 'Bangladesh', 'GH': 'Ghana',
+  'EG': 'Egypt', 'OTHER': 'Other',
+};
+const MEDALS = ['&#x1F947;', '&#x1F948;', '&#x1F949;'];
+export default function NationsClient() {
+  const [nations, setNations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userCountry, setUserCountry] = useState('');
+  const [lastUpdated, setLastUpdated] = useState('');
+  const [totalPredictions, setTotalPredictions] = useState(0);
+  const [totalForecasters, setTotalForecasters] = useState(0);
+  useEffect(() => {
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('country').eq('id', session.user.id).single();
+        if (profile?.country) setUserCountry(profile.country);
+      }
+      await fetchNations();
+    };
+    load();
+  }, []);
+  const fetchNations = async () => {
+    setLoading(true);
+    try {
+      const { data: profiles } = await supabase.from('profiles').select('country, total_points, accuracy_pct, prediction_count');
+      if (!profiles) { setLoading(false); return; }
+      const { count: predCount } = await supabase.from('predictions').select('*', { count: 'exact', head: true });
+      setTotalPredictions(predCount || 0);
+      setTotalForecasters(profiles.length);
+      const countryMap: { [key: string]: { points: number; forecasters: number; predictions: number; accuracy: number } } = {};
+      profiles.forEach((p: any) => {
+        if (!p.country && !p.total_points && !p.prediction_count) return;
+        const c = (p.country && p.country.trim() !== '') ? p.country.toUpperCase() : 'OTHER';
+        if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0, predictions: 0, accuracy: 0 };
+        countryMap[c].points += p.total_points || 0;
+        countryMap[c].forecasters += 1;
+        countryMap[c].predictions += p.prediction_count || 0;
+        countryMap[c].accuracy += p.accuracy_pct || 0;
+      });
+      const sorted = Object.entries(countryMap)
+        .map(([code, stats]) => ({
+          code, name: COUNTRY_NAMES[code] || code,
+          flag: COUNTRY_FLAGS[code] || '&#x1F30D;',
+          points: stats.points, forecasters: stats.forecasters,
+          predictions: stats.predictions,
+          accuracy: stats.forecasters > 0 ? Math.round(stats.accuracy / stats.forecasters) : 0,
+        }))
+        .filter(n => n.forecasters > 0)
+        .sort((a, b) => b.points - a.points || b.forecasters - a.forecasters);
+      setNations(sorted);
+      setLastUpdated(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+    } catch (e) { console.error('Nations fetch error:', e); }
+    setLoading(false);
+  };
+  const maxPoints = nations[0]?.points || 1;
+  const userNation = nations.find(n => n.code === userCountry);
+  const userRank = userNation ? nations.indexOf(userNation) + 1 : null;
+  const shareText = userNation
+    ? '🌍 ' + userNation.name + ' is ranked #' + userRank + ' on Flipseer EPL Nation Battle with ' + userNation.points + ' pts! Join → flipseer.com/nations #PremierLeague #EPL2027 #Flipseer'
+    : '🌍 The EPL 2026/27 Nation Battle is live on Flipseer! Which country leads? flipseer.com/nations #PremierLeague #EPL2027';
+  return (
+    <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
+      <style>{`
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nation-row:hover { background-color: rgba(139,92,246,0.05) !important; }
+      `}</style>
+      {/* HEADER */}
+      <div style={{ background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)', padding: '40px 20px 32px', textAlign: 'center', borderBottom: '1px solid #2D1B69' }}>
+        <p style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '8px' }}>EPL 2026/27 · NATION BATTLE</p>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '32px', marginBottom: '8px' }}>🌍 Nation Battle</h1>
+        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '16px' }}>
+          Every EPL prediction earns points for your country. Which nation leads?
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          {[
+            { label: 'Nations', value: loading ? '...' : nations.length },
+            { label: 'Forecasters', value: loading ? '...' : totalForecasters },
+            { label: 'Predictions', value: loading ? '...' : totalPredictions },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ textAlign: 'center', minWidth: '70px' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>{value}</div>
+              <div style={{ fontSize: '11px', color: '#6B7280' }}>{label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(139,92,246,0.1)', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '4px 14px' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold' }}>
+            LIVE {lastUpdated ? '· Updated ' + lastUpdated : ''}
+          </span>
+        </div>
+      </div>
+      <div style={{ maxWidth: '700px', margin: '0 auto', padding: '24px 20px 0' }}>
+        {/* YOUR NATION CARD */}
+        {userNation && (
+          <div style={{ backgroundColor: '#0D2B14', border: '2px solid #8B5CF6', borderRadius: '16px', padding: '20px', marginBottom: '24px', animation: 'slideIn 0.5s ease forwards', boxShadow: '0 0 20px rgba(139,92,246,0.15)' }}>
+            <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px', marginBottom: '12px' }}>YOUR NATION</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '48px' }} dangerouslySetInnerHTML={{ __html: userNation.flag }} />
+              <div style={{ flex: 1, minWidth: '120px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '4px' }}>{userNation.name}</div>
+                <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                  {userNation.forecasters} forecaster{userNation.forecasters !== 1 ? 's' : ''} · {userNation.predictions} predictions
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>Rank</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#F59E0B', fontFamily: 'Georgia, serif' }}>#{userRank}</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginBottom: '2px' }}>Points</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#8B5CF6', fontFamily: 'Georgia, serif' }}>{userNation.points}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6B7280', marginBottom: '6px' }}>
+                <span>Points vs leader</span>
+                <span>{Math.round((userNation.points / maxPoints) * 100)}%</span>
+              </div>
+              <div style={{ backgroundColor: '#2D1B69', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
+                <div style={{ width: Math.round((userNation.points / maxPoints) * 100) + '%', backgroundColor: '#8B5CF6', height: '100%', borderRadius: '999px', transition: 'width 1s ease' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <a href={'https://wa.me/?text=' + encodeURIComponent(shareText)} target="_blank" rel="noopener noreferrer"
+                style={{ flex: 1, backgroundColor: '#25D366', color: 'white', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                📱 Share Nation Rank
+              </a>
+              <a href="/predict"
+                style={{ flex: 1, backgroundColor: '#8B5CF6', color: 'white', padding: '10px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                🏴󠁧󠁢󠁥󠁮󠁧󠁿 Predict EPL
+              </a>
+            </div>
+          </div>
+        )}
+        {/* NO COUNTRY SET */}
+        {!loading && !userNation && (
+          <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '24px' }}>🌍</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: '#F59E0B', fontWeight: 'bold', fontSize: '14px' }}>Set your country to join the battle!</div>
+              <div style={{ color: '#9CA3AF', fontSize: '12px', marginTop: '2px' }}>Earn points for your nation with every EPL prediction</div>
+            </div>
+            <a href="/profile" style={{ backgroundColor: '#F59E0B', color: 'black', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+              Set Country →
+            </a>
+          </div>
+        )}
+        {/* LEADERBOARD */}
+        <div style={{ backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '16px', overflow: 'hidden' }}>
+          <div style={{ backgroundColor: '#050E05', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#6B7280', fontWeight: 'bold', letterSpacing: '1px' }}>
+            <span>RANK · NATION</span>
+            <span>FORECASTERS · PREDICTIONS · POINTS</span>
+          </div>
+          {loading ? (
+            <div style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌍</div>
+              <p style={{ fontSize: '14px' }}>Loading nation battle...</p>
+            </div>
+          ) : nations.length === 0 ? (
+            <div style={{ padding: '48px', textAlign: 'center', color: '#6B7280' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌍</div>
+              <p style={{ marginBottom: '16px' }}>No nations yet — be the first to represent yours!</p>
+              <a href="/predict" style={{ color: '#8B5CF6', fontSize: '14px', fontWeight: 'bold', textDecoration: 'none' }}>Start predicting →</a>
+            </div>
+          ) : (
+            nations.map((nation, i) => {
+              const isUser = nation.code === userCountry;
+              const medal = i < 3 ? MEDALS[i] : null;
+              const barWidth = Math.max(4, Math.round((nation.points / maxPoints) * 100));
+              return (
+                <div key={nation.code} className="nation-row" style={{ borderTop: i === 0 ? 'none' : '1px solid #1A3A1A', padding: '14px 20px', backgroundColor: isUser ? 'rgba(139,92,246,0.08)' : 'transparent', animation: 'slideIn 0.4s ease ' + (i * 0.04) + 's both', transition: 'background-color 0.15s' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <div style={{ minWidth: '32px', textAlign: 'center' }}>
+                      {medal
+                        ? <span style={{ fontSize: '20px' }} dangerouslySetInnerHTML={{ __html: medal }} />
+                        : <span style={{ fontSize: '13px', color: '#6B7280', fontWeight: 'bold' }}>#{i + 1}</span>
+                      }
+                    </div>
+                    <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: nation.flag }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        {nation.code !== 'OTHER' ? (
+                          <a href={`/${nation.name.toLowerCase().replace(/\s+/g, '-')}`} style={{ color: 'white', textDecoration: 'none' }}
+                            onMouseOver={e => (e.currentTarget.style.color = '#8B5CF6')}
+                            onMouseOut={e => (e.currentTarget.style.color = 'white')}>
+                            {nation.name}
+                          </a>
+                        ) : <span>{nation.name}</span>}
+                        {isUser && (
+                          <span style={{ fontSize: '10px', color: '#8B5CF6', backgroundColor: 'rgba(139,92,246,0.2)', padding: '1px 8px', borderRadius: '999px', fontWeight: 'bold' }}>YOU</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
+                        {nation.forecasters} forecaster{nation.forecasters !== 1 ? 's' : ''} · {nation.predictions} predictions · {nation.accuracy}% avg accuracy
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '20px', fontWeight: 'bold', color: i === 0 ? '#F59E0B' : '#8B5CF6', fontFamily: 'Georgia, serif' }}>{nation.points}</div>
+                      <div style={{ fontSize: '10px', color: '#4B5563' }}>pts</div>
+                    </div>
+                  </div>
+                  <div style={{ marginLeft: '42px' }}>
+                    <div style={{ backgroundColor: '#2D1B69', borderRadius: '999px', height: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: barWidth + '%', backgroundColor: i === 0 ? '#F59E0B' : isUser ? '#8B5CF6' : '#4C1D95', height: '100%', borderRadius: '999px', transition: 'width 0.8s ease' }} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        {/* BOTTOM CTA */}
+        {!loading && nations.length > 0 && (
+          <div style={{ textAlign: 'center', marginTop: '24px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '14px', padding: '24px' }}>
+            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+            <h3 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '8px' }}>Every EPL prediction moves your nation up</h3>
+            <p style={{ color: '#6B7280', fontSize: '13px', marginBottom: '16px' }}>380 matches. Earn points for your country all season.</p>
+            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white', padding: '12px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold', boxShadow: '0 0 20px rgba(139,92,246,0.25)' }}>
+              Predict Now →
+            </a>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}
