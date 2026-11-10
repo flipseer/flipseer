@@ -2,27 +2,25 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Spain Football Predictions | EPL & UCL | Flipseer',
-  description: 'Spanish football fans predict EPL, UCL and La Liga on Flipseer. Represent Spain in the global Nation Battle. World Cup 2030 host. Free forever.',
+  description: 'Spanish football fans predict EPL, UCL on Flipseer. Represent Spain in the global Nation Battle. World Cup 2030 co-host. Free forever.',
   alternates: { canonical: 'https://flipseer.com/spain' },
   openGraph: {
     title: 'Spain Football Predictions | EPL & UCL | Flipseer',
-    description: 'Spanish football fans predict EPL, UCL and La Liga on Flipseer. Represent Spain in the global Nation Battle. World Cup 2030 host. Free forever.',
+    description: 'Spanish football fans predict EPL, UCL on Flipseer. Represent Spain in the global Nation Battle. World Cup 2030 co-host. Free forever.',
     url: 'https://flipseer.com/spain',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
-
 export default function SpainPage() {
   const steps = [
-    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
+    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL and Ghana PL.' },
     { num: '2', title: 'Lock', desc: 'Your prediction locks at kickoff. Permanent record — no edits ever.' },
     { num: '3', title: 'Earn REP', desc: 'Correct predictions earn REP points for you and for Spain in the Nation Battle.' },
   ]
   const competitions = [
-    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/epl', color: '#8B5CF6' },
-    { flag: '⭐', name: 'UCL 2026/27', status: 'Live Oct 13', href: '/ucl', color: '#A78BFA' },
-    { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', href: '/indonesia', color: '#CE1126' },
-    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana', color: '#F59E0B' },
+    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/premier-league', color: '#8B5CF6' },
+    { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', href: '/ucl', color: '#A78BFA' },
+    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/leaderboard/ghana-pl', color: '#F59E0B' },
   ]
   const links = [
     { href: '/predict', label: '⚽ Predict Matches' },
@@ -40,14 +38,14 @@ export default function SpainPage() {
           Spain Football Predictions
         </h1>
         <p style={{ color: '#9CA3AF', fontSize: '15px', maxWidth: '480px', margin: '0 auto 16px', lineHeight: 1.7 }}>
-          Spain hosts the World Cup 2030. Start building your verified football prediction record now — 4 years before the tournament begins. Spanish forecasters on Flipseer predict EPL, UCL and international football, earning REP points for Spain in the global Nation Battle.
+          Euro 2024 champions. World Cup 2030 co-hosts. Spanish forecasters on Flipseer predict EPL, UCL and international football — building verified prediction history and earning REP points for Spain in the global Nation Battle.
         </p>
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '999px', padding: '6px 16px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>🇪🇸 Spain hosts World Cup 2030 — Build your record now</span>
+          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold' }}>🇪🇸 Spain co-hosts World Cup 2030 — Build your record now</span>
         </div>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a href="/predict" style={{ backgroundColor: '#C60B1E', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
-            ⚽ Predict EPL matches for Spain →
+          <a href="/predict" style={{ backgroundColor: '#AA151B', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
+            ⚽ Predict for Spain →
           </a>
           <a href="/leaderboard" style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px' }}>
             🏆 View Leaderboard
