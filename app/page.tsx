@@ -878,9 +878,19 @@ export default function Home() {
           <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(32px,7vw,60px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-1.5px', marginBottom: '16px', animation: 'flicker 8s infinite' }}>
             {heroNation && nationRank > 0 ? (
               <>
-                <span style={{ fontSize: 'clamp(18px,3.5vw,26px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '0px', fontWeight: 700 }}>{heroNation.toUpperCase()} IS RANKED</span>
-                <span style={{ fontSize: 'clamp(72px,16vw,120px)', color: '#8B5CF6', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
-                <span style={{ fontSize: 'clamp(20px,4vw,32px)', color: '#8B5CF6', display: 'block', marginTop: '12px', fontWeight: 800 }}>CAN YOU HELP THEM REACH #1?</span>
+                {nationRank === 1 ? (
+                  <>
+                    <span style={{ fontSize: 'clamp(18px,3.5vw,26px)', color: '#F59E0B', display: 'block', marginBottom: '8px', letterSpacing: '0px', fontWeight: 700 }}>{heroNation.toUpperCase()} IS</span>
+                    <span style={{ fontSize: 'clamp(72px,16vw,120px)', color: '#F59E0B', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#1</span>
+                    <span style={{ fontSize: 'clamp(20px,4vw,32px)', color: '#F59E0B', display: 'block', marginTop: '12px', fontWeight: 800 }}>DEFEND THE TOP SPOT.</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ fontSize: 'clamp(18px,3.5vw,26px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '0px', fontWeight: 700 }}>{heroNation.toUpperCase()} IS RANKED</span>
+                    <span style={{ fontSize: 'clamp(72px,16vw,120px)', color: '#8B5CF6', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
+                    <span style={{ fontSize: 'clamp(20px,4vw,32px)', color: '#8B5CF6', display: 'block', marginTop: '12px', fontWeight: 800 }}>PUSH THEM TO #1.</span>
+                  </>
+                )}
               </>
             ) : (
               <>
