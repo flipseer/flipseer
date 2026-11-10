@@ -138,7 +138,6 @@ function TopTicker({ topNations }: { topNations: any[] }) {
     color: '#F59E0B',
   }));
 
-  // Build doubled array for seamless loop
   const allItems: { icon: string; text: string; color: string; pill?: string; pillColor?: string }[] = [
     ...nationItems,
     ...matchItems.map(m => ({
@@ -155,7 +154,6 @@ function TopTicker({ topNations }: { topNations: any[] }) {
 
   return (
     <div aria-hidden="true" style={{ backgroundColor: '#050E05', borderBottom: '1px solid #2D1B69', overflow: 'hidden', padding: '7px 0', contain: 'layout', position: 'relative' }}>
-      {/* Fixed left label */}
       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, zIndex: 2, display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#050E05', paddingLeft: '12px', paddingRight: '14px', borderRight: '1px solid #2D1B69' }}>
         <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#F59E0B', display: 'inline-block', animation: 'repPulse 1s ease-in-out infinite', flexShrink: 0 }} />
         <span style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px', whiteSpace: 'nowrap' }}>🌍 NATIONS</span>
@@ -242,7 +240,6 @@ function TodayRepTicker() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Start of today UTC
         const todayStart = new Date();
         todayStart.setUTCHours(0, 0, 0, 0);
         const { data: preds } = await supabase
@@ -254,7 +251,6 @@ function TodayRepTicker() {
           .order('updated_at', { ascending: false })
           .limit(200);
         if (!preds || preds.length === 0) return;
-        // Aggregate points per user today
         const totals: { [uid: string]: number } = {};
         preds.forEach((p: any) => { totals[p.user_id] = (totals[p.user_id] || 0) + (p.points_earned || 0); });
         const userIds = Object.keys(totals);
@@ -277,13 +273,12 @@ function TodayRepTicker() {
   return <ScrollBand items={items} label="⚡ TODAY'S REP" labelColor="#2E9E5E" pointsColor="#2E9E5E" bgColor="#020B04" borderColor="#2E9E5E30" speed={Math.max(30, items.length * 4)} />;
 }
 
-function LiveActivity() { // CLS fix: reserve space before data loads
+function LiveActivity() {
   const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
   const [fetched, setFetched] = useState(false);
   const fetchActivity = async () => {
     try {
-      // Step 1: fetch recent predictions (no join — avoids FK lookup issues)
       const { data: preds } = await supabase
         .from('predictions')
         .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id')
@@ -291,7 +286,6 @@ function LiveActivity() { // CLS fix: reserve space before data loads
         .limit(50);
 
       if (preds && preds.length > 0) {
-        // Step 2: deduplicate by user_id, keep 5 most recent unique users
         const seen = new Set<string>();
         const unique = preds.filter((p: any) => {
           if (seen.has(p.user_id)) return false;
@@ -299,7 +293,6 @@ function LiveActivity() { // CLS fix: reserve space before data loads
           return true;
         }).slice(0, 5);
 
-        // Step 3: fetch profiles for those user_ids separately
         const userIds = unique.map((p: any) => p.user_id);
         const { data: profiles } = await supabase
           .from('profiles')
@@ -330,7 +323,6 @@ function LiveActivity() { // CLS fix: reserve space before data loads
     const interval = setInterval(fetchActivity, 60000);
     return () => clearInterval(interval);
   }, []);
-  // Show skeleton only while loading (not yet fetched); hide entirely if no data after fetch
   if (!mounted || !fetched) return (
     <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px', minHeight: '164px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -385,7 +377,6 @@ function LiveScoreCard() {
       const res = await fetch('/api/live-scores');
       const data = await res.json();
       if (data.live && data.live.length > 0) {
-        // Cross-check against Supabase — remove any match Supabase marks completed
         const slugs = data.live.map((m: any) =>
           (m.home || '').toLowerCase().replace(/[^a-z0-9]+/g, '-') +
           '-vs-' +
@@ -557,7 +548,7 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
-    const handleShare = (match: any) => {
+  const handleShare = (match: any) => {
     try {
       const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const url = `https://flipseer.com/matches/${slug}`;
@@ -572,7 +563,7 @@ function UpcomingMatches() {
         }).catch(() => {});
       }
     } catch (e) {}
-    };
+  };
   if (loading) return (
     <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -688,6 +679,7 @@ function ClaimModal() {
     </div>
   );
 }
+
 function PWAInstallButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
@@ -852,7 +844,6 @@ export default function Home() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
       <ClaimModal />
-      {/* ── TELEGRAM FLOATING BUTTON ── */}
       <TelegramFloatingButton />
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -865,12 +856,73 @@ export default function Home() {
         @keyframes repFlash { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         @keyframes repTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
-      {/* ── TELEGRAM BANNER — dismissible, shows once ── */}
-      <TelegramBanner />
-      {/* TOP TICKER — National leaderboard + upcoming/current matches */}
-      <TopTicker topNations={topNations} />
 
-      {/* ── REPUTATION TICKER — blinking, rotates every 3s ── */}
+      {/* ── HERO — first thing a new visitor sees ── */}
+      <section style={{
+        background: 'linear-gradient(180deg, #071408 0%, #0D1F0F 100%)',
+        padding: 'clamp(40px,8vw,72px) 20px clamp(32px,6vw,56px)',
+        textAlign: 'center',
+        borderBottom: '1px solid #1A3A1A',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '100%', background: 'radial-gradient(ellipse,rgba(139,92,246,0.1) 0%,transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: '640px', margin: '0 auto', position: 'relative' }}>
+          {/* What it is — one line */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '999px', padding: '6px 18px', marginBottom: '24px' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
+            <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1.5px' }}>EPL · UCL · Liga 1 · Ghana PL · ISL — LIVE NOW</span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(32px,7vw,60px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-1.5px', marginBottom: '16px', animation: 'flicker 8s infinite' }}>
+            {heroNation && nationRank > 0 ? (
+              <>
+                <span style={{ fontSize: 'clamp(18px,3.5vw,26px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '0px', fontWeight: 700 }}>{heroNation.toUpperCase()} IS RANKED</span>
+                <span style={{ fontSize: 'clamp(72px,16vw,120px)', color: '#8B5CF6', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
+                <span style={{ fontSize: 'clamp(20px,4vw,32px)', color: '#8B5CF6', display: 'block', marginTop: '12px', fontWeight: 800 }}>CAN YOU HELP THEM REACH #1?</span>
+              </>
+            ) : (
+              <>
+                <span style={{ display: 'block' }}>Your football calls.</span>
+                <span style={{ display: 'block', color: '#8B5CF6' }}>Permanent record.</span>
+                <span style={{ display: 'block' }}>Forever.</span>
+              </>
+            )}
+          </h1>
+
+          {/* One-line value prop */}
+          <p style={{ fontSize: 'clamp(15px,2.5vw,18px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 480, margin: '0 auto 24px', fontFamily: 'Georgia, serif' }}>
+            Predict EPL, UCL, Liga 1, Ghana PL and ISL matches before kickoff.
+            Every correct call builds your <span style={{ color: '#8B5CF6' }}>Football Reputation</span> — verified, locked, yours forever.
+          </p>
+
+          {/* Trust signals */}
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
+            <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', padding: '4px 12px', borderRadius: '999px' }}>✓ Free forever</span>
+            <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', padding: '4px 12px', borderRadius: '999px' }}>✓ No betting</span>
+            <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', padding: '4px 12px', borderRadius: '999px' }}>✓ No card required</span>
+            {totalUsers > 0 && <span style={{ fontSize: '12px', color: '#6B7280', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', padding: '4px 12px', borderRadius: '999px' }}>🌍 {totalUsers} forecasters</span>}
+          </div>
+
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+            <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '16px 40px', borderRadius: '12px', textDecoration: 'none', fontSize: '17px', fontWeight: 'bold', boxShadow: '0 0 40px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
+              ⚽ Make Your First Prediction — Free →
+            </a>
+            <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '16px 28px', borderRadius: '12px', textDecoration: 'none', fontSize: '17px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
+              👥 Challenge a Friend
+            </a>
+          </div>
+          <p style={{ fontSize: '12px', color: '#6B7280' }}>
+            Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
+          </p>
+        </div>
+      </section>
+
+      {/* ── TICKER BARS ── */}
+      <TelegramBanner />
+      <TopTicker topNations={topNations} />
       <AllTimeRepTicker />
       <TodayRepTicker />
 
@@ -893,6 +945,7 @@ export default function Home() {
           <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
         </div>
       </div>
+
       {/* LIVE COMPETITIONS PREDICT BANNER */}
       <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '10px 20px', overflowX: 'auto' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', minWidth: 'max-content' }}>
@@ -904,7 +957,7 @@ export default function Home() {
             { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
             { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: true },
           ].map(({ href, flag, name, color, live }) => (
-            <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, transition: 'all 0.2s ease' }}>
+            <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0 }}>
               <span style={{ fontSize: '14px' }}>{flag}</span>
               <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
               <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold', animation: 'liveBadgePulse 1.5s ease-in-out infinite' }}>LIVE</span>
@@ -915,6 +968,7 @@ export default function Home() {
           </a>
         </div>
       </div>
+
       {/* TOP BANNER */}
       <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
@@ -929,77 +983,13 @@ export default function Home() {
           </a>
         </div>
       </div>
-       {/* UPCOMING MATCHES */}
+
+      {/* UPCOMING MATCHES */}
       <UpcomingMatches />
       {/* LIVE SCORES + ACTIVITY */}
       <LiveScoreCard />
       <LiveActivity />
-      {/* HERO */}
-      <section style={{ textAlign: 'center', padding: '40px 20px 48px', maxWidth: '960px', margin: '0 auto', position: 'relative' }}>
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '700px', height: '400px', background: 'radial-gradient(ellipse, rgba(139,92,246,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div suppressHydrationWarning style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '999px', padding: '8px 20px', marginBottom: '40px' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
-          <span style={{ fontSize: '13px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · ⭐ UCL · 🇮🇳 ISL · LIVE NOW</span>
-        </div>
-        <h1 style={{ fontFamily: 'Georgia, serif', lineHeight: '1.08', marginBottom: '16px', fontWeight: 'bold', animation: 'flicker 8s infinite' }}>
-          {heroNation && nationRank > 0 ? (
-            <>
-              <span style={{ fontSize: 'clamp(32px, 6vw, 56px)', color: '#9CA3AF', display: 'block', marginBottom: '8px', letterSpacing: '-0.5px' }}>{heroNation.toUpperCase()} IS RANKED</span>
-              <span style={{ fontSize: 'clamp(80px, 18vw, 140px)', color: '#8B5CF6', display: 'block', lineHeight: '0.9', letterSpacing: '-4px' }}>#{nationRank}</span>
-              <span style={{ fontSize: 'clamp(28px, 5vw, 48px)', color: '#8B5CF6', display: 'block', marginTop: '12px' }}>CAN YOU HELP THEM REACH #1?</span>
-            </>
-          ) : (
-            <>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>PROVE YOUR</span>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', color: '#8B5CF6', display: 'block', letterSpacing: '-2px' }}>FOOTBALL</span>
-              <span style={{ fontSize: 'clamp(40px, 9vw, 80px)', display: 'block', letterSpacing: '-2px' }}>INTELLIGENCE.</span>
-            </>
-          )}
-        </h1>
-        <p style={{ fontSize: 'clamp(15px,2.5vw,19px)', color: '#9CA3AF', lineHeight: 1.6, maxWidth: 520, margin: '0 auto 12px', fontFamily: 'Georgia, serif' }}>
-          Your football knowledge deserves a permanent record. Predict matches before kick-off. Prove your calls are right.{' '}
-          <span style={{ color: '#8B5CF6' }}>Build your Football Reputation.</span>
-        </p>
-        <div style={{ marginBottom: '20px' }}>
-          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', padding: '4px 14px', borderRadius: '999px' }}>
-            🌍 Building toward World Cup 2030 · Start your record today
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <a href="/predict" style={{ backgroundColor: '#8B5CF6', color: 'white', padding: '18px 48px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', fontWeight: 'bold', boxShadow: '0 0 48px rgba(139,92,246,0.4)', letterSpacing: '0.3px' }}>
-            ⚽ Make Your First Prediction — Free →
-          </a>
-          <a href="/groups" style={{ backgroundColor: 'rgba(245,158,11,0.1)', color: '#F59E0B', padding: '18px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '18px', border: '1px solid rgba(245,158,11,0.4)', fontWeight: 'bold' }}>
-            👥 Challenge a Friend
-          </a>
-        </div>
-        <p style={{ fontSize: '13px', color: '#8895A3', letterSpacing: '0.5px', marginBottom: '6px' }}>
-          Free forever &nbsp;·&nbsp; No betting &nbsp;·&nbsp; No card required
-        </p>
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
-          <span style={{ fontSize: '12px', color: '#6B7280' }}>🇬🇭 Ghana · 🇮🇩 Indonesia · 🇮🇳 India · 🇳🇬 Nigeria predicting now</span>
-        </div>
-        <p style={{ fontSize: '13px', color: '#6B7280' }}>
-          Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
-        </p>
-        <div style={{ minHeight: '80px', display: 'flex', gap: '24px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '32px', paddingTop: '32px', borderTop: '1px solid #2D1B69', visibility: (mounted && (nationForecasters > 0 || nextMatchCountdown || totalUsers > 0)) ? 'visible' : 'hidden' }}>
-          {nationForecasters > 0 && nationRank > 0 && (
-            <span style={{ fontSize: '13px', color: '#6B7280' }}>
-              🔥 <strong style={{ color: '#F59E0B' }}>{nationForecasters}</strong> {heroNation} forecasters competing
-            </span>
-          )}
-          {nextMatchCountdown && (
-            <span style={{ fontSize: '13px', color: '#6B7280' }}>
-              ⏱ Next match locks in <strong style={{ color: '#EF4444' }}>{nextMatchCountdown}</strong>
-            </span>
-          )}
-          {totalUsers > 0 && (
-            <span style={{ fontSize: '13px', color: '#6B7280' }}>
-              🌍 <strong style={{ color: '#8B5CF6' }}>{totalUsers}</strong> forecasters globally
-            </span>
-          )}
-        </div>
-      </section>
+
       {/* THREE STEPS */}
       <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -1020,9 +1010,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       {/* INVITE BANNER */}
       <InviteBanner />
-      {/* 4 COMPETITIONS */}
+
+      {/* 5 COMPETITIONS */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '32px 24px' }}>
@@ -1055,6 +1047,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       {/* NATION BATTLE */}
       <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
@@ -1066,6 +1059,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
       {/* FOOTER */}
       <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -1084,7 +1078,6 @@ export default function Home() {
             ))}
           </div>
           <p style={{ color: '#4B5563', fontSize: 12, marginBottom: 8 }}>Free forever · No betting · No gambling · Pure football intelligence</p>
-          {/* Telegram channel link in footer */}
           <p style={{ marginBottom: 8 }}>
             <a href="https://t.me/flipseer" target="_blank" rel="noopener noreferrer" style={{ color: '#2AABEE', fontSize: 13, textDecoration: 'none', fontWeight: 'bold' }}>
               📣 Join us on Telegram → t.me/flipseer
