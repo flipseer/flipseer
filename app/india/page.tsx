@@ -19,10 +19,10 @@ export default function IndiaPage() {
     { num: '3', title: 'Earn REP', desc: 'Correct predictions earn REP points for you and for India in the Nation Battle.' },
   ]
   const competitions = [
-    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/epl', color: '#8B5CF6' },
+    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/premier-league', color: '#8B5CF6' },
     { flag: '⭐', name: 'UCL 2026/27', status: 'Live Oct 13', href: '/ucl', color: '#A78BFA' },
     { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', href: '/indonesia', color: '#CE1126' },
-   { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana-premier-league', color: '#F59E0B' },
+    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/leaderboard/ghana-pl', color: '#F59E0B' },
   ]
   const links = [
     { href: '/predict', label: '⚽ Predict Matches' },
