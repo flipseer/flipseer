@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: 'UCL 2026/27 Predictions | Champions League | Flipseer',
   description: 'Predict every UEFA Champions League 2026/27 match. Build your permanent Football Reputation. Free forever. No betting.',
   keywords: 'UCL predictions, Champions League 2026 predictions, football prediction UEFA',
+  alternates: {
+    canonical: 'https://flipseer.com/ucl',
+  },
   openGraph: {
     title: 'UCL 2026/27 Predictions | Flipseer',
     description: 'Predict every UCL match. Build your permanent Football Reputation.',
@@ -12,6 +15,7 @@ export const metadata: Metadata = {
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
+
 export default function UCLPage() {
   return <UCLClient />
 }
