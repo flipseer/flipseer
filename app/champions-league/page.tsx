@@ -5,11 +5,11 @@ export const metadata: Metadata = {
   title: 'Champions League Predictions 2026/27 | UCL Match Predictions | Flipseer',
   description: 'Predict every Champions League 2026/27 match before kickoff. UCL predictions for Arsenal, Barcelona, Bayern, Real Madrid and more. Free forever. No betting.',
   keywords: 'champions league predictions, UCL predictions 2026, football prediction, champions league match predictions',
-  alternates: { canonical: 'https://flipseer.com/champions-league' },
+  alternates: { canonical: 'https://flipseer.com/ucl' },
   openGraph: {
     title: 'Champions League Predictions 2026/27 | Flipseer',
     description: 'Predict every UCL match before kickoff. Build your Champions League reputation.',
-    url: 'https://flipseer.com/champions-league',
+    url: 'https://flipseer.com/ucl',
   },
 }
 
@@ -117,13 +117,13 @@ export default async function ChampionsLeaguePage() {
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '14px' }}>More on Flipseer</h2>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
-{ href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
-{ href: '/india', label: '🇮🇳 Indian Super League' },
-{ href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
-{ href: '/football-reputation', label: '📊 Football Reputation' },
-{ href: '/leaderboard', label: '🏆 Leaderboard' },
-{ href: '/groups', label: '👥 Private Leagues' },
-    ].map(({ href, label }) => (
+              { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
+              { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
+              { href: '/leaderboard/ghana-pl', label: '🇬🇭 Ghana Premier League' },
+              { href: '/football-reputation', label: '📊 Football Reputation' },
+              { href: '/leaderboard', label: '🏆 Leaderboard' },
+              { href: '/groups', label: '👥 Private Leagues' },
+            ].map(({ href, label }) => (
               <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', color: '#9CA3AF', padding: '8px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px' }}>
                 {label}
               </a>
