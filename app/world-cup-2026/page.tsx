@@ -176,7 +176,7 @@ export default async function WorldCup2026Page() {
             }}>
               🏆 Final Leaderboard →
             </a>
-            <a href="/epl" style={{
+            <a href="/premier-league" style={{
               backgroundColor: 'rgba(139,92,246,0.1)', color: '#8B5CF6',
               padding: '14px 24px', borderRadius: 10, textDecoration: 'none',
               fontSize: 15, border: '1px solid #8B5CF6', fontWeight: 700,
@@ -339,14 +339,14 @@ export default async function WorldCup2026Page() {
               World Cup points carry forward. Premier League 2026/27 starts August 21.
               380 matches. One permanent record. Forever.
             </p>
-            <a href="/epl/matchweek-1" style={{
+            <a href="/premier-league" style={{
               display: 'inline-block', backgroundColor: '#8B5CF6', color: 'white',
               padding: '15px 40px', borderRadius: 10, textDecoration: 'none',
               fontSize: 16, fontWeight: 700,
               boxShadow: '0 0 24px rgba(139,92,246,0.3)',
               marginBottom: 24,
             }}>
-              View EPL Matchweek 1 →
+              View EPL Predictions →
             </a>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
               {[
