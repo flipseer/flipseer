@@ -9,19 +9,18 @@ export const metadata: Metadata = {
     description: 'Argentine football fans predict EPL, UCL on Flipseer. Represent Argentina in the global Nation Battle. World Cup 2030 co-host. Free forever.',
     url: 'https://flipseer.com/argentina',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
-  },  
+  },
 }
 export default function ArgentinaPage() {
   const steps = [
-    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL, Liga 1 and Ghana PL.' },
+    { num: '1', title: 'Predict', desc: 'Pick match outcomes before kickoff across EPL, UCL and Ghana PL.' },
     { num: '2', title: 'Lock', desc: 'Your prediction locks at kickoff. Permanent record — no edits ever.' },
     { num: '3', title: 'Earn REP', desc: 'Correct predictions earn REP points for you and for Argentina in the Nation Battle.' },
   ]
   const competitions = [
-    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/epl', color: '#8B5CF6' },
-    { flag: '⭐', name: 'UCL 2026/27', status: 'Live Oct 13', href: '/ucl', color: '#A78BFA' },
-    { flag: '🇮🇩', name: 'Liga 1 Indonesia', status: 'LIVE', href: '/indonesia', color: '#CE1126' },
-    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana-premier-league', color: '#F59E0B' },
+    { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/premier-league', color: '#8B5CF6' },
+    { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', href: '/ucl', color: '#A78BFA' },
+    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/leaderboard/ghana-pl', color: '#F59E0B' },
   ]
   const links = [
     { href: '/predict', label: '⚽ Predict Matches' },
@@ -46,7 +45,7 @@ export default function ArgentinaPage() {
         </div>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/predict" style={{ backgroundColor: '#74ACDF', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
-            ⚽ Predict EPL matches for Argentina →
+            ⚽ Predict for Argentina →
           </a>
           <a href="/leaderboard" style={{ backgroundColor: 'transparent', color: '#9CA3AF', border: '1px solid #1A3A1A', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px' }}>
             🏆 View Leaderboard
