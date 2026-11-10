@@ -166,7 +166,7 @@ export default function GhanaClient() {
             🇬🇭 Start Predicting Ghana PL →
           </a>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-            {[{ href: '/epl', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL' }, { href: '/ucl', label: '⭐ UCL' }, { href: '/nations', label: '🌍 Nations' }, { href: '/leaderboard', label: '🏆 Leaderboard' }].map(({ href, label }) => (
+            {[{ href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL' }, { href: '/ucl', label: '⭐ UCL' }, { href: '/nations', label: '🌍 Nations' }, { href: '/leaderboard', label: '🏆 Leaderboard' }].map(({ href, label }) => (
               <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 8, padding: '6px 14px', textDecoration: 'none', fontSize: 12, color: '#8895A3' }}>{label}</a>
             ))}
           </div>
