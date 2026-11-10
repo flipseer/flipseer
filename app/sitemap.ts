@@ -43,20 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/nations`,                          lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
     { url: `${baseUrl}/groups`,                           lastModified: now, changeFrequency: 'weekly',  priority: 0.6 },
 
-    // Competition hubs (real pages with full content)
+    // Competition hubs
     { url: `${baseUrl}/premier-league`,                   lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
     { url: `${baseUrl}/ucl`,                              lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${baseUrl}/indian-super-league`,              lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
 
-    // Competition leaderboards (new dedicated pages)
-    { url: `${baseUrl}/leaderboard/epl`,                  lastModified: now, changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${baseUrl}/leaderboard/ucl`,                  lastModified: now, changeFrequency: 'weekly',  priority: 0.8 },
-    { url: `${baseUrl}/leaderboard/isl`,                  lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-    { url: `${baseUrl}/leaderboard/liga-1`,               lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-    { url: `${baseUrl}/leaderboard/ghana-pl`,             lastModified: now, changeFrequency: 'daily',   priority: 0.7 },
-    { url: `${baseUrl}/leaderboard/nation-battle`,        lastModified: now, changeFrequency: 'daily',   priority: 0.8 },
-
-    // Nation pages (real pages with content)
+    // Nation pages
     { url: `${baseUrl}/india`,                            lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${baseUrl}/indonesia`,                        lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${baseUrl}/nigeria`,                          lastModified: now, changeFrequency: 'weekly',  priority: 0.7 },
