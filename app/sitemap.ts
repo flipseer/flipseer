@@ -18,10 +18,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/ucl`,                priority: 0.85, changeFrequency: 'daily'   },
     { url: `${base}/isl`,                priority: 0.8,  changeFrequency: 'daily'   },
     { url: `${base}/nations`,            priority: 0.8,  changeFrequency: 'weekly'  },
-    // Leaderboard sub-pages
     { url: `${base}/leaderboard/ghana-pl`, priority: 0.75, changeFrequency: 'daily' },
     { url: `${base}/leaderboard/liga-1`,   priority: 0.75, changeFrequency: 'daily' },
-    // SEO content pages
     { url: `${base}/football-prediction-tips`,             priority: 0.7, changeFrequency: 'weekly' },
     { url: `${base}/epl-predictions`,                      priority: 0.7, changeFrequency: 'weekly' },
     { url: `${base}/champions-league-predictions`,         priority: 0.7, changeFrequency: 'weekly' },
@@ -30,8 +28,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/auth`,               priority: 0.6,  changeFrequency: 'monthly' },
   ]
 
+  // ── Match pages ───────────────────────────────────────────────────────────
+  // Only include matches with a valid slug — exact slug used, no transformation
+  const { data: matches } = await supabase
+    .from('matches')
+    .select('slug, kickoff, status')
+    .in('status', ['completed', 'upcoming', 'live', 'locked'])
+    .not('slug', 'is', null)
+    .order('kickoff', { ascending: false })
+    .limit(300)
+
+  const matchPages: MetadataRoute.Sitemap = (matches ?? [])
+    .filter((m) => m.slug && m.slug.trim() !== '')
+    .map((m) => ({
+      url: `${base}/matches/${m.slug}`,
+      lastModified: new Date(m.kickoff),
+      changeFrequency: (m.status === 'completed' ? 'monthly' : 'daily') as 'monthly' | 'daily',
+      priority: m.status === 'completed' ? 0.65 : 0.8,
+    }))
+
   // ── Profile pages ─────────────────────────────────────────────────────────
-  // Only include users with meaningful prediction history
   const { data: profiles } = await supabase
     .from('profiles')
     .select('username, updated_at')
@@ -49,5 +65,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-  return [...staticPages, ...profilePages]
+  return [...staticPages, ...matchPages, ...profilePages]
 }
