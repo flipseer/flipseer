@@ -78,20 +78,43 @@ export default function GroupsPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const jc = params.get('join');
-    if (jc) { setJoinCode(jc.toUpperCase()); setShowJoin(true); }
     const stored = sessionStorage.getItem('flipseer_join_code');
-    if (stored) { setJoinCode(stored); setShowJoin(true); sessionStorage.removeItem('flipseer_join_code'); }
+    const autoCode = (jc || stored || '').toUpperCase();
+    if (stored) sessionStorage.removeItem('flipseer_join_code');
+
+    const autoJoin = async (uid: string, code: string) => {
+      const { data: group } = await supabase.from('groups').select('*').eq('invite_code', code).single();
+      if (!group) { toast$('Invalid invite code', 'error'); return; }
+      const { data: existing } = await supabase.from('group_members').select('id').eq('group_id', group.id).eq('user_id', uid).single();
+      if (!existing) {
+        await supabase.from('group_members').insert({ group_id: group.id, user_id: uid, joined_via_invite: true });
+        trackLeagueJoined({ league_code: group.invite_code, league_name: group.name });
+        toast$('Joined ' + group.name + '! 🎉');
+      }
+      await loadGroups(uid);
+      setExpandedId(group.id);
+      loadLeagueData(group, uid);
+      // Clean up ?join= from URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('join');
+      window.history.replaceState({}, '', url.toString());
+    };
+
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        if (jc) sessionStorage.setItem('flipseer_join_code', jc.toUpperCase());
-        window.location.href = '/auth' + (jc ? '?join=' + jc : '');
+        if (autoCode) sessionStorage.setItem('flipseer_join_code', autoCode);
+        window.location.href = '/auth' + (autoCode ? `?redirect=${encodeURIComponent('/groups?join=' + autoCode)}` : '');
         return;
       }
       setUserId(session.user.id);
       const { data: p } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
       if (p?.username) setUsername(p.username);
-      await loadGroups(session.user.id);
+      if (autoCode) {
+        await autoJoin(session.user.id, autoCode);
+      } else {
+        await loadGroups(session.user.id);
+      }
       setLoading(false);
     };
     init();
