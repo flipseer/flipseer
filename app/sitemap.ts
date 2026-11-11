@@ -29,16 +29,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // ── Match pages ───────────────────────────────────────────────────────────
-  // Only include matches with a valid slug — exact slug used, no transformation
-  const { data: matches } = await supabase
-    .from('matches')
-    .select('slug, kickoff, status')
-    .in('status', ['completed', 'upcoming', 'live', 'locked'])
-    .not('slug', 'is', null)
-    .order('kickoff', { ascending: false })
-    .limit(300)
+  // Fetch in batches to get all 1,400+ matches
+  async function fetchMatchBatch(from: number, to: number) {
+    const { data } = await supabase
+      .from('matches')
+      .select('slug, kickoff, status')
+      .in('status', ['completed', 'upcoming', 'live', 'locked'])
+      .not('slug', 'is', null)
+      .order('kickoff', { ascending: false })
+      .range(from, to)
+    return data ?? []
+  }
 
-  const matchPages: MetadataRoute.Sitemap = (matches ?? [])
+  const [batch1, batch2, batch3] = await Promise.all([
+    fetchMatchBatch(0, 499),
+    fetchMatchBatch(500, 999),
+    fetchMatchBatch(1000, 1499),
+  ])
+
+  const allMatches = [...batch1, ...batch2, ...batch3]
+
+  const matchPages: MetadataRoute.Sitemap = allMatches
     .filter((m) => m.slug && m.slug.trim() !== '')
     .map((m) => ({
       url: `${base}/matches/${m.slug}`,
