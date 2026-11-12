@@ -6,48 +6,42 @@ export const metadata: Metadata = {
   description: 'Predict every Ghana Premier League 2026/27 match before kickoff. Asante Kotoko, Hearts of Oak, Medeama, Aduana Stars and more. Build your Ghana football reputation. Free forever.',
   keywords: 'Ghana Premier League predictions, GPL predictions 2026, Ghana football prediction, Asante Kotoko predictions, Hearts of Oak predictions',
   alternates: { canonical: 'https://flipseer.com/ghana-premier-league' },
-    openGraph: {
+  openGraph: {
     title: 'Ghana Premier League Predictions 2026/27 | Flipseer',
     description: 'Predict every GPL match before kickoff. Build your Ghana football reputation. Free forever.',
     url: 'https://flipseer.com/ghana-premier-league',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
 }
+
 export const dynamic = 'force-dynamic'
 
-async function getUpcomingMatches() {
+async function getMatches() {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    const { data } = await supabase
-      .from('matches')
-      .select('id, home_team, away_team, kickoff, competition')
-      .eq('competition', 'Ghana PL 2026/27')
-      .eq('status', 'upcoming')
-      .order('kickoff', { ascending: true })
-      .limit(10)
-    return data || []
-  } catch { return [] }
-}
-
-async function getRecentResults() {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
-    const { data } = await supabase
-      .from('matches')
-      .select('id, home_team, away_team, home_score, away_score, kickoff')
-      .eq('competition', 'Ghana PL 2026/27')
-      .eq('status', 'completed')
-      .not('home_score', 'is', null)
-      .order('kickoff', { ascending: false })
-      .limit(5)
-    return data || []
-  } catch { return [] }
+    const [upcoming, recent] = await Promise.all([
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, slug')
+        .eq('competition', 'Ghana PL 2026/27')
+        .in('status', ['upcoming', 'live'])
+        .order('kickoff', { ascending: true })
+        .limit(10),
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, home_score, away_score, kickoff, slug')
+        .eq('competition', 'Ghana PL 2026/27')
+        .eq('status', 'completed')
+        .not('slug', 'is', null)
+        .not('home_score', 'is', null)
+        .order('kickoff', { ascending: false })
+        .limit(20),
+    ])
+    return { upcoming: upcoming.data || [], recent: recent.data || [] }
+  } catch { return { upcoming: [], recent: [] } }
 }
 
 function formatDate(kickoff: string) {
@@ -58,15 +52,8 @@ function formatDate(kickoff: string) {
   })
 }
 
-function slugTeam(name: string) {
-  return name.toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-}
-
 export default async function GhanaPremierLeaguePage() {
-  const [upcoming, results] = await Promise.all([getUpcomingMatches(), getRecentResults()])
+  const { upcoming, recent } = await getMatches()
 
   const clubs = [
     'Asante Kotoko', 'Hearts of Oak', 'Medeama', 'Aduana Stars',
@@ -111,7 +98,7 @@ export default async function GhanaPremierLeaguePage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {upcoming.map((match: any) => (
                 <a key={match.id}
-                  href={`/matches/${slugTeam(match.home_team)}-vs-${slugTeam(match.away_team)}`}
+                  href={match.slug ? `/matches/${match.slug}` : '/predict'}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>
@@ -134,22 +121,24 @@ export default async function GhanaPremierLeaguePage() {
         )}
 
         {/* RECENT RESULTS */}
-        {results.length > 0 && (
+        {recent.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Recent Results</h2>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Recent Ghana PL Results</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {results.map((match: any) => {
+              {recent.map((match: any) => {
                 const homeWon = match.home_score > match.away_score
                 const awayWon = match.away_score > match.home_score
                 return (
-                  <div key={match.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px' }}>
+                  <a key={match.id}
+                    href={`/matches/${match.slug}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ fontSize: '13px', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'white' : '#6B7280', flex: 1, textAlign: 'right' }}>{match.home_team}</span>
                       <span style={{ fontSize: '16px', fontWeight: 700, color: '#F59E0B', minWidth: '50px', textAlign: 'center' }}>{match.home_score}–{match.away_score}</span>
                       <span style={{ fontSize: '13px', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'white' : '#6B7280', flex: 1 }}>{match.away_team}</span>
                     </div>
-                    <span style={{ fontSize: '11px', color: '#4B5563', flexShrink: 0 }}>{formatDate(match.kickoff)}</span>
-                  </div>
+                    <span style={{ fontSize: '11px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '3px 10px', borderRadius: '999px', fontWeight: 600, flexShrink: 0 }}>View →</span>
+                  </a>
                 )
               })}
             </div>
@@ -205,25 +194,15 @@ export default async function GhanaPremierLeaguePage() {
           ))}
         </div>
 
-        {/* WORLD CUP 2030 */}
-        <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '12px', padding: '20px', marginBottom: '32px' }}>
-          <p style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '1px', margin: '0 0 8px' }}>🌍 BUILDING TOWARD WORLD CUP 2030</p>
-          <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0, lineHeight: 1.6 }}>
-            Ghana has one of the most passionate football fanbases in Africa. Start predicting Ghana PL now
-            and build 4 years of verified football intelligence before World Cup 2030. Your record starts today.
-          </p>
-        </div>
-
         {/* INTERNAL LINKS */}
         <div style={{ borderTop: '1px solid #1A3A1A', paddingTop: '24px' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '14px' }}>More on Flipseer</h2>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
               { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
-              { href: '/champions-league', label: '⭐ Champions League' },
+              { href: '/ucl', label: '⭐ Champions League' },
               { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
               { href: '/ghana', label: '🇬🇭 Ghana Nation Page' },
-              { href: '/football-reputation', label: '📊 Football Reputation' },
               { href: '/leaderboard', label: '🏆 Leaderboard' },
               { href: '/groups', label: '👥 Private Leagues' },
               { href: '/nations', label: '🌍 Nation Battle' },
