@@ -528,9 +528,8 @@ export default function JournalClient({ username, profile, predictions, badges =
                     const competition = match?.competition || '';
                     const compShort = COMP_SHORT[competition] || competition.split(' ')[0];
                     const compBg = COMP_COLOR[competition] || '#1A3A1A';
-                    const slug = match
-                      ? `${match.home_team.toLowerCase().replace(/\s+/g, '-')}-vs-${match.away_team.toLowerCase().replace(/\s+/g, '-')}`
-                      : '';
+                    // Use DB slug directly — avoids broken URLs for teams with special chars (e.g. Bodo/Glimt)
+                    const slug = match?.slug || '';
                     const isCopied = copiedPredId === pred.id;
 
                     const borderColor = state === 'correct' ? '#1A7A4A' : state === 'wrong' ? 'rgba(239,68,68,0.25)' : '#1A3A1A';
