@@ -817,7 +817,7 @@
 
   function copyLink() {
     const username = document.getElementById('username-input').value.trim() || 'praveen';
-    const url = `https://flipseer.com/reputation-card.html?u=${encodeURIComponent(username)}`;
+    const url = `https://flipseer.com/static/card.html?u=${encodeURIComponent(username)}`;
     const btn = document.getElementById('copy-btn');
     navigator.clipboard.writeText(url).then(() => {
       btn.textContent = '✓ Copied';
