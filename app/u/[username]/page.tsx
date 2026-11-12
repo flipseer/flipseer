@@ -62,13 +62,13 @@ export default async function JournalPage({ params }: Props) {
     .order('created_at', { ascending: false })
     .limit(200);
 
-  // Fetch match data
+  // Fetch match data — slug added to fix broken match URLs on team names with special chars (e.g. Bodo/Glimt)
   const matchIds = Array.from(new Set((rawPreds || []).map((p: any) => p.match_id).filter(Boolean)));
   let matchMap: Record<string, any> = {};
   if (matchIds.length > 0) {
     const { data: matchData } = await supabase
       .from('matches')
-      .select('id, home_team, away_team, kickoff, status, home_score, away_score, competition')
+      .select('id, home_team, away_team, kickoff, status, home_score, away_score, competition, slug')
       .in('id', matchIds);
     (matchData || []).forEach((m: any) => { matchMap[String(m.id)] = m; });
   }
