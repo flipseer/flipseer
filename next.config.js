@@ -40,10 +40,10 @@ const nextConfig = {
         destination: '/ucl',
         permanent: true,
       },
-      // /ghana-premier-league duplicates — consolidate
+      // /leaderboard/ghana-pl → canonical /ghana-premier-league
       {
-        source: '/ghana-premier-league',
-        destination: '/leaderboard/ghana-pl',
+        source: '/leaderboard/ghana-pl',
+        destination: '/ghana-premier-league',
         permanent: true,
       },
       // /leagues page doesn't exist
@@ -51,6 +51,15 @@ const nextConfig = {
         source: '/leagues',
         destination: '/leaderboard',
         permanent: true,
+      },
+    ]
+  },
+  async rewrites() {
+    return [
+      // Serve static HTML file from public/ before dynamic routes match
+      {
+        source: '/reputation-card.html',
+        destination: '/reputation-card.html',
       },
     ]
   },
