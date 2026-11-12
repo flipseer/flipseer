@@ -21,8 +21,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily' },
     { url: `${base}/indonesia`,            priority: 0.75, changeFrequency: 'daily' },
     { url: `${base}/football-prediction-tips`,             priority: 0.7, changeFrequency: 'weekly' },
-    { url: `${base}/epl-predictions`,                      priority: 0.7, changeFrequency: 'weekly' },
-    { url: `${base}/champions-league-predictions`,         priority: 0.7, changeFrequency: 'weekly' },
     { url: `${base}/world-cup-2026-predictions`,           priority: 0.7, changeFrequency: 'weekly' },
     { url: `${base}/football-prediction-accuracy-tracker`, priority: 0.65, changeFrequency: 'monthly' },
     { url: `${base}/auth`,               priority: 0.6,  changeFrequency: 'monthly' },
