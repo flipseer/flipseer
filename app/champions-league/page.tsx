@@ -15,22 +15,31 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-async function getUpcomingMatches() {
+async function getMatches() {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    const { data } = await supabase
-      .from('matches')
-      .select('id, home_team, away_team, kickoff')
-      .eq('competition', 'UCL 2026/27')
-      .eq('status', 'upcoming')
-      .gte('kickoff', '2026-10-13')
-      .order('kickoff', { ascending: true })
-      .limit(10)
-    return data || []
-  } catch { return [] }
+    const [upcoming, recent] = await Promise.all([
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, slug')
+        .eq('competition', 'UCL 2026/27')
+        .in('status', ['upcoming', 'live'])
+        .order('kickoff', { ascending: true })
+        .limit(10),
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, home_score, away_score, kickoff, slug')
+        .eq('competition', 'UCL 2026/27')
+        .eq('status', 'completed')
+        .not('slug', 'is', null)
+        .order('kickoff', { ascending: false })
+        .limit(20),
+    ])
+    return { upcoming: upcoming.data || [], recent: recent.data || [] }
+  } catch { return { upcoming: [], recent: [] } }
 }
 
 function formatDate(kickoff: string) {
@@ -38,12 +47,8 @@ function formatDate(kickoff: string) {
   return new Date(utc).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
 }
 
-function slugTeam(name: string) {
-  return name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
-}
-
 export default async function ChampionsLeaguePage() {
-  const matches = await getUpcomingMatches()
+  const { upcoming, recent } = await getMatches()
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
@@ -57,7 +62,7 @@ export default async function ChampionsLeaguePage() {
           Build your Champions League reputation permanently.
         </p>
         <div style={{ display: 'inline-block', backgroundColor: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.4)', borderRadius: '999px', padding: '5px 14px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '12px', color: '#A78BFA', fontWeight: 'bold' }}>⭐ League Stage 2 starts October 13, 2026</span>
+          <span style={{ fontSize: '12px', color: '#A78BFA', fontWeight: 'bold' }}>⭐ UCL 2026/27 · Season live now</span>
         </div>
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/ucl" style={{ backgroundColor: '#A78BFA', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '14px', fontWeight: 700 }}>
@@ -71,13 +76,14 @@ export default async function ChampionsLeaguePage() {
 
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 20px' }}>
 
-        {matches.length > 0 && (
+        {/* UPCOMING MATCHES */}
+        {upcoming.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Upcoming UCL Matches</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {matches.map((match: any) => (
+              {upcoming.map((match: any) => (
                 <a key={match.id}
-                  href={`/matches/${slugTeam(match.home_team)}-vs-${slugTeam(match.away_team)}`}
+                  href={match.slug ? `/matches/${match.slug}` : '/ucl'}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>
@@ -91,6 +97,33 @@ export default async function ChampionsLeaguePage() {
             </div>
             <div style={{ marginTop: '12px', textAlign: 'center' }}>
               <a href="/ucl" style={{ fontSize: '13px', color: '#A78BFA', textDecoration: 'none', fontWeight: 'bold' }}>View all UCL matches →</a>
+            </div>
+          </div>
+        )}
+
+        {/* RECENT RESULTS */}
+        {recent.length > 0 && (
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Recent UCL Results</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {recent.map((match: any) => (
+                <a key={match.id}
+                  href={`/matches/${match.slug}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>
+                      {match.home_team} vs {match.away_team}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#6B7280' }}>{formatDate(match.kickoff)} UTC</div>
+                  </div>
+                  {match.home_score !== null && (
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#9CA3AF', minWidth: '40px', textAlign: 'center' }}>
+                      {match.home_score}–{match.away_score}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '11px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '3px 10px', borderRadius: '999px', fontWeight: 600 }}>View →</span>
+                </a>
+              ))}
             </div>
           </div>
         )}
@@ -119,8 +152,7 @@ export default async function ChampionsLeaguePage() {
             {[
               { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
               { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
-              { href: '/leaderboard/ghana-pl', label: '🇬🇭 Ghana Premier League' },
-              { href: '/football-reputation', label: '📊 Football Reputation' },
+              { href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
               { href: '/leaderboard', label: '🏆 Leaderboard' },
               { href: '/groups', label: '👥 Private Leagues' },
             ].map(({ href, label }) => (
