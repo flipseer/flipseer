@@ -54,15 +54,6 @@ const nextConfig = {
       },
     ]
   },
-  async rewrites() {
-    return [
-      // Serve static HTML file from public/ before dynamic routes match
-      {
-        source: '/reputation-card.html',
-        destination: '/reputation-card.html',
-      },
-    ]
-  },
 }
 module.exports = withSentryConfig(nextConfig, {
   org: 'flipseer',
