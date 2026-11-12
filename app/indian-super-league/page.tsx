@@ -22,7 +22,7 @@ export default function IndiaPage() {
     { flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL 2026/27', status: 'LIVE', href: '/premier-league', color: '#8B5CF6' },
     { flag: '⭐', name: 'UCL 2026/27', status: 'LIVE', href: '/ucl', color: '#A78BFA' },
     { flag: '🇮🇳', name: 'ISL 2026/27', status: 'LIVE', href: '/indian-super-league', color: '#FF9933' },
-    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/leaderboard/ghana-pl', color: '#F59E0B' },
+    { flag: '🇬🇭', name: 'Ghana Premier League', status: 'LIVE', href: '/ghana-premier-league', color: '#F59E0B' },
   ]
   const links = [
     { href: '/predict', label: '⚽ Predict Matches' },
