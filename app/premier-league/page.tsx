@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: 'Predict every Premier League 2026/27 match before kickoff. Lock your EPL predictions, build your football reputation and compete in private leagues. Free forever.',
   keywords: 'premier league predictions, EPL predictions 2026, football prediction, premier league match predictions',
   alternates: { canonical: 'https://flipseer.com/premier-league' },
-    openGraph: {
+  openGraph: {
     title: 'Premier League Predictions 2026/27 | Flipseer',
     description: 'Predict every EPL match before kickoff. Build your permanent football reputation.',
     url: 'https://flipseer.com/premier-league',
@@ -16,21 +16,31 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-async function getUpcomingMatches() {
+async function getMatches() {
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-    const { data } = await supabase
-      .from('matches')
-      .select('id, home_team, away_team, kickoff, competition')
-      .eq('competition', 'EPL 2026/27')
-      .eq('status', 'upcoming')
-      .order('kickoff', { ascending: true })
-      .limit(10)
-    return data || []
-  } catch { return [] }
+    const [upcoming, recent] = await Promise.all([
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, slug')
+        .eq('competition', 'EPL 2026/27')
+        .eq('status', 'upcoming')
+        .order('kickoff', { ascending: true })
+        .limit(10),
+      supabase
+        .from('matches')
+        .select('id, home_team, away_team, kickoff, slug, home_score, away_score')
+        .eq('competition', 'EPL 2026/27')
+        .eq('status', 'completed')
+        .not('slug', 'is', null)
+        .order('kickoff', { ascending: false })
+        .limit(20),
+    ])
+    return { upcoming: upcoming.data || [], recent: recent.data || [] }
+  } catch { return { upcoming: [], recent: [] } }
 }
 
 function formatDate(kickoff: string) {
@@ -38,12 +48,8 @@ function formatDate(kickoff: string) {
   return new Date(utc).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
 }
 
-function slugTeam(name: string) {
-  return name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
-}
-
 export default async function PremierLeaguePage() {
-  const matches = await getUpcomingMatches()
+  const { upcoming, recent } = await getMatches()
 
   const clubs = [
     'Arsenal','Aston Villa','Bournemouth','Brentford','Brighton','Chelsea',
@@ -77,13 +83,13 @@ export default async function PremierLeaguePage() {
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '32px 20px' }}>
 
         {/* UPCOMING MATCHES */}
-        {matches.length > 0 && (
+        {upcoming.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Upcoming EPL Matches</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {matches.map((match: any) => (
+              {upcoming.map((match: any) => (
                 <a key={match.id}
-                  href={`/matches/${slugTeam(match.home_team)}-vs-${slugTeam(match.away_team)}`}
+                  href={match.slug ? `/matches/${match.slug}` : '/predict'}
                   style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>
@@ -99,6 +105,33 @@ export default async function PremierLeaguePage() {
               <a href="/predict" style={{ fontSize: '13px', color: '#8B5CF6', textDecoration: 'none', fontWeight: 'bold' }}>
                 View all EPL matches →
               </a>
+            </div>
+          </div>
+        )}
+
+        {/* RECENT RESULTS */}
+        {recent.length > 0 && (
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginBottom: '16px' }}>Recent EPL Results</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {recent.map((match: any) => (
+                <a key={match.id}
+                  href={`/matches/${match.slug}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', textDecoration: 'none' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'white', marginBottom: '2px' }}>
+                      {match.home_team} vs {match.away_team}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#6B7280' }}>{formatDate(match.kickoff)} UTC</div>
+                  </div>
+                  {match.home_score !== null && (
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: '#9CA3AF', minWidth: '40px', textAlign: 'center' }}>
+                      {match.home_score}–{match.away_score}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '11px', backgroundColor: '#1A3A1A', color: '#6B7280', padding: '3px 10px', borderRadius: '999px', fontWeight: 600 }}>View →</span>
+                </a>
+              ))}
             </div>
           </div>
         )}
@@ -140,12 +173,11 @@ export default async function PremierLeaguePage() {
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
               { href: '/ucl', label: '⭐ Champions League' },
-              { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
+              { href: '/isl', label: '🇮🇳 Indian Super League' },
               { href: '/leaderboard/ghana-pl', label: '🇬🇭 Ghana Premier League' },
-              { href: '/football-reputation', label: '📊 Football Reputation' },
               { href: '/leaderboard', label: '🏆 Leaderboard' },
               { href: '/groups', label: '👥 Private Leagues' },
-              { href: '/how-to-predict-football', label: 'How to Predict Football' },
+              { href: '/nations', label: '🌍 Nations' },
             ].map(({ href, label }) => (
               <a key={href} href={href} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', color: '#9CA3AF', padding: '8px 14px', borderRadius: '8px', textDecoration: 'none', fontSize: '13px' }}>
                 {label}
