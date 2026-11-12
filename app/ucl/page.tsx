@@ -174,12 +174,12 @@ export default async function UCLPage() {
           </div>
         </div>
 
-        {/* INTERNAL LINKS */}
+        {/* INTERNAL LINKS — fixed: /isl → /indian-super-league, /leaderboard/ghana-pl → /ghana-premier-league */}
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {[
             { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
-            { href: '/isl', label: '🇮🇳 Indian Super League' },
-            { href: '/leaderboard/ghana-pl', label: '🇬🇭 Ghana Premier League' },
+            { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
+            { href: '/ghana-premier-league', label: '🇬🇭 Ghana Premier League' },
             { href: '/nations', label: '🌍 Nation Battle' },
             { href: '/leaderboard', label: '🏆 Leaderboard' },
             { href: '/groups', label: '👥 Private Leagues' },
