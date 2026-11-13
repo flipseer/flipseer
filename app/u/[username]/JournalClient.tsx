@@ -23,12 +23,14 @@ const COMP_COLOR: Record<string, string> = {
   'ISL': '#7c2d12', 'ISL 2026/27': '#7c2d12',
   'Liga 1': '#14532d', 'Liga 1 2026/27': '#14532d',
   'Ghana PL': '#713f12', 'Ghana PL 2026/27': '#713f12',
+  'NPFL': '#052e16', 'NPFL 2026/27': '#052e16',
 };
 
 const COMP_SHORT: Record<string, string> = {
   'EPL 2026/27': 'EPL', 'UCL 2026/27': 'UCL',
   'ISL 2026/27': 'ISL', 'Liga 1 2026/27': 'Liga 1',
   'Ghana PL 2026/27': 'Ghana PL',
+  'NPFL 2026/27': 'NPFL',
 };
 
 function outcomeState(pred: any): 'correct' | 'wrong' | 'pending' {
@@ -80,6 +82,7 @@ const COMP_HASHTAGS: Record<string, string> = {
   'Liga 1 2026/27':   '#Liga1 #IndonesiaFootball',
   'Ghana PL 2026/27': '#GhanaPremierLeague #GhanaFootball',
   'World Cup 2026':   '#WorldCup2026',
+  'NPFL 2026/27':     '#NPFL #NigeriaFootball',
 };
 
 function getHashtags(competition: string): string {
@@ -728,7 +731,7 @@ export default function JournalClient({ username, profile, predictions, badges =
           </h3>
           <p style={{ color: '#6B7280', fontSize: 13, lineHeight: 1.7, marginBottom: 22, maxWidth: 400, margin: '0 auto 22px' }}>
             @{username}'s predictions are locked before kickoff and archived forever.
-            EPL · UCL · Ghana PL · ISL. One record. One reputation.
+            EPL · UCL · ISL · Liga 1 · Ghana PL · NPFL. One record. One reputation.
           </p>
           <a href="/auth" style={{
             display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white',
