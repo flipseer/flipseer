@@ -8,13 +8,15 @@ import { createClient } from '@/lib/supabase-browser';
 const supabase = createClient();
 
 const LEAGUES = [
-  { href: '/epl',       label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27',        badge: 'LIVE',  badgeColor: '#8B5CF6' },
-  { href: '/ucl',       label: '⭐ UCL 2026/27',           badge: 'OCT 13', badgeColor: '#A78BFA' },
-  { href: '/ghana',     label: '🇬🇭 Ghana PL 2026/27',      badge: 'LIVE',  badgeColor: '#F59E0B' },
-  { href: '/indonesia', label: '🇮🇩 Liga 1 2026/27',        badge: 'LIVE',  badgeColor: '#CE1126' },
-  { href: '/india',     label: '🇮🇳 ISL 2026/27',           badge: 'OCT',   badgeColor: '#FF6B35' },
-  { href: '/nigeria',   label: '🇳🇬 NPFL 2026/27',          badge: 'JAN',   badgeColor: '#008751' },
-  { href: '/world-cup-2026', label: '🏆 World Cup 2026',   badge: 'DONE',  badgeColor: '#6B7280' },
+  { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27',                   badge: 'LIVE',  badgeColor: '#8B5CF6' },
+  { href: '/ucl',            label: '⭐ UCL 2026/27',                      badge: 'OCT 13', badgeColor: '#A78BFA' },
+  { href: '/ghana-premier-league', label: '🇬🇭 Ghana PL 2026/27',          badge: 'LIVE',  badgeColor: '#F59E0B' },
+  { href: '/indonesia',      label: '🇮🇩 Indonesian Super League 2026/27', badge: 'LIVE',  badgeColor: '#CE1126' },
+  { href: '/indian-super-league', label: '🇮🇳 ISL 2026/27',                badge: 'OCT',   badgeColor: '#FF6B35' },
+  { href: '/nigeria-premier-league', label: '🇳🇬 NPFL 2026/27',            badge: 'JAN',   badgeColor: '#008751' },
+  { href: '/afcon',          label: '🌍 AFCON 2027',                       badge: 'JUN 27', badgeColor: '#F59E0B' },
+  { href: '/asian-cup-2027', label: '🌏 Asian Cup 2027',                   badge: 'DEC 27', badgeColor: '#0EA5E9' },
+  { href: '/world-cup-2026', label: '🏆 World Cup 2026',                   badge: 'DONE',  badgeColor: '#6B7280' },
 ]
 
 export default function Navbar() {
@@ -59,7 +61,7 @@ export default function Navbar() {
         }
         .predict-btn { animation: navPulse 1.5s ease-in-out infinite; }
         .nav-link:hover { color: #ffffff !important; background-color: rgba(46,158,94,0.1) !important; }
-        .leagues-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #0A1A0C; border: 1px solid #1A7A4A; border-radius: 12px; padding: 8px; min-width: 240px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .leagues-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #0A1A0C; border: 1px solid #1A7A4A; border-radius: 12px; padding: 8px; min-width: 260px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         .league-item:hover { background-color: rgba(139,92,246,0.1) !important; }
       `}</style>
 
