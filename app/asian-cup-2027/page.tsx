@@ -66,7 +66,7 @@ export default function AsianCup2027Page() {
             <span style={{ color: '#0EA5E9' }}>23 December 2027 in Saudi Arabia.</span>
           </h2>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>
-            Postponed to December 2027–January 2028 (AFC announcement, Nov 2026). Fixtures drop in mid-2027. Meanwhile, build your Football Reputation on ISL, Indonesian Super League, EPL and UCL — your record carries into the Asian Cup.
+            Postponed to December 2027–January 2028 (AFC announcement, Nov 2026). Fixtures drop in mid-2027. Meanwhile, build your Football Reputation on ISL, Liga 1 Indonesia, EPL and UCL — your record carries into the Asian Cup.
           </p>
           <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#0EA5E9', color: 'white', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
             🌏 Start Predicting Now →
@@ -136,7 +136,7 @@ export default function AsianCup2027Page() {
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
               { href: '/indian-super-league', label: '🇮🇳 Indian Super League' },
-              { href: '/indonesian-super-league', label: '🇮🇩 Indonesian Super League' },
+              { href: '/indonesia', label: '🇮🇩 Liga 1 Indonesia' },
               { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League' },
               { href: '/afcon', label: '🌍 AFCON 2027' },
               { href: '/nations', label: '🌍 Nation Battle' },
