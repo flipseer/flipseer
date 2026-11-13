@@ -48,7 +48,7 @@ export default function ReputationCard({ username, onClose }: Props) {
     (data.bestStreak > 1 ? `🔥 Best streak: ${data.bestStreak}\n` : '') +
     `\nPermanent Football Reputation\n` +
     `flipseer.com/u/${data.username}\n` +
-    `#WorldCup2026 #FootballReputation #Flipseer`
+    `#FootballReputation #Flipseer`
   ) : '';
 
   const handleShare = () => {
@@ -212,7 +212,7 @@ export default function ReputationCard({ username, onClose }: Props) {
                 }}>
                   <div>
                     <div style={{ fontSize: 12, color: '#2E9E5E', fontWeight: 700, letterSpacing: '1px' }}>PERMANENT FOOTBALL REPUTATION</div>
-                    <div style={{ fontSize: 11, color: '#8895A3', marginTop: 3 }}>flipseer.com · World Cup 2026</div>
+                    <div style={{ fontSize: 11, color: '#8895A3', marginTop: 3 }}>flipseer.com</div>
                   </div>
                   <div style={{ fontSize: 20 }}>⚽</div>
                 </div>
