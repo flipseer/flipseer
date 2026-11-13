@@ -73,6 +73,19 @@ function actualScore(pred: any): string {
   return '';
 }
 
+const COMP_HASHTAGS: Record<string, string> = {
+  'EPL 2026/27':      '#PremierLeague #EPL',
+  'UCL 2026/27':      '#ChampionsLeague #UCL',
+  'ISL 2026/27':      '#ISL #IndianFootball',
+  'Liga 1 2026/27':   '#Liga1 #IndonesiaFootball',
+  'Ghana PL 2026/27': '#GhanaPremierLeague #GhanaFootball',
+  'World Cup 2026':   '#WorldCup2026',
+};
+
+function getHashtags(competition: string): string {
+  return COMP_HASHTAGS[competition] || '#Football #FootballPrediction';
+}
+
 function buildResultShareText(pred: any, username: string): string {
   const m = pred.matches;
   const matchName = m ? `${m.home_team} vs ${m.away_team}` : 'Match';
@@ -80,14 +93,15 @@ function buildResultShareText(pred: any, username: string): string {
   const predicted = scoreDisplay(pred);
   const isExact = pred.exact_bonus > 0;
   const pts = pred.points_earned || 0;
+  const tags = `${getHashtags(m?.competition || '')} #Flipseer #FootballReputation`;
 
   if (isExact) {
-    return `🎯 Exact Score! I called ${matchName} ${predicted} and nailed it!\n\nResult: ${actual} ✅\n+${pts} REP earned\n\nMy prediction record 👉 https://flipseer.com/u/${username}`;
+    return `🎯 Exact Score! I called ${matchName} ${predicted} and nailed it!\n\nResult: ${actual} ✅\n+${pts} REP earned\n\nMy prediction record 👉 https://flipseer.com/u/${username}\n\n${tags}`;
   }
   if (pts > 0) {
-    return `✅ Correct call! ${matchName} · ${actual}\n\nI predicted ${pickLabel(pred)} and got it right.\n+${pts} REP earned\n\nMy record 👉 https://flipseer.com/u/${username}`;
+    return `✅ Correct call! ${matchName} · ${actual}\n\nI predicted ${pickLabel(pred)} and got it right.\n+${pts} REP earned\n\nMy record 👉 https://flipseer.com/u/${username}\n\n${tags}`;
   }
-  return `❌ I called ${pickLabel(pred)} in ${matchName} but the result was ${actual}.\n\nStill building my forecast record 👉 https://flipseer.com/u/${username}`;
+  return `❌ I called ${pickLabel(pred)} in ${matchName} but the result was ${actual}.\n\nStill building my forecast record 👉 https://flipseer.com/u/${username}\n\n${tags}`;
 }
 
 function buildOgUrl(pred: any, username: string): string {
@@ -144,10 +158,11 @@ export default function JournalClient({ username, profile, predictions, badges =
 
   const share = () => {
     const url = `https://flipseer.com/u/${username}`;
+    const text = `🏆 @${username}'s Football Reputation on Flipseer\n\n⚡ ${profile?.total_points || 0} REP · ${accuracy}% accuracy · ${predictions.length} predictions\n\nPermanent record. Locked at kickoff.\n\n${url}\n\n#FootballReputation #Flipseer`;
     if (navigator.share) {
-      navigator.share({ title: `@${username}'s Forecast Journal`, url });
+      navigator.share({ title: `@${username}'s Forecast Journal`, text, url });
     } else {
-      navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+      navigator.clipboard.writeText(`${text}`).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
     }
   };
 
