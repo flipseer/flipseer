@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 export const metadata: Metadata = {
-  title: 'Liga 1 Indonesia 2026/27 Predictions | Flipseer',
-  description: 'Prediksi Liga 1 Indonesia 2026/27. Arema, Bali United, Persebaya, Persib dan 14 klub lainnya. Bangun reputasi sepakbolamu selamanya. Gratis.',
-  keywords: 'Liga 1 predictions, Liga 1 2026, Indonesia football, Arema, Bali United, Persebaya, prediksi bola',
+  title: 'Indonesian Super League 2026/27 Predictions | Flipseer',
+  description: 'Prediksi Indonesian Super League 2026/27. Arema, Bali United, Persebaya, Persib dan 14 klub lainnya. Bangun reputasi sepakbolamu selamanya. Gratis.',
+  keywords: 'Indonesian Super League predictions, Liga 1 predictions, Indonesia Super League 2026, Indonesia football, Arema, Bali United, Persebaya, prediksi bola',
   alternates: { canonical: 'https://flipseer.com/indonesia' },
   openGraph: {
-    title: 'Liga 1 Indonesia 2026/27 | Flipseer',
-    description: 'Prediksi setiap pertandingan Liga 1. Bangun reputasi sepakbolamu yang permanen. Gratis selamanya.',
+    title: 'Indonesian Super League 2026/27 | Flipseer',
+    description: 'Prediksi setiap pertandingan Indonesian Super League. Bangun reputasi sepakbolamu yang permanen. Gratis selamanya.',
     url: 'https://flipseer.com/indonesia',
     images: [{ url: 'https://flipseer.com/og-image.png', width: 1200, height: 630 }],
   },
@@ -69,18 +69,18 @@ export default async function IndonesiaPage() {
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '80%', height: '100%', background: 'radial-gradient(ellipse,rgba(206,17,38,0.07) 0%,transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, backgroundColor: 'rgba(206,17,38,0.1)', border: '1px solid rgba(206,17,38,0.4)', borderRadius: 999, padding: '6px 20px', marginBottom: 24 }}>
           <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#CE1126', display: 'inline-block' }} />
-          <span style={{ fontSize: 12, color: '#CE1126', fontWeight: 700, letterSpacing: '2px' }}>LIGA 1 INDONESIA 2026/27</span>
+          <span style={{ fontSize: 12, color: '#CE1126', fontWeight: 700, letterSpacing: '2px' }}>INDONESIAN SUPER LEAGUE 2026/27</span>
         </div>
         <div style={{ fontSize: 'clamp(48px,12vw,80px)', marginBottom: 16 }}>🇮🇩</div>
         <h1 style={{ fontSize: 'clamp(32px,8vw,64px)', fontWeight: 900, letterSpacing: '-2px', lineHeight: 1.05, marginBottom: 16 }}>
-          Liga 1 Indonesia<br /><span style={{ color: '#CE1126' }}>2026/27</span>
+          Indonesian Super League<br /><span style={{ color: '#CE1126' }}>2026/27</span>
         </h1>
         <p style={{ fontSize: 'clamp(15px,2.5vw,18px)', color: '#9CA3AF', lineHeight: 1.7, maxWidth: 540, margin: '0 auto 32px' }}>
-          Arema. Bali United. Persebaya. Persib. Prediksi setiap pertandingan Liga 1. Bangun reputasi sepakbolamu yang permanen.
+          Arema. Bali United. Persebaya. Persib. Prediksi setiap pertandingan Indonesian Super League. Bangun reputasi sepakbolamu yang permanen.
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           <a href="/predict" style={{ backgroundColor: '#CE1126', color: 'white', borderRadius: 12, padding: 'clamp(12px,3vw,16px) clamp(24px,6vw,40px)', fontSize: 'clamp(14px,2.5vw,16px)', fontWeight: 700, textDecoration: 'none', boxShadow: '0 0 32px rgba(206,17,38,0.35)' }}>
-            🇮🇩 Prediksi Liga 1 →
+            🇮🇩 Prediksi Super League →
           </a>
           <a href="/nations" style={{ backgroundColor: 'transparent', color: '#9CA3AF', padding: 'clamp(12px,3vw,16px) clamp(16px,4vw,24px)', borderRadius: 12, textDecoration: 'none', fontSize: 'clamp(13px,2vw,15px)', border: '1px solid #1A3A1A' }}>
             🌍 Nation Battle →
@@ -94,7 +94,7 @@ export default async function IndonesiaPage() {
         <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
           <div style={{ maxWidth: 720, margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px' }}>PERTANDINGAN MENDATANG</p>
+              <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px' }}>PERTANDINGAN MENDATANG · SUPER LEAGUE</p>
               <a href="/predict" style={{ fontSize: 12, color: '#6B7280', textDecoration: 'none', fontWeight: 600 }}>Prediksi semua →</a>
             </div>
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid rgba(206,17,38,0.3)', borderRadius: 14, overflow: 'hidden' }}>
@@ -124,7 +124,7 @@ export default async function IndonesiaPage() {
       {recent.length > 0 && (
         <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
           <div style={{ maxWidth: 720, margin: '0 auto' }}>
-            <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px', marginBottom: 16 }}>HASIL TERBARU · LIGA 1</p>
+            <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px', marginBottom: 16 }}>HASIL TERBARU · SUPER LEAGUE</p>
             <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 14, overflow: 'hidden' }}>
               {recent.map((match: any, i: number) => (
                 <a key={match.id}
@@ -152,7 +152,7 @@ export default async function IndonesiaPage() {
       {/* CLUBS */}
       <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>18 KLUB · MUSIM 2026/27</p>
+          <p style={{ fontSize: 11, color: '#CE1126', fontWeight: 700, letterSpacing: '3px', marginBottom: 20, textAlign: 'center' }}>18 KLUB · SUPER LEAGUE 2026/27</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8 }}>
             {LIGA1_CLUBS.map(club => (
               <div key={club} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: 10, padding: '10px 14px', fontSize: 12, color: '#9CA3AF', textAlign: 'center' as const }}>
@@ -171,10 +171,10 @@ export default async function IndonesiaPage() {
             Wakili Indonesia.<br /><span style={{ color: '#CE1126' }}>Bangun Reputasi Sepakbolamu.</span>
           </h2>
           <p style={{ color: '#9CA3AF', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
-            Setiap prediksi Liga 1 menambah reputasi globalmu. EPL + Liga 1 + UCL — satu catatan permanen. Selamanya.
+            Setiap prediksi Super League menambah reputasi globalmu. EPL + Super League + UCL — satu catatan permanen. Selamanya.
           </p>
           <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#CE1126', color: 'white', padding: '14px 32px', borderRadius: 10, textDecoration: 'none', fontSize: 15, fontWeight: 700, boxShadow: '0 0 24px rgba(206,17,38,0.3)', marginBottom: 16 }}>
-            🇮🇩 Mulai Prediksi Liga 1 →
+            🇮🇩 Mulai Prediksi Super League →
           </a>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
