@@ -4,11 +4,13 @@ import { createClient } from '@/lib/supabase-browser';
 const supabase = createClient();
 
 const OFFICIAL_LEAGUES = [
-  { code: 'FLIP-GLB1', name: 'Global Flipseer League', flag: '🌍', comp: 'All competitions', color: '#2E9E5E', desc: 'EPL · UCL · Liga 1 · Ghana PL' },
+  { code: 'FLIP-GLB1', name: 'Global Flipseer League', flag: '🌍', comp: 'All competitions', color: '#2E9E5E', desc: 'EPL · UCL · Liga 1 · Ghana PL · ISL · NPFL' },
   { code: 'FLIP-EPL1', name: 'Flipseer EPL League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', comp: 'EPL 2026/27', color: '#8B5CF6', desc: 'Premier League predictions' },
   { code: 'FLIP-UCL1', name: 'Flipseer UCL League', flag: '⭐', comp: 'UCL 2026/27', color: '#A78BFA', desc: 'Champions League predictions' },
   { code: 'FLIP-AFR1', name: 'Ghana Premier League Community', flag: '🇬🇭', comp: 'Ghana PL 2026/27', color: '#F59E0B', desc: 'Predict Ghana Premier League matches' },
-  { code: 'FLIP-ASI1', name: 'Indonesia Liga 1 Community', flag: '🇮🇩', comp: 'Liga 1 2026/27', color: '#CE1126', desc: 'Predict Liga 1 Indonesia matches' },
+  { code: 'FLIP-ASI1', name: 'Indonesian Super League Community', flag: '🇮🇩', comp: 'Liga 1 2026/27', color: '#CE1126', desc: 'Predict Indonesian Super League matches' },
+  { code: 'FLIP-ISL1', name: 'Indian Super League Community', flag: '🇮🇳', comp: 'ISL 2026/27', color: '#FF9933', desc: 'Predict ISL matches' },
+  { code: 'FLIP-NGA1', name: 'Nigeria Premier League Community', flag: '🇳🇬', comp: 'NPFL 2026/27', color: '#00A000', desc: 'Predict NPFL matches · Starts Jan 2027' },
 ];
 
 export default function LeagueJoinPrompt({ userId, username, onDone }: { userId: string; username: string; onDone?: () => void }) {
