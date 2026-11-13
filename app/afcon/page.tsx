@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'AFCON 2027 Predictions | Africa Cup of Nations 2027 | Flipseer',
-  description: 'Predict every AFCON 2027 match before kickoff. Build your permanent Football Reputation across Africa Cup of Nations. Free forever. No betting.',
-  keywords: 'AFCON 2027 predictions, Africa Cup of Nations 2027 predictions, football prediction Africa, AFCON predictions',
+  description: 'Predict every AFCON 2027 match before kickoff. Africa Cup of Nations 2027 runs June–July 2027 in Kenya, Tanzania and Uganda. Build your permanent Football Reputation. Free forever.',
+  keywords: 'AFCON 2027 predictions, Africa Cup of Nations 2027 predictions, football prediction Africa, AFCON 2027 June July',
   alternates: { canonical: 'https://flipseer.com/afcon' },
   openGraph: {
     title: 'AFCON 2027 Predictions | Africa Cup of Nations | Flipseer',
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
 
 const AFCON_FACTS = [
   { icon: '🏆', label: 'Competition', value: 'Africa Cup of Nations' },
-  { icon: '📅', label: 'Dates', value: 'January – February 2027' },
-  { icon: '🌍', label: 'Host', value: 'Morocco / Kenya / Uganda / Tanzania' },
+  { icon: '📅', label: 'Dates', value: '19 June – 17 July 2027' },
+  { icon: '🌍', label: 'Host', value: 'Kenya / Tanzania / Uganda' },
   { icon: '⚽', label: 'Teams', value: '24 nations' },
   { icon: '🗓️', label: 'Fixtures', value: 'Coming Dec 2026' },
   { icon: '🆓', label: 'Cost', value: 'Free forever' },
@@ -37,7 +37,7 @@ export default function AFCONPage() {
       <div style={{ background: 'linear-gradient(180deg, #1A0A00 0%, #0D1F0F 100%)', padding: '48px 20px 40px', borderBottom: '1px solid #2A1A00', textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid #F59E0B', borderRadius: '999px', padding: '6px 18px', marginBottom: '24px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#F59E0B', display: 'inline-block' }} />
-          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px' }}>🌍 AFCON 2027 · COMING JANUARY 2027</span>
+          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '2px' }}>🌍 AFCON 2027 · COMING JUNE 2027</span>
         </div>
         <div style={{ fontSize: '56px', marginBottom: '12px' }}>🌍</div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(28px,6vw,48px)', marginBottom: '10px', lineHeight: 1.1 }}>
@@ -63,10 +63,10 @@ export default function AFCONPage() {
           <div style={{ fontSize: '11px', color: '#F59E0B', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>FIXTURES COMING SOON</div>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,4vw,28px)', marginBottom: '12px' }}>
             AFCON 2027 kicks off<br />
-            <span style={{ color: '#F59E0B' }}>January 2027.</span>
+            <span style={{ color: '#F59E0B' }}>19 June 2027 in East Africa.</span>
           </h2>
           <p style={{ color: '#9CA3AF', fontSize: '14px', lineHeight: 1.7, marginBottom: '24px' }}>
-            Fixtures drop in late 2026. Meanwhile, build your Football Reputation on EPL, UCL, ISL and Ghana Premier League — your record carries into AFCON.
+            Hosted by Kenya, Tanzania and Uganda. Fixtures drop in early 2027. Meanwhile, build your Football Reputation on EPL, UCL, ISL and Ghana Premier League — your record carries into AFCON.
           </p>
           <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#F59E0B', color: '#0D1F0F', padding: '14px 36px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
             🌍 Start Predicting Now →
