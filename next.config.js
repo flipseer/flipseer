@@ -52,6 +52,50 @@ const nextConfig = {
         destination: '/leaderboard',
         permanent: true,
       },
+      // AFCON 2027 alternate slugs → canonical /afcon
+      {
+        source: '/africa-cup-2027',
+        destination: '/afcon',
+        permanent: true,
+      },
+      {
+        source: '/africa-cup-of-nations',
+        destination: '/afcon',
+        permanent: true,
+      },
+      {
+        source: '/afcon-2027',
+        destination: '/afcon',
+        permanent: true,
+      },
+      // Asian Cup 2027 alternate slugs → canonical /asian-cup-2027
+      {
+        source: '/asian-cup',
+        destination: '/asian-cup-2027',
+        permanent: true,
+      },
+      {
+        source: '/afc-asian-cup',
+        destination: '/asian-cup-2027',
+        permanent: true,
+      },
+      // Indonesian Super League → canonical /indonesia (temp until route renamed next season)
+      {
+        source: '/indonesian-super-league',
+        destination: '/indonesia',
+        permanent: false,
+      },
+      // NPFL short slug → canonical /nigeria-premier-league
+      {
+        source: '/npfl',
+        destination: '/nigeria-premier-league',
+        permanent: true,
+      },
+      {
+        source: '/nigeria-football',
+        destination: '/nigeria-premier-league',
+        permanent: true,
+      },
     ]
   },
 }
