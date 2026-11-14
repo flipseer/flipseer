@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Flipseer — Football Reputation Platform',
     description: 'Predict EPL, UCL, Liga 1 and Ghana PL. Build your permanent football reputation. Free forever.',
-images: ['/og-image.png'],
+    images: ['/og-image.png'],
   },
   icons: {
     icon: [
@@ -144,7 +144,6 @@ export default function RootLayout({
       <body style={{ margin: 0, padding: 0, backgroundColor: '#02081F' }}>
         <Navbar />
         {children}
-        <FlipseerChat />
         <ServiceWorkerRegistration />
         <PWAInstallPrompt />
         <PushNotificationPrompt />
