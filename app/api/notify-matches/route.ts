@@ -114,46 +114,77 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ posted: 0, message: 'No matches in 4hr window' })
     }
 
+    // Group matches by competition + kickoff hour → one post per group
+    const groups: Record<string, typeof matches> = {}
+    for (const match of matches) {
+      const kickoffHour = match.kickoff.slice(0, 13) // 'YYYY-MM-DD HH'
+      const key = `${match.competition}__${kickoffHour}`
+      if (!groups[key]) groups[key] = []
+      groups[key].push(match)
+    }
+
     const results = []
 
-    for (const match of matches) {
-      const emoji = COMP_EMOJI[match.competition] || '⚽'
-      const hashtags = COMP_HASHTAGS[match.competition] || '#Flipseer'
-      const kickoffLocal = new Date(match.kickoff.endsWith('Z')
-        ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
+    for (const [, groupMatches] of Object.entries(groups)) {
+      const first = groupMatches[0]
+      const emoji = COMP_EMOJI[first.competition] || '⚽'
+      const hashtags = COMP_HASHTAGS[first.competition] || '#Flipseer'
+      const kickoffLocal = new Date(first.kickoff.endsWith('Z')
+        ? first.kickoff : first.kickoff.replace(' ', 'T') + 'Z')
       const timeStr = kickoffLocal.toLocaleTimeString('en-GB', {
         timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: true,
       }) + ' UTC'
 
-      const postText = `${emoji} MATCHDAY
+      let postText: string
+      if (groupMatches.length === 1) {
+        // Single match — individual post
+        postText = `${emoji} MATCHDAY
 
-${match.home_team} vs ${match.away_team}
+${first.home_team} vs ${first.away_team}
 Kickoff: ${timeStr} · 4 hours to go
 
 Who wins? Predict before kickoff 👇
 🔗 flipseer.com/predict
 
 ${hashtags}`
+      } else {
+        // Multiple matches same competition + time — one batched post
+        const fixtures = groupMatches
+          .map(m => `• ${m.home_team} vs ${m.away_team}`)
+          .join('\n')
+        postText = `${emoji} MATCHDAY · ${groupMatches.length} fixtures
+
+${fixtures}
+
+Kickoff: ${timeStr} · 4 hours to go
+Predict before kickoff 👇
+🔗 flipseer.com/predict
+
+${hashtags}`
+      }
 
       const [x, facebook] = await Promise.all([
         postToX(postText),
         postToFacebook(postText),
       ])
 
-      // Mark as posted
-      await supabase.from('matches').update({ matchday_posted: true }).eq('id', match.id)
+      // Mark all matches in group as posted
+      const ids = groupMatches.map(m => m.id)
+      await supabase.from('matches').update({ matchday_posted: true }).in('id', ids)
 
-      // Email admin with matchday post text
+      // Email admin
       try {
         const { Resend } = await import('resend')
         const resend = new Resend(process.env.RESEND_API_KEY)
+        const subject = groupMatches.length === 1
+          ? `⚽ Matchday: ${first.home_team} vs ${first.away_team} — Share Now`
+          : `⚽ Matchday: ${groupMatches.length} ${first.competition} fixtures — Share Now`
         await resend.emails.send({
           from: 'Flipseer <noreply@flipseer.com>',
           to: 'contact@flipseer.com',
-          subject: `⚽ Matchday: ${match.home_team} vs ${match.away_team} — Share Now`,
+          subject,
           html: `<div style="font-family:Arial;padding:24px;background:#0D1F0F;color:white;max-width:600px">
             <p style="font-size:11px;color:#8B5CF6;font-weight:bold;letter-spacing:3px;margin-bottom:8px">FLIPSEER · MATCHDAY</p>
-            <h2 style="font-family:Georgia,serif;font-size:22px;margin:0 0 20px;color:white">${match.home_team} vs ${match.away_team}</h2>
             <div style="background:#0D2B14;padding:18px;border-radius:10px;white-space:pre-wrap;font-size:14px;color:white;border:1px solid #2E9E5E;line-height:1.7">
               ${postText.split('\n').join('<br/>')}
             </div>
@@ -162,7 +193,12 @@ ${hashtags}`
         })
       } catch (emailErr) {}
 
-      results.push({ match: `${match.home_team} vs ${match.away_team}`, x, facebook })
+      results.push({
+        matches: groupMatches.map(m => `${m.home_team} vs ${m.away_team}`),
+        count: groupMatches.length,
+        x,
+        facebook,
+      })
     }
 
     return NextResponse.json({ posted: results.length, results })
