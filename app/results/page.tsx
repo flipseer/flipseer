@@ -19,6 +19,7 @@ export default function ResultsPage() {
     { key: 'Liga 1 2026/27',   label: '🇮🇩 Liga 1',      color: '#CE1126' },
     { key: 'Ghana PL 2026/27', label: '🇬🇭 Ghana PL',    color: '#2E9E5E' },
     { key: 'ISL 2026/27',      label: '🇮🇳 ISL',         color: '#FF6B00' },
+    { key: 'NPFL 2026/27',     label: '🇳🇬 NPFL',        color: '#008751' },
   ];
 
   useEffect(() => {
@@ -57,8 +58,8 @@ export default function ResultsPage() {
         });
         setPredictionCounts(counts);
 
-        const matchesWithPredictions = completedMatches.filter((m: any) => counts[m.id] > 0);
-        setMatches(matchesWithPredictions);
+        // Show ALL completed matches — not just ones with predictions
+        setMatches(completedMatches);
       } else {
         setMatches([]);
       }
