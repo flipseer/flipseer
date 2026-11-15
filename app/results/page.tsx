@@ -6,12 +6,14 @@ const supabase = createClient();
 export default function ResultsPage() {
   const [matches, setMatches] = useState<any[]>([]);
   const [predictionCounts, setPredictionCounts] = useState<{ [key: number]: number }>({});
+  const [myPredictions, setMyPredictions] = useState<{ [key: number]: any }>({});
   const [loading, setLoading] = useState(true);
   const [activeMatch, setActiveMatch] = useState<any>(null);
   const [topPredictors, setTopPredictors] = useState<any[]>([]);
   const [loadingPredictors, setLoadingPredictors] = useState(false);
   const [stats, setStats] = useState({ total: 0, completed: 0, cancelled: 0, live: 0, upcoming: 0 });
   const [activeCompetition, setActiveCompetition] = useState('EPL 2026/27');
+  const [userId, setUserId] = useState<string | null>(null);
 
   const COMPETITIONS = [
     { key: 'EPL 2026/27',      label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL',      color: '#8B5CF6' },
@@ -21,6 +23,13 @@ export default function ResultsPage() {
     { key: 'ISL 2026/27',      label: '🇮🇳 ISL',         color: '#FF6B00' },
     { key: 'NPFL 2026/27',     label: '🇳🇬 NPFL',        color: '#008751' },
   ];
+
+  // Get current user once
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.id) setUserId(session.user.id);
+    });
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -46,6 +55,8 @@ export default function ResultsPage() {
 
       if (completedMatches.length > 0) {
         const matchIds = completedMatches.map((m: any) => m.id);
+
+        // Fetch prediction counts (community)
         const { data: predData } = await supabase
           .from('predictions')
           .select('match_id')
@@ -58,16 +69,29 @@ export default function ResultsPage() {
         });
         setPredictionCounts(counts);
 
-        // Show ALL completed matches — not just ones with predictions
+        // Fetch MY predictions if logged in
+        if (userId) {
+          const { data: myPredData } = await supabase
+            .from('predictions')
+            .select('match_id, predicted_outcome, confidence_pct, points_earned, base_points, exact_bonus, goal_diff_bonus, upset_bonus, prediction_processed, predicted_home_score, predicted_away_score')
+            .in('match_id', matchIds)
+            .eq('user_id', userId);
+
+          const myMap: { [key: number]: any } = {};
+          myPredData?.forEach((p: any) => { myMap[p.match_id] = p; });
+          setMyPredictions(myMap);
+        }
+
         setMatches(completedMatches);
       } else {
         setMatches([]);
+        setMyPredictions({});
       }
 
       setLoading(false);
     };
     load();
-  }, [activeCompetition]);
+  }, [activeCompetition, userId]);
 
   const loadTopPredictors = async (match: any) => {
     setActiveMatch(match);
@@ -114,7 +138,7 @@ export default function ResultsPage() {
 
       <div style={{ background: 'linear-gradient(180deg, #0D2B14 0%, #0D1F0F 100%)', padding: '40px 20px 24px', textAlign: 'center', borderBottom: '1px solid #1A3A1A' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '8px' }}>📊 Match Results</h1>
-        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Results, scores and top predictors</p>
+        <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '20px' }}>Results, your predictions & top forecasters</p>
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px', flexWrap: 'wrap' }}>
           {COMPETITIONS.map(comp => (
             <button key={comp.key} onClick={() => { setActiveCompetition(comp.key); setActiveMatch(null); }}
@@ -209,8 +233,14 @@ export default function ResultsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {matches.map((match) => {
               const hasPredictions = (predictionCounts[match.id] || 0) > 0;
+              const myPred = myPredictions[match.id] || null;
+              const myWon = myPred && myPred.points_earned > 0;
+              const myPending = myPred && !myPred.prediction_processed;
+
               return (
-                <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px' }}>
+                <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (myWon ? activeComp.color : myPred && !myWon && !myPending ? '#374151' : '#1A7A4A'), borderRadius: '14px', padding: '18px 20px' }}>
+
+                  {/* Match header */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                     <span style={{ fontSize: '11px', color: '#6B7280' }}>{match.league} · {formatDate(match.kickoff)}</span>
                     <div style={{ display: 'flex', gap: '6px' }}>
@@ -218,6 +248,8 @@ export default function ResultsPage() {
                       <span style={{ fontSize: '10px', backgroundColor: 'rgba(46,158,94,0.2)', color: '#2E9E5E', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>FT</span>
                     </div>
                   </div>
+
+                  {/* Score row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                     <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'home' ? 'white' : '#6B7280', flex: 1 }}>{match.home_team}</span>
                     <div style={{ textAlign: 'center', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '8px 16px', margin: '0 12px', flexShrink: 0 }}>
@@ -225,6 +257,58 @@ export default function ResultsPage() {
                     </div>
                     <span style={{ fontSize: '17px', fontWeight: 'bold', color: match.winner === 'away' ? 'white' : '#6B7280', flex: 1, textAlign: 'right' }}>{match.away_team}</span>
                   </div>
+
+                  {/* MY PREDICTION ROW */}
+                  {myPred && (
+                    <div style={{
+                      backgroundColor: myWon ? 'rgba(46,158,94,0.08)' : myPending ? 'rgba(251,191,36,0.06)' : 'rgba(248,113,113,0.06)',
+                      border: '1px solid ' + (myWon ? '#2E9E5E' : myPending ? '#6B7280' : '#374151'),
+                      borderRadius: '10px',
+                      padding: '10px 14px',
+                      marginBottom: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px',
+                      flexWrap: 'wrap',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px' }}>{myWon ? '✅' : myPending ? '⏳' : '❌'}</span>
+                        <div>
+                          <div style={{ fontSize: '12px', fontWeight: 'bold', color: myWon ? '#2E9E5E' : myPending ? '#FBBF24' : '#F87171' }}>
+                            {myPending ? 'Your prediction' : myWon ? 'You got it!' : 'Missed this one'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '1px' }}>
+                            Picked <strong style={{ color: 'white' }}>{getOutcomeLabel(match, myPred.predicted_outcome)}</strong>
+                            {' · '}{myPred.confidence_pct}% confidence
+                            {myPred.predicted_home_score !== null && myPred.predicted_away_score !== null && (
+                              <span> · Score: {myPred.predicted_home_score}–{myPred.predicted_away_score}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        {myPending ? (
+                          <span style={{ fontSize: '11px', color: '#6B7280', backgroundColor: '#0D1F0F', padding: '3px 10px', borderRadius: '999px' }}>Processing</span>
+                        ) : (
+                          <div>
+                            <div style={{ fontSize: '16px', fontWeight: 'bold', color: myWon ? '#2E9E5E' : '#6B7280' }}>
+                              {myWon ? '+' + myPred.points_earned : '0'} pts
+                            </div>
+                            {myWon && (
+                              <div style={{ display: 'flex', gap: '3px', justifyContent: 'flex-end', marginTop: '2px', flexWrap: 'wrap' }}>
+                                {myPred.exact_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(245,158,11,0.2)', color: '#F59E0B', padding: '1px 5px', borderRadius: '999px' }}>EXACT</span>}
+                                {myPred.goal_diff_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(59,130,246,0.2)', color: '#3B82F6', padding: '1px 5px', borderRadius: '999px' }}>DIFF</span>}
+                                {myPred.upset_bonus > 0 && <span style={{ fontSize: '9px', backgroundColor: 'rgba(139,92,246,0.2)', color: '#8B5CF6', padding: '1px 5px', borderRadius: '999px' }}>UPSET</span>}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
                   <div style={{ display: 'flex', gap: '10px' }}>
                     {hasPredictions ? (
                       <button onClick={() => loadTopPredictors(match)} style={{ flex: 1, padding: '8px', backgroundColor: activeComp.color, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
