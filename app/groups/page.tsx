@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
@@ -49,7 +49,7 @@ function generateCode() {
   return 'FLIP-' + Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-export default function GroupsPage() {
+function GroupsPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -575,5 +575,20 @@ export default function GroupsPage() {
         </div>
       )}
     </main>
+  );
+}
+
+export default function GroupsPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ backgroundColor: '#02081F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#6B7280', fontFamily: 'Arial, sans-serif' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>⚽</div>
+          <p>Loading leagues...</p>
+        </div>
+      </main>
+    }>
+      <GroupsPageInner />
+    </Suspense>
   );
 }
