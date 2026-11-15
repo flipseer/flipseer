@@ -110,12 +110,11 @@ export default function Navbar() {
                 )}
               </div>
             );
+      <Link href="/groups" className="nav-link" style={{ color: pathname.startsWith('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (pathname.startsWith('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: pathname.startsWith('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
+  👥 Groups
+</Link>
           })()}
-
-          {/* GROUPS DROPDOWN */}
-          {(() => {
-            const groupsPages = ['/groups'];
-            const isGroupsPage = pathname.startsWith('/groups');
+          const isGroupsPage = pathname.startsWith('/groups');
             const [groupsOpen, setGroupsOpen] = React.useState(false);
             return (
               <div style={{ position: 'relative' }} onMouseEnter={() => setGroupsOpen(true)} onMouseLeave={() => setGroupsOpen(false)}>
