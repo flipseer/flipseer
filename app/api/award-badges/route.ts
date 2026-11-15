@@ -37,6 +37,14 @@ export async function GET(request: NextRequest) {
 
       if (!predictions?.length) continue
 
+      // Community split — needed to determine Bold Caller
+      const total = predictions.length
+      const upsetSideCount = predictions.filter(
+        (p: any) => p.predicted_outcome === match.winner
+      ).length
+      // Bold Caller: called the upset when fewer than 30% of community agreed
+      const upsetPct = total > 0 ? upsetSideCount / total : 1
+
       // Sort by points for Match Hero
       const sorted = [...predictions].sort((a, b) =>
         (b.points_earned ?? 0) - (a.points_earned ?? 0)
@@ -59,7 +67,7 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        // 👑 Upset King — correct + was upset
+        // 👑 Upset King — correct call on an upset match
         if (pred.predicted_outcome === match.winner && match.is_upset) {
           badges.push({
             user_id: pred.user_id,
@@ -70,7 +78,7 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        // 🏆 Match Hero — top 3 points
+        // 🏆 Match Hero — top 3 points earners
         const rank = sorted.findIndex(p => p.user_id === pred.user_id)
         if (rank < 3 && (pred.points_earned ?? 0) > 0) {
           badges.push({
@@ -82,8 +90,12 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        // ⚡ Bold Caller — predicted upset with low community support
-        if (pred.predicted_outcome === match.winner && match.is_upset && pred.upset_bonus > 0) {
+        // ⚡ Bold Caller — called the upset when <30% of community agreed
+        if (
+          pred.predicted_outcome === match.winner &&
+          match.is_upset &&
+          upsetPct < 0.3
+        ) {
           badges.push({
             user_id: pred.user_id,
             badge_type: 'bold_caller',
@@ -93,7 +105,7 @@ export async function GET(request: NextRequest) {
           })
         }
 
-        // Insert badges — ignore duplicates
+        // Insert badges — ignore duplicates via DB unique constraint
         for (const badge of badges) {
           const { error } = await supabase
             .from('user_badges')
@@ -101,25 +113,25 @@ export async function GET(request: NextRequest) {
           if (!error) totalAwarded++
         }
       }
+    }
 
-      // 🔥 Hot Streak — 5+ streak
-      const { data: hotUsers } = await supabase
-        .from('profiles')
-        .select('id, streak')
-        .gte('streak', 5)
+    // 🔥 Hot Streak — award ONCE per run, not once per match
+    const { data: hotUsers } = await supabase
+      .from('profiles')
+      .select('id, streak')
+      .gte('streak', 5)
 
-      for (const u of hotUsers ?? []) {
-        const { error } = await supabase
-          .from('user_badges')
-          .insert({
-            user_id: u.id,
-            badge_type: `hot_streak_${u.streak}`,
-            badge_label: `${u.streak} Match Streak`,
-            badge_icon: '🔥',
-            match_id: match.id,
-          })
-        if (!error) totalAwarded++
-      }
+    for (const u of hotUsers ?? []) {
+      const { error } = await supabase
+        .from('user_badges')
+        .insert({
+          user_id: u.id,
+          badge_type: `hot_streak_${u.streak}`,
+          badge_label: `${u.streak} Match Streak`,
+          badge_icon: '🔥',
+          match_id: null,
+        })
+      if (!error) totalAwarded++
     }
 
     return NextResponse.json({ awarded: totalAwarded })
