@@ -112,9 +112,39 @@ export default function Navbar() {
             );
           })()}
 
-          <a href="/groups" className="nav-link" style={{ color: isActive('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (isActive('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: isActive('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
-            Groups
-          </a>
+          {/* GROUPS DROPDOWN */}
+          {(() => {
+            const groupsPages = ['/groups'];
+            const isGroupsPage = pathname.startsWith('/groups');
+            const [groupsOpen, setGroupsOpen] = React.useState(false);
+            return (
+              <div style={{ position: 'relative' }} onMouseEnter={() => setGroupsOpen(true)} onMouseLeave={() => setGroupsOpen(false)}>
+                <button style={{ color: isGroupsPage ? '#2E9E5E' : '#9CA3AF', fontSize: '12px', padding: '5px 10px', borderRadius: '6px', border: '1px solid ' + (isGroupsPage ? '#1A7A4A' : 'transparent'), fontWeight: isGroupsPage ? 'bold' : 'normal', whiteSpace: 'nowrap', backgroundColor: isGroupsPage ? 'rgba(46,158,94,0.08)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  👥 Groups <span style={{ fontSize: '10px', opacity: 0.7 }}>▾</span>
+                </button>
+                {groupsOpen && (
+                  <div className="leagues-dropdown">
+                    {[
+                      { href: '/groups',           label: '👥 My Leagues',      desc: 'View & manage your private leagues' },
+                      { href: '/groups',            label: '➕ Create League',    desc: 'Start a new private prediction league', action: 'create' },
+                    ].map(({ href, label, desc, action }) => (
+                      <Link key={label} href={action === 'create' ? '/groups?create=1' : href} className="league-item" style={{ display: 'block', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', backgroundColor: !action && isActive(href) ? 'rgba(46,158,94,0.1)' : 'transparent', transition: 'all 0.1s' }}>
+                        <div style={{ fontSize: '13px', color: !action && isActive(href) ? '#2E9E5E' : '#9CA3AF', fontWeight: !action && isActive(href) ? 'bold' : 'normal' }}>{label}</div>
+                        <div style={{ fontSize: '11px', color: '#4B5563', marginTop: '2px' }}>{desc}</div>
+                      </Link>
+                    ))}
+                    <div style={{ borderTop: '1px solid #1A3A1A', margin: '6px 0 2px', padding: '6px 12px 2px' }}>
+                      <div style={{ fontSize: '10px', color: '#4B5563', letterSpacing: 1, fontWeight: 700, marginBottom: 6 }}>HOW TO JOIN</div>
+                      <div style={{ fontSize: '11px', color: '#4B5563', lineHeight: 1.6 }}>
+                        Get an invite link from a friend<br />
+                        or enter a <span style={{ color: '#2E9E5E', fontWeight: 700 }}>FLIP-XXXX</span> code
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* LEAGUES DROPDOWN */}
           <div style={{ position: 'relative' }} onMouseEnter={() => setLeaguesOpen(true)} onMouseLeave={() => setLeaguesOpen(false)}>
