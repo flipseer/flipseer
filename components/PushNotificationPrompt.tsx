@@ -4,18 +4,24 @@ import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
 
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
 export default function PushNotificationPrompt() {
   const [show, setShow] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Only show if PWA notifications are supported and not already subscribed
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     const dismissed = localStorage.getItem('push_dismissed');
     if (dismissed) return;
-
-    // Show after 2 minutes of use
     const timer = setTimeout(() => setShow(true), 120000);
     return () => clearTimeout(timer);
   }, []);
@@ -24,21 +30,28 @@ export default function PushNotificationPrompt() {
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setShow(false); return; }
+      if (!session) { setShow(false); setLoading(false); return; }
 
-      const reg = await navigator.serviceWorker.ready;
+      const permission = await Notification.requestPermission();
+      if (permission === 'denied') { setShow(false); setLoading(false); return; }
+
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.ready;
+
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub, userId: session.user.id }),
+        body: JSON.stringify({ subscription: sub.toJSON(), user_id: session.user.id }),
       });
 
       setSubscribed(true);
+      localStorage.setItem('push_dismissed', '1');
       setTimeout(() => setShow(false), 2000);
     } catch (err) {
       console.error('Push subscription failed:', err);
@@ -69,10 +82,10 @@ export default function PushNotificationPrompt() {
         <span style={{ fontSize: 28, flexShrink: 0 }}>⚽</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: 'white', marginBottom: 2 }}>
-            {subscribed ? '✅ Notifications enabled!' : 'Get match reminders'}
+            {subscribed ? '✅ Notifications enabled!' : 'Get match result alerts'}
           </div>
           <div style={{ fontSize: 12, color: '#8895A3' }}>
-            {subscribed ? 'We\'ll notify you before kickoff.' : 'Never miss a prediction window again.'}
+            {subscribed ? "You'll be notified when results are in." : 'Know your score the moment the match ends.'}
           </div>
         </div>
         {!subscribed && (
@@ -81,9 +94,7 @@ export default function PushNotificationPrompt() {
               background: 'transparent', border: '1px solid #1A3A1A',
               color: '#6B7280', padding: '6px 12px', borderRadius: 8,
               fontSize: 12, cursor: 'pointer',
-            }}>
-              No thanks
-            </button>
+            }}>No thanks</button>
             <button onClick={subscribe} disabled={loading} style={{
               background: '#2E9E5E', border: 'none',
               color: 'white', padding: '6px 14px', borderRadius: 8,
