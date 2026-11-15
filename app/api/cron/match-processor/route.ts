@@ -134,7 +134,10 @@ if (!isVercelCron && !isManual) return NextResponse.json({ error: 'Unauthorized'
         }else await supabase.from('matches').update({winner}).eq('id',match.id)
 
         const {error:pe}=await supabase.rpc('process_match_results',{p_match_id:match.id})
-        if(pe)log.push('PTS ERR: '+pe.message);else log.push('PTS OK: '+match.id)
+        if(pe){log.push('PTS ERR: '+pe.message)}else{
+          log.push('PTS OK: '+match.id)
+          await supabase.from('matches').update({results_processed:true}).eq('id',match.id)
+        }
         const {error:be}=await supabase.rpc('award_badges',{p_match_id:match.id})
         if(be)log.push('BADGE ERR: '+be.message);else log.push('BADGE OK: '+match.id)
 
