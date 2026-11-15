@@ -355,6 +355,8 @@ export default function Profile() {
   const [error, setError] = useState<string>('');
   const [activeTab, setActiveTab] = useState('overview');
   const [activeCompetition, setActiveCompetition] = useState('all');
+  const [userGroups, setUserGroups] = useState<any[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
   useEffect(() => {
     const getProfile = async () => {
       try {
@@ -391,6 +393,28 @@ export default function Profile() {
     };
     getProfile();
   }, []);
+  const fetchUserGroups = async (uid: string) => {
+    setGroupsLoading(true);
+    const { data: memberRows } = await supabase
+      .from('group_members').select('group_id').eq('user_id', uid);
+    if (memberRows && memberRows.length > 0) {
+      const ids = memberRows.map((r: any) => r.group_id);
+      const { data: groups } = await supabase
+        .from('groups').select('id, name, competition, invite_code, created_at').in('id', ids);
+      if (groups) {
+        // get member counts
+        const counts: { [key: string]: number } = {};
+        await Promise.all(groups.map(async (g: any) => {
+          const { count } = await supabase
+            .from('group_members').select('*', { count: 'exact', head: true }).eq('group_id', g.id);
+          counts[g.id] = count ?? 0;
+        }));
+        setUserGroups(groups.map((g: any) => ({ ...g, member_count: counts[g.id] || 0 })));
+      }
+    }
+    setGroupsLoading(false);
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     window.location.href = '/';
@@ -409,6 +433,7 @@ export default function Profile() {
   const tabs = [
     { key: 'overview', label: 'Overview', icon: '&#x1F4CA;', color: '#8B5CF6' },
     { key: 'predictions', label: 'Predictions', icon: '&#x1F3AF;', color: '#8B5CF6' },
+    { key: 'leagues', label: 'Leagues', icon: '&#x1F465;', color: '#2E9E5E' },
     { key: 'badges', label: 'Badges', icon: '&#x1F3C5;', color: '#F59E0B' },
     { key: 'settings', label: 'Settings', icon: '&#x2699;', color: '#6B7280' },
   ];
@@ -500,9 +525,9 @@ export default function Profile() {
       )}
       {/* MAIN TABS */}
       <div style={{ maxWidth: '600px', margin: '20px auto 0', padding: '0 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '20px' }}>
           {tabs.map(({ key, label, icon, color }) => (
-            <button key={key} onClick={() => setActiveTab(key)}
+            <button key={key} onClick={() => { setActiveTab(key); if (key === 'leagues' && userId && userGroups.length === 0) fetchUserGroups(userId); }}
               style={{ padding: '12px 4px', borderRadius: '12px', border: '2px solid ' + (activeTab === key ? color : '#1A3A1A'), backgroundColor: activeTab === key ? color + '20' : '#0D2B14', color: activeTab === key ? color : '#4B5563', cursor: 'pointer', fontSize: '10px', fontWeight: activeTab === key ? 'bold' : 'normal', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.2s ease' }}>
               <span style={{ fontSize: '22px' }} dangerouslySetInnerHTML={{ __html: icon }} />
               <span style={{ letterSpacing: '0.5px' }}>{label.toUpperCase()}</span>
@@ -578,6 +603,49 @@ export default function Profile() {
             <PredictionHistory userId={userId} username={username} activeCompetition={activeCompetition} />
           </div>
         )}
+        {/* ── LEAGUES TAB ── */}
+        {activeTab === 'leagues' && (
+          <div style={{ paddingBottom: '32px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', margin: 0 }}>👥 Private Leagues</h2>
+              <a href="/groups?create=1" style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold' }}>+ New League</a>
+            </div>
+            {groupsLoading ? (
+              <div style={{ textAlign: 'center', padding: '32px', color: '#6B7280' }}>Loading leagues...</div>
+            ) : userGroups.length === 0 ? (
+              <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '40px', textAlign: 'center' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
+                <p style={{ color: '#6B7280', fontSize: '15px', marginBottom: '8px' }}>No private leagues yet</p>
+                <p style={{ color: '#4B5563', fontSize: '13px', marginBottom: '20px' }}>Create a league and invite friends via WhatsApp</p>
+                <a href="/groups?create=1" style={{ display: 'inline-block', backgroundColor: '#2E9E5E', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+                  Create Your First League →
+                </a>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {userGroups.map((g: any) => (
+                  <a key={g.id} href={'/groups/' + g.id} style={{ display: 'block', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '18px 20px', textDecoration: 'none', transition: 'border-color 0.15s' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'white' }}>{g.name}</div>
+                      <span style={{ fontSize: '10px', backgroundColor: 'rgba(46,158,94,0.15)', color: '#2E9E5E', border: '1px solid rgba(46,158,94,0.3)', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                        {g.competition}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                      <span style={{ fontSize: '12px', color: '#6B7280' }}>👥 {g.member_count} member{g.member_count !== 1 ? 's' : ''}</span>
+                      <span style={{ fontSize: '12px', color: '#4B5563' }}>🔑 {g.invite_code}</span>
+                    </div>
+                    <div style={{ marginTop: '10px', fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>View Leaderboard →</div>
+                  </a>
+                ))}
+                <a href="/groups" style={{ display: 'block', textAlign: 'center', backgroundColor: 'transparent', border: '1px dashed #1A7A4A', borderRadius: '14px', padding: '16px', color: '#6B7280', textDecoration: 'none', fontSize: '13px' }}>
+                  View All Leagues →
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── BADGES TAB ── */}
         {activeTab === 'badges' && (
           <div style={{ paddingBottom: '32px' }}>
