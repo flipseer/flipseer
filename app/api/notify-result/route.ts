@@ -39,7 +39,6 @@ export async function POST(req: NextRequest) {
     if (!match_id) {
       return NextResponse.json({ error: 'match_id required' }, { status: 400 });
     }
-    // Get match
     const { data: match, error: matchError } = await supabaseAdmin
       .from('matches')
       .select('*')
@@ -48,7 +47,6 @@ export async function POST(req: NextRequest) {
     if (matchError || !match) {
       return NextResponse.json({ error: 'Match not found', match_id }, { status: 404 });
     }
-    // ── Only notify for active competitions ──
     if (!ACTIVE_COMPETITIONS.includes(match.competition)) {
       return NextResponse.json({
         success: true,
@@ -57,10 +55,8 @@ export async function POST(req: NextRequest) {
       });
     }
     const meta = COMPETITION_META[match.competition] || { emoji: '⚽', label: match.competition, color: '#8B5CF6' }
-    const accentColor = meta.color
     const headerEmoji = meta.emoji
 
-    // Get predictions
     const { data: predictionsRaw, error: predError } = await supabaseAdmin
       .from('predictions')
       .select('*')
@@ -76,129 +72,37 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Email notifications disabled ──
-    return NextResponse.json({ success: true, message: 'Email notifications disabled', sent: 0 });
-
-    // Get profiles
-    const userIds = predictions.map((p: any) => p.user_id);
-    const { data: profiles } = await supabaseAdmin
-      .from('profiles')
-      .select('id, username, total_points, correct_count, prediction_count, accuracy_pct, streak')
-      .in('id', userIds);
-    const profileMap: { [key: string]: any } = {};
-    profiles?.forEach((p: any) => { profileMap[p.id] = p; });
-    // Get emails
-    const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const emailMap: { [key: string]: string } = {};
-    if (authUsers?.users) {
-      authUsers.users.forEach((u: any) => {
-        if (userIds.includes(u.id) && u.email) emailMap[u.id] = u.email;
+    // ── Send web push notifications ──
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://flipseer.com';
+    let pushSent = 0;
+    try {
+      const pushRes = await fetch(origin + '/api/push/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${process.env.CRON_SECRET || ''}`,
+        },
+        body: JSON.stringify({
+          title: `${headerEmoji} ${meta.label} Result`,
+          body: `${match.home_team} ${match.home_score}–${match.away_score} ${match.away_team} · See how you scored`,
+          url: `https://flipseer.com/results`,
+        }),
       });
-    }
-    const { Resend } = await import('resend');
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    let sent = 0;
-    let failed = 0;
-    const matchName = match.home_team + ' vs ' + match.away_team;
-    const actualScore = match.home_score + '-' + match.away_score;
-    const isUpset = match.is_upset === true;
-
-    for (const pred of predictions) {
-      const email = emailMap[pred.user_id];
-      if (!email) continue;
-      const profile = profileMap[pred.user_id];
-      const username = profile?.username || 'Forecaster';
-      const won = pred.points_earned > 0;
-      const points = pred.points_earned || 0;
-      const outcomeLabel =
-        pred.predicted_outcome === 'home' ? match.home_team :
-        pred.predicted_outcome === 'away' ? match.away_team : 'Draw';
-      const breakdown = [];
-      if (pred.base_points > 0) breakdown.push('+' + pred.base_points + ' outcome');
-      if (pred.exact_bonus > 0) breakdown.push('+' + pred.exact_bonus + ' exact score');
-      if (pred.goal_diff_bonus > 0) breakdown.push('+' + pred.goal_diff_bonus + ' goal diff');
-      if (pred.upset_bonus > 0) breakdown.push('+' + pred.upset_bonus + ' upset');
-      if (pred.confidence_multiplier > 1) breakdown.push('x' + pred.confidence_multiplier + ' confidence');
-      const subject = won
-        ? `${headerEmoji} You called it! +${points} pts — ${matchName}`
-        : `${headerEmoji} Missed this one — ${matchName} result`;
-      const html = `
-<div style="background:#0D1F0F;padding:40px 32px;font-family:Arial,sans-serif;color:white;max-width:580px;margin:0 auto;border-radius:16px">
-  <div style="text-align:center;margin-bottom:28px">
-    <div style="font-size:44px;margin-bottom:10px">${won ? '✅' : '❌'}</div>
-    <h1 style="font-family:Georgia,serif;color:${won ? accentColor : '#EF4444'};font-size:26px;margin:0 0 6px">
-      ${won ? 'You called it right!' : 'Missed this one'}
-    </h1>
-    <p style="color:#9CA3AF;font-size:14px;margin:0">@${username}</p>
-  </div>
-  <div style="background:#0D2B14;border:1px solid #1A7A4A;border-radius:12px;padding:20px;margin-bottom:20px;text-align:center">
-    <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 8px">FULL TIME · ${meta.label}</p>
-    <p style="color:white;font-size:18px;font-weight:bold;margin:0 0 8px">${matchName}</p>
-    <p style="color:${accentColor};font-size:36px;font-weight:bold;font-family:Georgia,serif;margin:0 0 8px">${actualScore}</p>
-    ${isUpset ? '<p style="color:#F59E0B;font-size:12px;font-weight:bold;margin:0">UPSET RESULT</p>' : ''}
-  </div>
-  <div style="background:#0D2B14;border:2px solid ${won ? accentColor : '#7F1D1D'};border-radius:12px;padding:20px;margin-bottom:20px">
-    <p style="color:#6B7280;font-size:10px;font-weight:bold;letter-spacing:2px;margin:0 0 14px">YOUR PREDICTION</p>
-    <table style="width:100%;border-collapse:collapse">
-      <tr>
-        <td style="color:#9CA3AF;font-size:13px;padding:4px 0">You picked</td>
-        <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${outcomeLabel}</td>
-      </tr>
-      <tr>
-        <td style="color:#9CA3AF;font-size:13px;padding:4px 0">Confidence</td>
-        <td style="color:white;font-weight:bold;font-size:13px;text-align:right">${pred.confidence_pct}%</td>
-      </tr>
-    </table>
-    <div style="background:${won ? 'rgba(139,92,246,0.15)' : 'rgba(127,29,29,0.15)'};border:1px solid ${won ? accentColor : '#7F1D1D'};border-radius:8px;padding:14px;text-align:center;margin-top:14px">
-      <p style="color:${won ? accentColor : '#EF4444'};font-size:28px;font-weight:bold;margin:0">${won ? '+' + points + ' pts' : '0 pts'}</p>
-      ${breakdown.length > 0 ? '<p style="color:#6B7280;font-size:11px;margin:4px 0 0">' + breakdown.join(' · ') + '</p>' : ''}
-    </div>
-  </div>
-  <a href="https://www.flipseer.com/predict" style="display:block;background:${accentColor};color:white;padding:16px;border-radius:10px;text-align:center;text-decoration:none;font-weight:bold;font-size:16px;margin-bottom:12px">
-    ${headerEmoji} Predict Next Match →
-  </a>
-  <a href="https://www.flipseer.com/leaderboard" style="display:block;background:transparent;color:${accentColor};padding:12px;border-radius:10px;text-align:center;text-decoration:none;font-size:14px;border:1px solid ${accentColor};margin-bottom:24px">
-    View Leaderboard →
-  </a>
-  <div style="border-top:1px solid #1A3A1A;padding-top:16px;text-align:center">
-    <p style="color:#4B5563;font-size:11px;margin:0">Flipseer · Pure football reputation. No betting. Ever.</p>
-  </div>
-</div>`;
-      let attempt = 0;
-      while (attempt < 3) {
-        try {
-          await resend.emails.send({
-            from: 'Flipseer <noreply@flipseer.com>',
-            to: email,
-            subject,
-            html,
-          });
-          sent++;
-          break;
-        } catch (e: any) {
-          const isRateLimit = e?.statusCode === 429
-            || String(e?.message).includes('429')
-            || String(e?.message).toLowerCase().includes('rate limit');
-          if (isRateLimit && attempt < 2) {
-            attempt++;
-            await new Promise(r => setTimeout(r, 1000));
-            continue;
-          }
-          console.error('Email failed:', email, e);
-          failed++;
-          break;
-        }
+      if (pushRes.ok) {
+        const pushData = await pushRes.json();
+        pushSent = pushData.sent || 0;
       }
-      await new Promise(r => setTimeout(r, 250));
+    } catch (e: any) {
+      console.error('Push send error:', e.message);
     }
+
     return NextResponse.json({
       success: true,
-      match: matchName,
-      competition: match.competition,
+      message: 'Push notifications sent',
+      push_sent: pushSent,
       total_predictions: predictions.length,
-      emails_sent: sent,
-      emails_failed: failed,
     });
+
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
