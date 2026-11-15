@@ -1,10 +1,19 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 
 const supabase = createClient();
+
+const COMPETITIONS = [
+  'EPL 2026/27',
+  'UCL 2026/27',
+  'Liga 1 2026/27',
+  'Ghana PL 2026/27',
+  'ISL 2026/27',
+  'NPFL 2026/27',
+];
 
 const COMP_FLAG: Record<string, string> = {
   'EPL 2026/27':      '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
@@ -24,8 +33,6 @@ const COMP_COLOR: Record<string, string> = {
   'NPFL 2026/27':     '#008751',
 };
 
-const MEDALS = ['🥇', '🥈', '🥉'];
-
 type Group = {
   id: string;
   name: string;
@@ -33,182 +40,182 @@ type Group = {
   description: string | null;
   invite_code: string;
   created_by: string;
+  member_count?: number;
+  is_owner?: boolean;
 };
 
-type Member = {
-  user_id: string;
-  display_name: string;
-  avatar_url: string | null;
-  total_predictions: number;
-  correct_predictions: number;
-  points: number;
-  accuracy: number;
-  rank: number;
-  is_me: boolean;
-};
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return 'FLIP-' + Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
 
-export default function GroupLeaderboardPage() {
+function GroupsPageInner() {
   const router = useRouter();
-  const params = useParams();
-  const groupId = params.id as string;
+  const searchParams = useSearchParams();
 
   const [user, setUser] = useState<any>(null);
-  const [group, setGroup] = useState<Group | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
-  const [notMember, setNotMember] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState('');
+  const [joinSuccess, setJoinSuccess] = useState('');
+
+  // Create form state
+  const [groupName, setGroupName] = useState('');
+  const [groupComp, setGroupComp] = useState('Ghana PL 2026/27');
+  const [groupDesc, setGroupDesc] = useState('');
 
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push(`/auth?redirect=/groups/${groupId}`); return; }
+      if (!session) { router.push('/auth?redirect=/groups'); return; }
       setUser(session.user);
-      await loadLeaderboard(session.user.id);
+      await loadGroups(session.user.id);
+
+      // Handle ?join=CODE from invite link redirect
+      const joinCode = searchParams.get('join');
+      if (joinCode) {
+        await handleJoinByCode(joinCode.toUpperCase(), session.user.id);
+      }
+
+      // Handle ?create=1 from navbar dropdown
+      if (searchParams.get('create') === '1') {
+        setShowCreate(true);
+      }
     };
     init();
-  }, [groupId]);
+  }, []);
 
-  const loadLeaderboard = async (userId: string) => {
-    // Load group info
+  const loadGroups = async (userId: string) => {
+    // Get groups user is a member of
+    const { data: memberships } = await supabase
+      .from('group_members')
+      .select('group_id')
+      .eq('user_id', userId);
+
+    if (!memberships?.length) { setGroups([]); setLoading(false); return; }
+
+    const groupIds = memberships.map((m: any) => m.group_id);
+
     const { data: groupData } = await supabase
       .from('groups')
       .select('id, name, competition, description, invite_code, created_by')
-      .eq('id', groupId)
-      .single();
+      .in('id', groupIds);
 
-    if (!groupData) { setLoading(false); return; }
-    setGroup(groupData);
+    if (!groupData?.length) { setGroups([]); setLoading(false); return; }
 
-    // Check membership
-    const { data: myMembership } = await supabase
-      .from('group_members')
-      .select('id')
-      .eq('group_id', groupId)
-      .eq('user_id', userId)
-      .single();
-
-    if (!myMembership) { setNotMember(true); setLoading(false); return; }
-
-    // Get all members
-    const { data: memberRows } = await supabase
-      .from('group_members')
-      .select('user_id')
-      .eq('group_id', groupId);
-
-    if (!memberRows?.length) { setLoading(false); return; }
-
-    const memberIds = memberRows.map((m: any) => m.user_id);
-
-    // Get profiles
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .in('id', memberIds);
-
-    // Get prediction stats per member
-    const enriched: Member[] = await Promise.all(memberIds.map(async (uid: string) => {
-      const profile = profiles?.find((p: any) => p.id === uid);
-
-      // Count total predictions
-      const { count: total } = await supabase
-        .from('predictions')
+    // Get member counts
+    const enriched = await Promise.all(groupData.map(async (g: any) => {
+      const { count } = await supabase
+        .from('group_members')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', uid);
-
-      // Count correct predictions (where result matches prediction)
-      const { count: correct } = await supabase
-        .from('predictions')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', uid)
-        .eq('is_correct', true);
-
-      const totalPred = total || 0;
-      const correctPred = correct || 0;
-      const accuracy = totalPred > 0 ? Math.round((correctPred / totalPred) * 100) : 0;
-      // Points: 3 per correct + bonus for activity
-      const points = correctPred * 3 + Math.floor(totalPred * 0.5);
-
-      return {
-        user_id: uid,
-        display_name: profile?.display_name || 'Anonymous',
-        avatar_url: profile?.avatar_url || null,
-        total_predictions: totalPred,
-        correct_predictions: correctPred,
-        points,
-        accuracy,
-        rank: 0,
-        is_me: uid === userId,
-      };
+        .eq('group_id', g.id);
+      return { ...g, member_count: count || 0, is_owner: g.created_by === userId };
     }));
 
-    // Sort by points desc, then accuracy
-    enriched.sort((a, b) => b.points - a.points || b.accuracy - a.accuracy);
-    enriched.forEach((m, i) => { m.rank = i + 1; });
-
-    setMembers(enriched);
+    setGroups(enriched);
     setLoading(false);
   };
 
-  const shareWhatsApp = () => {
-    if (!group) return;
+  const handleJoinByCode = async (code: string, userId: string) => {
+    const { data: group } = await supabase
+      .from('groups')
+      .select('id, name, competition')
+      .eq('invite_code', code)
+      .single();
+
+    if (!group) { setJoinError('Invalid invite code.'); return; }
+
+    const { data: existing } = await supabase
+      .from('group_members')
+      .select('id')
+      .eq('group_id', group.id)
+      .eq('user_id', userId)
+      .single();
+
+    if (!existing) {
+      await supabase.from('group_members').insert({
+        group_id: group.id,
+        user_id: userId,
+        joined_via_invite: true,
+      });
+    }
+
+    const flag = COMP_FLAG[group.competition] || '⚽';
+    setJoinSuccess(`${flag} Joined "${group.name}"!`);
+    await loadGroups(userId);
+    setTimeout(() => setJoinSuccess(''), 4000);
+  };
+
+  const handleCreate = async () => {
+    if (!groupName.trim() || !user) return;
+    setCreating(true);
+
+    const code = generateCode();
+    const { data: newGroup, error } = await supabase
+      .from('groups')
+      .insert({
+        name: groupName.trim(),
+        competition: groupComp,
+        description: groupDesc.trim() || null,
+        invite_code: code,
+        created_by: user.id,
+      })
+      .select('id')
+      .single();
+
+    if (!error && newGroup) {
+      await supabase.from('group_members').insert({
+        group_id: newGroup.id,
+        user_id: user.id,
+      });
+      await loadGroups(user.id);
+    }
+
+    setGroupName('');
+    setGroupDesc('');
+    setGroupComp('Ghana PL 2026/27');
+    setShowCreate(false);
+    setCreating(false);
+  };
+
+  const copyInviteLink = async (code: string) => {
+    const link = `https://flipseer.com/groups/join/${code}`;
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      // fallback: select text
+    }
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2500);
+  };
+
+  const shareWhatsApp = (group: Group) => {
     const flag = COMP_FLAG[group.competition] || '⚽';
     const comp = group.competition.replace(' 2026/27', '');
     const link = `https://flipseer.com/groups/join/${group.invite_code}`;
-    const text = `${flag} Join my private ${comp} prediction league on Flipseer!\n\n*${group.name}* — ${members.length} member${members.length === 1 ? '' : 's'}\n\nPredict matches, build your football reputation, compete with friends.\nFree forever. No betting.\n\n👉 ${link}`;
+    const text = `${flag} Join my private ${comp} prediction league on Flipseer!\n\n*${group.name}* — ${group.member_count} member${group.member_count === 1 ? '' : 's'}\n\nPredict matches, build your football reputation, compete with friends.\nFree forever. No betting.\n\n👉 ${link}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  const copyInviteLink = async () => {
-    if (!group) return;
+  const shareTelegram = (group: Group) => {
+    const flag = COMP_FLAG[group.competition] || '⚽';
+    const comp = group.competition.replace(' 2026/27', '');
     const link = `https://flipseer.com/groups/join/${group.invite_code}`;
-    try { await navigator.clipboard.writeText(link); } catch {}
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    const text = `${flag} Join my private ${comp} prediction league — ${group.name}. Free, no betting. Prove your football intelligence!\n👉 ${link}`;
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
   };
 
   if (loading) return (
     <main style={{ backgroundColor: '#02081F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center', color: '#6B7280', fontFamily: 'Arial, sans-serif' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🏆</div>
-        <p>Loading leaderboard...</p>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>⚽</div>
+        <p>Loading leagues...</p>
       </div>
     </main>
   );
-
-  if (!group) return (
-    <main style={{ backgroundColor: '#02081F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', color: '#6B7280', fontFamily: 'Arial, sans-serif' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>❌</div>
-        <p>League not found.</p>
-        <Link href="/groups" style={{ color: '#2E9E5E' }}>← Back to leagues</Link>
-      </div>
-    </main>
-  );
-
-  if (notMember) return (
-    <main style={{ backgroundColor: '#02081F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ textAlign: 'center', color: '#6B7280', fontFamily: 'Arial, sans-serif', padding: '0 24px' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-        <p style={{ color: 'white', fontWeight: 700 }}>You're not in this league.</p>
-        <Link
-          href={`/groups/join/${group.invite_code}`}
-          style={{
-            display: 'inline-block', marginTop: 12,
-            backgroundColor: '#2E9E5E', color: 'white',
-            padding: '10px 24px', borderRadius: 10,
-            textDecoration: 'none', fontWeight: 800, fontSize: 14,
-          }}
-        >
-          Join This League →
-        </Link>
-      </div>
-    </main>
-  );
-
-  const flag = COMP_FLAG[group.competition] || '⚽';
-  const color = COMP_COLOR[group.competition] || '#2E9E5E';
-  const myEntry = members.find(m => m.is_me);
 
   return (
     <main style={{
@@ -216,221 +223,435 @@ export default function GroupLeaderboardPage() {
       minHeight: '100vh',
       fontFamily: "-apple-system,'Segoe UI',Arial,sans-serif",
       color: 'white',
-      paddingBottom: 80,
+      paddingBottom: 60,
     }}>
       {/* Header */}
       <div style={{
-        background: `linear-gradient(180deg, ${color}22 0%, #02081F 100%)`,
-        borderBottom: `1px solid ${color}30`,
-        padding: '20px 16px 20px',
+        background: 'linear-gradient(180deg, #0D2B14 0%, #02081F 100%)',
+        borderBottom: '1px solid #1A3A1A',
+        padding: '20px 16px 24px',
       }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <Link href="/groups" style={{
-            fontSize: 12, color: '#6B7280', textDecoration: 'none',
-            display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 12,
-          }}>
-            ← Private Leagues
-          </Link>
-
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: '50%',
-              backgroundColor: `${color}20`, border: `2px solid ${color}50`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 24, flexShrink: 0,
-            }}>
-              {flag}
-            </div>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', letterSpacing: '-0.5px' }}>
-                {group.name}
-              </h1>
-              <div style={{ fontSize: 12, color: '#6B7280' }}>
-                {group.competition.replace(' 2026/27', '')} · {members.length} member{members.length === 1 ? '' : 's'}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: '#2E9E5E', marginBottom: 4 }}>
+                FLIPSEER
               </div>
-              {group.description && (
-                <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>{group.description}</div>
-              )}
+              <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: '-0.5px' }}>
+                Private Leagues
+              </h1>
             </div>
-          </div>
-
-          {/* Share row */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             <button
-              onClick={shareWhatsApp}
+              onClick={() => setShowCreate(true)}
               style={{
-                flex: 1, backgroundColor: '#128C7E', color: 'white',
-                border: 'none', borderRadius: 8, padding: '9px 0',
-                fontSize: 12, fontWeight: 800, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                backgroundColor: '#2E9E5E',
+                color: 'white',
+                border: 'none',
+                borderRadius: 10,
+                padding: '10px 18px',
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
               }}
             >
-              📱 Invite via WhatsApp
-            </button>
-            <button
-              onClick={copyInviteLink}
-              style={{
-                backgroundColor: copied ? '#0D2B14' : '#1A2A1A',
-                border: `1px solid ${copied ? '#2E9E5E' : '#2A3A2A'}`,
-                color: copied ? '#2E9E5E' : '#9CA3AF',
-                borderRadius: 8, padding: '9px 14px',
-                fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                whiteSpace: 'nowrap', transition: 'all 0.2s',
-              }}
-            >
-              {copied ? '✓ Copied!' : '📋 Copy Link'}
+              + New League
             </button>
           </div>
+          <p style={{ fontSize: 13, color: '#6B7280', margin: '8px 0 0' }}>
+            Compete with friends. Prove your football intelligence.
+          </p>
         </div>
       </div>
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 16px' }}>
 
-        {/* My rank card */}
-        {myEntry && (
+        {/* Join success / error banners */}
+        {joinSuccess && (
           <div style={{
-            margin: '20px 0 0',
-            backgroundColor: `${color}15`,
-            border: `1px solid ${color}40`,
-            borderRadius: 12, padding: '14px 16px',
-            display: 'flex', alignItems: 'center', gap: 14,
+            margin: '16px 0 0',
+            backgroundColor: '#0D2B14', border: '1px solid #2E9E5E',
+            borderRadius: 10, padding: '12px 16px',
+            fontSize: 14, fontWeight: 700, color: '#2E9E5E',
           }}>
-            <div style={{
-              fontSize: 28, width: 44, textAlign: 'center', flexShrink: 0,
-            }}>
-              {myEntry.rank <= 3 ? MEDALS[myEntry.rank - 1] : `#${myEntry.rank}`}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: color, marginBottom: 2 }}>
-                YOUR STANDING
-              </div>
-              <div style={{ display: 'flex', gap: 16 }}>
-                <div>
-                  <div style={{ fontSize: 20, fontWeight: 800 }}>{myEntry.points}</div>
-                  <div style={{ fontSize: 10, color: '#6B7280' }}>pts</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 20, fontWeight: 800 }}>{myEntry.accuracy}%</div>
-                  <div style={{ fontSize: 10, color: '#6B7280' }}>accuracy</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 20, fontWeight: 800 }}>{myEntry.correct_predictions}/{myEntry.total_predictions}</div>
-                  <div style={{ fontSize: 10, color: '#6B7280' }}>correct</div>
-                </div>
-              </div>
-            </div>
+            ✅ {joinSuccess}
+          </div>
+        )}
+        {joinError && (
+          <div style={{
+            margin: '16px 0 0',
+            backgroundColor: '#2B0D0D', border: '1px solid #9E2E2E',
+            borderRadius: 10, padding: '12px 16px',
+            fontSize: 14, color: '#F87171',
+          }}>
+            ❌ {joinError}
           </div>
         )}
 
-        {/* Leaderboard */}
-        <div style={{ marginTop: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#4B5563', marginBottom: 10 }}>
-            LEADERBOARD
-          </div>
-
-          {members.length === 0 && (
-            <div style={{
-              textAlign: 'center', backgroundColor: '#0D1A0F',
-              border: '1px dashed #1A3A1A', borderRadius: 12, padding: '32px 16px',
-              color: '#6B7280', fontSize: 13,
-            }}>
-              No predictions yet. Be the first to predict!
+        {/* How it works — always shown for new users */}
+        {groups.length === 0 && (
+          <>
+            {/* Steps */}
+            <div style={{ marginTop: 24 }}>
+              {[
+                {
+                  step: '1',
+                  icon: '➕',
+                  title: 'Create a private league',
+                  desc: 'Pick a name, choose your competition (Ghana PL, EPL, ISL…), and your league is ready in seconds.',
+                },
+                {
+                  step: '2',
+                  icon: '📱',
+                  title: 'Invite friends via WhatsApp',
+                  desc: 'Tap "WhatsApp" to share a pre-written invite message with your FLIP-XXXX code. Friends join in one tap.',
+                },
+                {
+                  step: '3',
+                  icon: '⚽',
+                  title: 'Everyone predicts matches',
+                  desc: 'Predictions lock at kickoff — no changing your mind. Pure skill, no luck.',
+                },
+                {
+                  step: '4',
+                  icon: '🏆',
+                  title: 'Leaderboard updates live',
+                  desc: 'See who\'s top after every result. Bragging rights go to the best predictor.',
+                },
+              ].map(({ step, icon, title, desc }) => (
+                <div key={step} style={{
+                  display: 'flex', gap: 14, alignItems: 'flex-start',
+                  marginBottom: 16,
+                  backgroundColor: '#0D1A0F',
+                  border: '1px solid #1A3A1A',
+                  borderRadius: 12, padding: '14px 16px',
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    backgroundColor: '#0D2B14', border: '1px solid #2E9E5E',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 18, flexShrink: 0,
+                  }}>
+                    {icon}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: '#2E9E5E', marginBottom: 3 }}>
+                      STEP {step}
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>{title}</div>
+                    <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.6 }}>{desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
 
-          {members.map((member, i) => {
-            const isMe = member.is_me;
-            const medal = i < 3 ? MEDALS[i] : null;
-            return (
-              <div key={member.user_id} style={{
-                marginBottom: 8,
-                backgroundColor: isMe ? `${color}12` : '#0D1A0F',
-                border: `1px solid ${isMe ? color + '40' : '#1A2A1A'}`,
-                borderRadius: 10, padding: '12px 14px',
-                display: 'flex', alignItems: 'center', gap: 12,
-                transition: 'all 0.2s',
+            {/* Free badge */}
+            <div style={{
+              textAlign: 'center', marginBottom: 20,
+              backgroundColor: '#0D2B14', border: '1px solid #1A4A1A',
+              borderRadius: 10, padding: '10px 16px',
+              fontSize: 12, color: '#6B7280',
+            }}>
+              🔒 Predictions lock at kickoff &nbsp;·&nbsp; Free forever &nbsp;·&nbsp; No betting
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => setShowCreate(true)}
+              style={{
+                width: '100%',
+                backgroundColor: '#2E9E5E', color: 'white',
+                border: 'none', borderRadius: 12,
+                padding: '15px', fontSize: 15,
+                fontWeight: 800, cursor: 'pointer',
+                boxShadow: '0 0 24px rgba(46,158,94,0.3)',
+              }}
+            >
+              🏆 Create Your First League →
+            </button>
+          </>
+        )}
+
+        {/* Groups list */}
+        {groups.map(group => {
+          const flag = COMP_FLAG[group.competition] || '⚽';
+          const color = COMP_COLOR[group.competition] || '#2E9E5E';
+          const isCopied = copiedCode === group.invite_code;
+          return (
+            <div key={group.id} style={{
+              marginTop: 16,
+              backgroundColor: '#0D1A0F',
+              border: `1px solid ${color}30`,
+              borderRadius: 14,
+              overflow: 'hidden',
+            }}>
+              {/* Group header */}
+              <div style={{
+                padding: '16px 16px 12px',
+                borderBottom: `1px solid ${color}20`,
+                background: `linear-gradient(135deg, ${color}10 0%, transparent 100%)`,
               }}>
-                {/* Rank */}
-                <div style={{
-                  width: 32, textAlign: 'center', flexShrink: 0,
-                  fontSize: medal ? 20 : 13,
-                  fontWeight: 800,
-                  color: medal ? 'inherit' : '#4B5563',
-                }}>
-                  {medal || `#${member.rank}`}
-                </div>
-
-                {/* Avatar */}
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  backgroundColor: `${color}20`,
-                  border: `1.5px solid ${isMe ? color : '#2A3A2A'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 16, flexShrink: 0, overflow: 'hidden',
-                }}>
-                  {member.avatar_url
-                    ? <img src={member.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : '👤'
-                  }
-                </div>
-
-                {/* Name */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <div style={{
-                    fontSize: 14, fontWeight: 700,
-                    color: isMe ? 'white' : '#E5E7EB',
-                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    width: 44, height: 44, borderRadius: '50%',
+                    backgroundColor: `${color}20`,
+                    border: `2px solid ${color}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 20, flexShrink: 0,
                   }}>
-                    {member.display_name}{isMe ? ' (you)' : ''}
+                    {flag}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>
-                    {member.correct_predictions}/{member.total_predictions} correct · {member.accuracy}% accuracy
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.3px' }}>
+                        {group.name}
+                      </div>
+                      {group.is_owner && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, letterSpacing: 1,
+                          color: color, backgroundColor: `${color}20`,
+                          padding: '2px 7px', borderRadius: 999,
+                        }}>
+                          OWNER
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                      {group.competition.replace(' 2026/27', '')} · {group.member_count} member{group.member_count === 1 ? '' : 's'}
+                    </div>
+                    {group.description && (
+                      <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
+                        {group.description}
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                {/* Points */}
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{
-                    fontSize: 18, fontWeight: 800,
-                    color: i === 0 ? '#F59E0B' : isMe ? color : 'white',
-                  }}>
-                    {member.points}
-                  </div>
-                  <div style={{ fontSize: 10, color: '#4B5563' }}>pts</div>
                 </div>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Points system explanation */}
-        <div style={{
-          marginTop: 24,
-          backgroundColor: '#0D1A0F',
-          border: '1px solid #1A3A1A',
-          borderRadius: 12, padding: '14px 16px',
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#4B5563', marginBottom: 8 }}>
-            HOW POINTS WORK
-          </div>
-          <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.7 }}>
-            ✅ +3 pts for every correct prediction<br />
-            ⚽ +0.5 pts per prediction (activity bonus)<br />
-            🏆 Leaderboard updates after each match result
-          </div>
-        </div>
+              {/* Invite code row */}
+              <div style={{
+                padding: '10px 16px',
+                borderBottom: `1px solid #1A2A1A`,
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontSize: 11, color: '#4B5563', flexShrink: 0 }}>Invite code:</span>
+                <code style={{
+                  fontSize: 13, fontWeight: 800, color: color,
+                  backgroundColor: `${color}15`, padding: '3px 8px',
+                  borderRadius: 6, letterSpacing: 1, flex: 1,
+                }}>
+                  {group.invite_code}
+                </code>
+                <button
+                  onClick={() => copyInviteLink(group.invite_code)}
+                  style={{
+                    backgroundColor: isCopied ? '#0D2B14' : '#1A2A1A',
+                    border: `1px solid ${isCopied ? '#2E9E5E' : '#2A3A2A'}`,
+                    color: isCopied ? '#2E9E5E' : '#9CA3AF',
+                    borderRadius: 7, padding: '5px 10px',
+                    fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    whiteSpace: 'nowrap', transition: 'all 0.2s',
+                  }}
+                >
+                  {isCopied ? '✓ Copied!' : '📋 Copy Link'}
+                </button>
+              </div>
 
-        {/* Predict CTA */}
-        <Link href="/predict" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginTop: 16, gap: 8,
-          backgroundColor: '#2E9E5E', color: 'white',
-          borderRadius: 12, padding: '14px',
-          fontSize: 15, fontWeight: 800, textDecoration: 'none',
-        }}>
-          ⚽ Make Predictions Now →
-        </Link>
+              {/* Share buttons */}
+              <div style={{ padding: '10px 16px', display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => shareWhatsApp(group)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#128C7E',
+                    color: 'white', border: 'none',
+                    borderRadius: 8, padding: '9px 0',
+                    fontSize: 12, fontWeight: 800,
+                    cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', gap: 5,
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>📱</span> WhatsApp
+                </button>
+                <button
+                  onClick={() => shareTelegram(group)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#2AABEE',
+                    color: 'white', border: 'none',
+                    borderRadius: 8, padding: '9px 0',
+                    fontSize: 12, fontWeight: 800,
+                    cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', gap: 5,
+                  }}
+                >
+                  <span style={{ fontSize: 14 }}>✈️</span> Telegram
+                </button>
+                <Link
+                  href={`/groups/${group.id}`}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#1A2A1A',
+                    color: '#9CA3AF', border: '1px solid #2A3A2A',
+                    borderRadius: 8, padding: '9px 0',
+                    fontSize: 12, fontWeight: 700,
+                    cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', gap: 5,
+                    textDecoration: 'none',
+                  }}
+                >
+                  🏆 Leaderboard
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* How it works — shown when groups exist */}
+        {groups.length > 0 && (
+          <div style={{
+            marginTop: 24,
+            backgroundColor: '#0D1A0F',
+            border: '1px solid #1A3A1A',
+            borderRadius: 12, padding: '14px 16px',
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#4B5563', marginBottom: 8 }}>
+              HOW SEEDING WORKS
+            </div>
+            <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.7 }}>
+              📱 Share the WhatsApp link in your football group chats<br />
+              🔗 Friends tap the link → see your league → join in seconds<br />
+              🏆 Everyone predicts → leaderboard updates live<br />
+              🔥 Top predictor gets bragging rights
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* CREATE MODAL */}
+      {showCreate && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          zIndex: 500, padding: '0 0 0',
+        }} onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}>
+          <div style={{
+            backgroundColor: '#0D1A0F',
+            border: '1px solid #2E9E5E',
+            borderRadius: '20px 20px 0 0',
+            padding: '24px 20px 36px',
+            width: '100%', maxWidth: 500,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ fontSize: 18, fontWeight: 800 }}>Create Private League</div>
+              <button onClick={() => setShowCreate(false)} style={{
+                backgroundColor: 'transparent', border: 'none',
+                color: '#6B7280', fontSize: 20, cursor: 'pointer', padding: '0 4px',
+              }}>✕</button>
+            </div>
+
+            {/* League name */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#6B7280', display: 'block', marginBottom: 6 }}>
+                LEAGUE NAME *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Friday Night Foxes, Office Rivals..."
+                value={groupName}
+                onChange={e => setGroupName(e.target.value)}
+                maxLength={40}
+                style={{
+                  width: '100%', backgroundColor: '#0D2B14',
+                  border: '1px solid #1A4A1A', borderRadius: 8,
+                  padding: '11px 14px', color: 'white', fontSize: 14,
+                  outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Competition */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#6B7280', display: 'block', marginBottom: 6 }}>
+                COMPETITION
+              </label>
+              <select
+                value={groupComp}
+                onChange={e => setGroupComp(e.target.value)}
+                style={{
+                  width: '100%', backgroundColor: '#0D2B14',
+                  border: '1px solid #1A4A1A', borderRadius: 8,
+                  padding: '11px 14px', color: 'white', fontSize: 14,
+                  outline: 'none', boxSizing: 'border-box',
+                  appearance: 'none',
+                }}
+              >
+                {COMPETITIONS.map(c => (
+                  <option key={c} value={c}>{COMP_FLAG[c]} {c}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Description */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#6B7280', display: 'block', marginBottom: 6 }}>
+                DESCRIPTION <span style={{ color: '#4B5563', fontWeight: 400 }}>(optional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Work friends only, Best predictions win bragging rights"
+                value={groupDesc}
+                onChange={e => setGroupDesc(e.target.value)}
+                maxLength={80}
+                style={{
+                  width: '100%', backgroundColor: '#0D2B14',
+                  border: '1px solid #1A4A1A', borderRadius: 8,
+                  padding: '11px 14px', color: 'white', fontSize: 14,
+                  outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleCreate}
+              disabled={!groupName.trim() || creating}
+              style={{
+                width: '100%',
+                backgroundColor: groupName.trim() ? '#2E9E5E' : '#1A3A1A',
+                color: 'white', border: 'none',
+                borderRadius: 10, padding: '14px',
+                fontSize: 15, fontWeight: 800,
+                cursor: groupName.trim() ? 'pointer' : 'default',
+                transition: 'all 0.2s',
+              }}
+            >
+              {creating ? 'Creating...' : '🏆 Create League & Get Invite Link →'}
+            </button>
+
+            <p style={{ textAlign: 'center', fontSize: 11, color: '#4B5563', margin: '12px 0 0' }}>
+              An invite link is generated instantly. Share via WhatsApp or Telegram.
+            </p>
+          </div>
+        </div>
+      )}
     </main>
+  );
+}
+
+export default function GroupsPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ backgroundColor: '#02081F', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#6B7280', fontFamily: 'Arial, sans-serif' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>⚽</div>
+          <p>Loading leagues...</p>
+        </div>
+      </main>
+    }>
+      <GroupsPageInner />
+    </Suspense>
   );
 }
