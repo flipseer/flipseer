@@ -603,10 +603,10 @@ function UpcomingMatches() {
                   <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', flex: 1, minWidth: 0, textAlign: 'right', wordBreak: 'break-word' }}>{match.home_team}</span>
                     <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', flex: 1, minWidth: 0, textAlign: 'left', wordBreak: 'break-word' }}>{match.away_team}</span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
                 </div>
@@ -986,7 +986,7 @@ export default function Home() {
             🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · 🇮🇳 ISL — all live now — Predict free forever
           </span>
           <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
-            🏆 Private leagues active · Building toward World Cup 2030
+            🏆 Private leagues active · Building toward World Cup 2026
           </span>
           <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
             Predict Now →
