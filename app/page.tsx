@@ -603,10 +603,10 @@ function UpcomingMatches() {
                   <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', flex: 1, minWidth: 0, textAlign: 'right', wordBreak: 'break-word' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
-                    <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'white', flex: 1, minWidth: 0, textAlign: 'left', wordBreak: 'break-word' }}>{match.away_team}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.home_team}</span>
+                    <span style={{ fontSize: '10px', color: '#8895A3', fontWeight: 'bold' }}>vs</span>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.away_team}</span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
                 </div>
