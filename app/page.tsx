@@ -44,7 +44,7 @@ function TelegramBanner() {
     setShow(false);
     try { localStorage.setItem('flipseer_tg_banner', '1'); } catch (e) {}
   };
-  if (!show) return null;
+  if (!show) return <div style={{ minHeight: '53px' }} />;
   return (
     <div style={{ backgroundColor: '#0A1929', borderBottom: '1px solid #1E3A5F', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', position: 'relative' }}>
       <span style={{ fontSize: '20px', flexShrink: 0 }}>📣</span>
@@ -180,7 +180,7 @@ function ScrollBand({ items, label, labelColor, pointsColor, bgColor, borderColo
   label: string; labelColor: string; pointsColor: string;
   bgColor: string; borderColor: string; speed: number;
 }) {
-  if (items.length === 0) return null;
+  if (items.length === 0) return <div style={{ minHeight: '37px', backgroundColor: bgColor, borderTop: '1px solid ' + borderColor, borderBottom: '1px solid ' + borderColor }} />;
   const band = [...items, ...items];
   return (
     <div style={{ backgroundColor: bgColor, borderTop: '1px solid ' + borderColor, borderBottom: '1px solid ' + borderColor, padding: '8px 0', overflow: 'hidden', position: 'relative' }}>
@@ -548,7 +548,9 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
-  const handleShare = (match: any) => {
+  const handleShare = (match: any, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
       const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const url = `https://flipseer.com/matches/${slug}`;
@@ -590,8 +592,9 @@ function UpcomingMatches() {
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
+            const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
+              <a key={match.id} href={`/matches/${slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none', textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ minWidth: '80px', textAlign: 'center', flexShrink: 0 }}>
                   {live ? (
                     <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px' }}>LIVE</span>
@@ -600,7 +603,7 @@ function UpcomingMatches() {
                   ) : (
                     <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
                   )}
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
+                  <div suppressHydrationWarning style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
@@ -612,17 +615,17 @@ function UpcomingMatches() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                   <button
-                    onClick={() => handleShare(match)}
+                    onClick={(e) => handleShare(match, e)}
                     title="Share this match"
                     style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >
                     {copied === match.id ? '✓' : '📤'}
                   </button>
-                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <a href="/predict" onClick={e => e.stopPropagation()} style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     {kickoffPast ? 'Locked' : 'Predict →'}
                   </a>
                 </div>
-              </div>
+              </a>
             );
           })}
         </div>
@@ -950,7 +953,7 @@ export default function Home() {
             </span>
           )}
           {nextMatchCountdown && (
-            <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
+            <span suppressHydrationWarning style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
           )}
           <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
         </div>
