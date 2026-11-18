@@ -893,8 +893,7 @@ export default function Home() {
             Never miss a prediction window
           </h2>
           <p style={{ color: '#93C5FD', fontSize: '14px', lineHeight: 1.7, marginBottom: '20px', maxWidth: '480px', margin: '0 auto 20px' }}>
-            Get pre-match predictions, live score alerts, and results for EPL, Liga 1, Ghana PL and ISL — straight to Telegram.
-            Over <strong style={{ color: 'white' }}>10,000 football fans</strong> already in the channel.
+            Pre-match predictions and live alerts for EPL, Liga 1, Ghana PL and ISL — straight to Telegram.
           </p>
           <a
             href="https://t.me/flipseer"
