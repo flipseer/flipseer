@@ -725,13 +725,28 @@ export default function JournalClient({ username, profile, predictions, badges =
           border: '1px solid #1A7A4A',
           borderRadius: 16, textAlign: 'center',
         }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>📖</div>
-          <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6, letterSpacing: '-0.3px' }}>
-            This record is permanent.
+          <div style={{ fontSize: 36, marginBottom: 10 }}>⚽</div>
+          <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, letterSpacing: '-0.3px' }}>
+            Think you can beat @{username}?
           </h3>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 20 }}>
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: accuracy >= 50 ? '#2E9E5E' : '#F59E0B' }}>{accuracy}%</div>
+              <div style={{ fontSize: 10, color: '#6B7280', letterSpacing: 1 }}>ACCURACY</div>
+            </div>
+            <div style={{ width: 1, backgroundColor: '#1A3A1A' }} />
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#8B5CF6' }}>{predictions.length}</div>
+              <div style={{ fontSize: 10, color: '#6B7280', letterSpacing: 1 }}>PREDICTIONS</div>
+            </div>
+            <div style={{ width: 1, backgroundColor: '#1A3A1A' }} />
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: '#F59E0B' }}>{profile?.total_points?.toLocaleString() || '0'}</div>
+              <div style={{ fontSize: 10, color: '#6B7280', letterSpacing: 1 }}>REP PTS</div>
+            </div>
+          </div>
           <p style={{ color: '#6B7280', fontSize: 13, lineHeight: 1.7, marginBottom: 22, maxWidth: 400, margin: '0 auto 22px' }}>
-            @{username}'s predictions are locked before kickoff and archived forever.
-            EPL · UCL · ISL · Liga 1 · Ghana PL · NPFL. One record. One reputation.
+            Predict EPL · UCL · ISL · Liga 1 · Ghana PL before kickoff. Build your permanent record. Free.
           </p>
           <a href="/auth" style={{
             display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white',
@@ -739,11 +754,10 @@ export default function JournalClient({ username, profile, predictions, badges =
             fontSize: 14, fontWeight: 700,
             boxShadow: '0 0 24px rgba(46,158,94,0.25)',
           }}>
-            Build Your Own Football Record →
+            Start Your Record Free →
           </a>
           <p style={{ fontSize: 11, color: '#8895A3', marginTop: 10 }}>Free forever · No betting · No card required</p>
         </div>
-
       </div>
 
       {showRepCard && (
