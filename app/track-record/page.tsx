@@ -46,7 +46,7 @@ async function getByCompetition() {
     .gte('created_at', thirtyDaysAgo)
   if (!preds || preds.length === 0) return []
 
-  const matchIds = [...new Set(preds.map(p => p.match_id))]
+  const matchIds = Array.from(new Set(preds.map(p => p.match_id)))
   const { data: matches } = await supabase
     .from('matches')
     .select('id, competition')
