@@ -290,7 +290,9 @@ function TrackRecordStrip() {
     load();
   }, []);
 
-  if (accuracy === null) return null;
+  if (accuracy === null) return (
+    <div style={{ height: '41px', borderTop: '1px solid rgba(139,92,246,0.15)', borderBottom: '1px solid rgba(139,92,246,0.15)', backgroundColor: 'rgba(139,92,246,0.06)' }} />
+  );
   const aboveRandom = Math.round((accuracy - 33.3) * 10) / 10;
   const isPositive = aboveRandom > 0;
 
