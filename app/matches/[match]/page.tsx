@@ -115,8 +115,20 @@ export default async function MatchPage({ params }: Props) {
   const homePct = communityStats.total > 0 ? Math.round((communityStats.home / communityStats.total) * 100) : 0;
   const drawPct = communityStats.total > 0 ? Math.round((communityStats.draw / communityStats.total) * 100) : 0;
   const awayPct = communityStats.total > 0 ? Math.round((communityStats.away / communityStats.total) * 100) : 0;
-
-  return (
+  // Related Liga 1 matches for internal linking
+  let relatedMatches: { slug: string; home_team: string; away_team: string; kickoff: string | null }[] = [];
+  if (match.competition?.includes('Liga 1')) {
+    const { data: related } = await supabase
+      .from('matches')
+      .select('slug, home_team, away_team, kickoff')
+      .ilike('competition', '%Liga 1%')
+      .neq('slug', slug)
+      .in('status', ['upcoming', 'live'])
+      .order('kickoff', { ascending: true })
+      .limit(4);
+    relatedMatches = related || [];
+  }
+    return (
     <>
       {/* SERVER-RENDERED SEO CONTENT — visible to Google, hidden to users */}
       <div style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>
