@@ -161,6 +161,7 @@ export default async function TrackRecordPage() {
   ])
 
   const maxWeeklyPct = Math.max(...weekly.map(w => w.accuracy_pct), 60)
+  const aboveRandom = overall ? Math.round((overall.accuracy_pct - 33.3) * 10) / 10 : 0
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', color: 'white', fontFamily: 'Arial, sans-serif', overflowX: 'hidden' }}>
@@ -187,13 +188,27 @@ export default async function TrackRecordPage() {
         </div>
       </section>
 
+      {/* BASELINE CONTEXT BANNER */}
+      {overall && (
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 20px 0' }}>
+          <div style={{ backgroundColor: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>📊</span>
+            <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0, lineHeight: 1.6 }}>
+              <strong style={{ color: '#8B5CF6' }}>Context:</strong> Random guessing (picking home/draw/away equally) gives ~33.3% accuracy. Flipseer community is at{' '}
+              <strong style={{ color: '#2E9E5E' }}>{overall.accuracy_pct}%</strong> —{' '}
+              <strong style={{ color: '#2E9E5E' }}>+{aboveRandom}pp above random</strong>.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 20px' }}>
 
         {/* STAT GRID */}
         {overall && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: '10px', paddingTop: '32px' }}>
             {[
-              { label: 'Overall Accuracy', value: `${overall.accuracy_pct}%`, sub: `${overall.correct} correct of ${overall.total_processed}`, color: '#2E9E5E' },
+              { label: 'Overall Accuracy', value: `${overall.accuracy_pct}%`, sub: `${overall.correct} of ${overall.total_processed} · +${aboveRandom}pp vs random`, color: '#2E9E5E' },
               { label: 'Predictions Made', value: String(overall.total_processed), sub: 'last 30 days', color: '#8B5CF6' },
               { label: 'Avg Confidence', value: `${overall.avg_confidence}%`, sub: 'user-set confidence', color: '#F59E0B' },
               { label: 'Rep Points Awarded', value: String(overall.total_points_awarded), sub: 'total earned', color: '#8B5CF6' },
@@ -277,8 +292,8 @@ export default async function TrackRecordPage() {
         )}
 
         {/* FOOTNOTE */}
-        <div style={{ paddingTop: '24px', paddingBottom: '48px', marginTop: '32px', borderTop: '1px solid #1A3A1A', textAlign: 'center', fontSize: '11px', color: '#6B7280' }}>
-          Data updates after every processed match result. Accuracy = predictions with points earned &gt; 0 ÷ total processed predictions.{' '}
+        <div style={{ paddingTop: '24px', paddingBottom: '48px', marginTop: '32px', borderTop: '1px solid #1A3A1A', textAlign: 'center', fontSize: '11px', color: '#6B7280', lineHeight: 1.7 }}>
+          Data updates after every processed match result. · Accuracy = predictions with points earned &gt; 0 ÷ total processed predictions. · Random baseline (guessing home/draw/away equally) = 33.3%.{overall ? ` Flipseer community beats random by +${aboveRandom}pp.` : ''}{' '}
           <a href="/predict" style={{ color: '#8B5CF6', textDecoration: 'none' }}>Start predicting →</a>
         </div>
 
