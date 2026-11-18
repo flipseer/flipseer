@@ -1084,6 +1084,7 @@ export default function Home() {
               { href: '/football-reputation', label: 'Football Reputation' },
               { href: '/nations', label: 'Nation Battle' },
               { href: '/leaderboard', label: 'Leaderboard' },
+              { href: '/track-record', label: 'Track Record' },
               { href: '/privacy', label: 'Privacy Policy' },
               { href: '/terms', label: 'Terms of Service' },
             ].map(({ href, label }) => (
