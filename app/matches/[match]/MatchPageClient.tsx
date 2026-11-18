@@ -14,9 +14,10 @@ type Props = {
   match: any;
   predictions: any[];
   communityStats: { home: number; draw: number; away: number; total: number };
+  relatedMatches?: { slug: string; home_team: string; away_team: string; kickoff: string | null }[];
 };
 
-export default function MatchPageClient({ home, away, slug, match, predictions, communityStats }: Props) {
+export default function MatchPageClient({ home, away, slug, match, predictions, communityStats, relatedMatches = [] }: Props) {
   const [copied, setCopied] = useState(false);
   const [liveScore, setLiveScore] = useState<{ home: number; away: number } | null>(
     match?.status === 'live' || match?.status === 'locked' || match?.status === 'completed'
@@ -357,6 +358,40 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
             Flipseer is a free football prediction platform. No betting. No gambling. Predict exact scores, set your confidence, and build your permanent football reputation across EPL, Champions League, Liga 1, Ghana Premier League and more.
           </p>
         </div>
+
+        {/* MORE LIGA 1 PREDICTIONS */}
+        {relatedMatches.length > 0 && (
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '16px', margin: 0 }}>🇮🇩 More Liga 1 Predictions</h2>
+              <a href="/predict" style={{ fontSize: '12px', color: '#2E9E5E', textDecoration: 'none' }}>All matches →</a>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {relatedMatches.map((m) => (
+                <a
+                  key={m.slug}
+                  href={`/matches/${m.slug}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: '#0D2B14',
+                    border: '1px solid #1A3A1A',
+                    borderRadius: '10px',
+                    padding: '12px 16px',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                  }}
+                >
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>
+                    {m.home_team} vs {m.away_team}
+                  </span>
+                  <span style={{ fontSize: '11px', color: '#6B7280' }}>Predict →</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* CTA */}
         <div style={{ textAlign: 'center', backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '28px' }}>
