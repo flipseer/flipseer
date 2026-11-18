@@ -24,6 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/world-cup-2026-predictions`,           priority: 0.7, changeFrequency: 'weekly' },
     { url: `${base}/football-prediction-accuracy-tracker`, priority: 0.65, changeFrequency: 'monthly' },
     { url: `${base}/auth`,               priority: 0.6,  changeFrequency: 'monthly' },
+    { url: `${base}/track-record`, priority: 0.8, changeFrequency: 'daily' },
   ]
 
   // ── Match pages ───────────────────────────────────────────────────────────
