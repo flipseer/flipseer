@@ -342,6 +342,34 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </div>
         )}
 
+        {/* H2H LINK */}
+        <a
+          href={`/tools/h2h?a=${encodeURIComponent(home)}&b=${encodeURIComponent(away)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: '#0D2B14',
+            border: '1px solid #1A3A1A',
+            borderRadius: '14px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            textDecoration: 'none',
+          }}
+        >
+          <div>
+            <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+              📊 {home} vs {away} — all-time H2H record
+            </div>
+            <div style={{ color: '#6B7280', fontSize: '12px', marginTop: '2px' }}>
+              Win rates · last 5 results · shareable card
+            </div>
+          </div>
+          <span style={{ color: '#2E9E5E', fontSize: '13px', whiteSpace: 'nowrap', marginLeft: '12px' }}>View →</span>
+        </a>
+
         {/* SEO CONTENT */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
           <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', margin: '0 0 12px 0', color: '#2E9E5E' }}>
