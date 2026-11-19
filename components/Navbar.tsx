@@ -39,7 +39,6 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
   const isLeaguePage = LEAGUES.some(l => pathname === l.href);
-
   return (
     <>
       <style>{`
@@ -63,6 +62,7 @@ export default function Navbar() {
         .nav-link:hover { color: #ffffff !important; background-color: rgba(46,158,94,0.1) !important; }
         .leagues-dropdown { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #0A1A0C; border: 1px solid #1A7A4A; border-radius: 12px; padding: 8px; min-width: 260px; z-index: 200; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
         .league-item:hover { background-color: rgba(139,92,246,0.1) !important; }
+
       `}</style>
 
       <nav style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1A7A4A', backgroundColor: '#0A1A0C', position: 'sticky', top: 0, zIndex: 100, fontFamily: 'Arial, sans-serif' }}>
@@ -100,6 +100,7 @@ export default function Navbar() {
                       { href: '/results',     label: '📊 Results',      desc: 'Match scores & top predictors' },
                       { href: '/leaderboard', label: '🏅 Rankings',     desc: 'Global leaderboard' },
                       { href: '/nations',     label: '🌍 Nation Battle', desc: 'Country vs country' },
+                      { href: '/tools/h2h',   label: '⚔️ H2H Generator', desc: 'Win rates · shareable card' },
                     ].map(({ href, label, desc }) => (
                       <Link key={href} href={href} className="league-item" style={{ display: 'block', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', backgroundColor: isActive(href) ? 'rgba(46,158,94,0.1)' : 'transparent', transition: 'all 0.1s' }}>
                         <div style={{ fontSize: '13px', color: isActive(href) ? '#2E9E5E' : '#9CA3AF', fontWeight: isActive(href) ? 'bold' : 'normal' }}>{label}</div>
@@ -112,7 +113,7 @@ export default function Navbar() {
             );
           })()}
 
-          <Link href="/groups" className="nav-link" style={{ color: pathname.startsWith('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (pathname.startsWith('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: pathname.startsWith('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
+<Link href="/groups" className="nav-link" style={{ color: pathname.startsWith('/groups') ? '#2E9E5E' : '#9CA3AF', textDecoration: 'none', fontSize: '12px', padding: '5px 7px', borderRadius: '6px', border: '1px solid ' + (pathname.startsWith('/groups') ? '#1A7A4A' : 'transparent'), fontWeight: pathname.startsWith('/groups') ? 'bold' : 'normal', whiteSpace: 'nowrap', transition: 'all 0.15s ease' }}>
             👥 Groups
           </Link>
 
@@ -171,6 +172,10 @@ export default function Navbar() {
             <span style={{ fontSize: '10px', backgroundColor: '#F59E0B', color: 'black', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>LIVE</span>
           </a>
           <a href="/groups" style={mobileLink(isActive('/groups'))}>👥 Groups</a>
+          <a href="/tools/h2h" style={{ ...mobileLink(isActive('/tools/h2h')), color: isActive('/tools/h2h') ? '#2E9E5E' : '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>📊 H2H Card Generator</span>
+            <span style={{ fontSize: '9px', backgroundColor: 'rgba(46,158,94,0.2)', color: '#2E9E5E', padding: '2px 8px', borderRadius: '999px', fontWeight: 'bold' }}>NEW</span>
+          </a>
 
           {/* LEAGUES SECTION */}
           <div style={{ borderTop: '1px solid #1A3A1A', marginTop: '6px', paddingTop: '8px' }}>
