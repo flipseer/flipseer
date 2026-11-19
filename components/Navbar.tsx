@@ -11,12 +11,8 @@ const LEAGUES = [
   { href: '/premier-league', label: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27',                   badge: 'LIVE',  badgeColor: '#8B5CF6' },
   { href: '/ucl',            label: '⭐ UCL 2026/27',                      badge: 'OCT 13', badgeColor: '#A78BFA' },
   { href: '/ghana-premier-league', label: '🇬🇭 Ghana PL 2026/27',          badge: 'LIVE',  badgeColor: '#F59E0B' },
-  { href: '/indonesia',      label: '🇮🇩 Indonesian Super League 2026/27', badge: 'LIVE',  badgeColor: '#CE1126' },
-  { href: '/indian-super-league', label: '🇮🇳 ISL 2026/27',                badge: 'OCT',   badgeColor: '#FF6B35' },
-  { href: '/nigeria-premier-league', label: '🇳🇬 NPFL 2026/27',            badge: 'JAN',   badgeColor: '#008751' },
-  { href: '/afcon',          label: '🌍 AFCON 2027',                       badge: 'JUN 27', badgeColor: '#F59E0B' },
-  { href: '/asian-cup-2027', label: '🌏 Asian Cup 2027',                   badge: 'DEC 27', badgeColor: '#0EA5E9' },
-  { href: '/world-cup-2026', label: '🏆 World Cup 2026',                   badge: 'DONE',  badgeColor: '#6B7280' },
+  { href: '/indonesia',      label: '🇮🇩 Liga 1 2026/27',                  badge: 'LIVE',  badgeColor: '#CE1126' },
+  { href: '/indian-super-league', label: '🇮🇳 ISL 2026/27',                badge: 'LIVE',  badgeColor: '#FF6B35' },
 ]
 
 export default function Navbar() {
