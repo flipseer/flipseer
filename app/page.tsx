@@ -463,7 +463,6 @@ function UpcomingMatches() {
     const fetchMatches = async () => {
       const { data } = await supabase
         .from('matches')
-        .select('id, home_team, away_team, kickoff, status, league, competition')
         .select('id, home_team, away_team, home_team_logo, away_team_logo, kickoff, status, league, competition')
         .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
         .in('status', ['upcoming', 'live'])
@@ -563,15 +562,26 @@ function UpcomingMatches() {
                     <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
                   )}
                   <div suppressHydrationWarning style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
-      <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-    <span ...>{match.home_team}</span>
-    <span ...>vs</span>
-    <span ...>{match.away_team}</span>
-  </div>
-  ...
-</div>
-        <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                    <div style={{ flexShrink: 0, width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {match.home_team_logo ? (
+                        <img src={match.home_team_logo} alt={match.home_team} width={28} height={28} style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      ) : <span style={{ fontSize: '18px' }}>⚽</span>}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', minWidth: 0 }}>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.home_team}</span>
+                      <span style={{ fontSize: '10px', color: '#8895A3', fontWeight: 'bold' }}>vs</span>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.away_team}</span>
+                    </div>
+                    <div style={{ flexShrink: 0, width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {match.away_team_logo ? (
+                        <img src={match.away_team_logo} alt={match.away_team} width={28} height={28} style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      ) : <span style={{ fontSize: '18px' }}>⚽</span>}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                   <button
