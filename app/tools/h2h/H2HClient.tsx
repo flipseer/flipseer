@@ -1,7 +1,7 @@
 'use client'
 // app/tools/h2h/H2HClient.tsx
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface Team {
   name: string
@@ -25,6 +25,164 @@ interface H2HResult {
   imageUrl: string
 }
 
+// Liga 1 / ISL teams shown at top of dropdown
+const PRIORITY_TEAMS = [
+  'Persib Bandung', 'Persija Jakarta', 'Persebaya Surabaya', 'Arema FC',
+  'PSS Sleman', 'Bali United', 'Borneo FC', 'PSIS Semarang',
+  'Dewa United', 'Madura United', 'PSM Makassar', 'Persik Kediri',
+]
+
+function SearchableSelect({
+  teams, value, onChange, placeholder,
+}: {
+  teams: Team[]
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+}) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  // When value is set externally (URL params), show name in input
+  const displayValue = value || ''
+
+  const priorityTeams = teams.filter(t => PRIORITY_TEAMS.includes(t.name))
+  const otherTeams = teams.filter(t => !PRIORITY_TEAMS.includes(t.name))
+
+  const filtered = (list: Team[]) =>
+    query
+      ? list.filter(t => t.name.toLowerCase().includes(query.toLowerCase()))
+      : list
+
+  const filteredPriority = filtered(priorityTeams)
+  const filteredOther = filtered(otherTeams)
+  const hasResults = filteredPriority.length > 0 || filteredOther.length > 0
+
+  function select(name: string) {
+    onChange(name)
+    setQuery('')
+    setOpen(false)
+  }
+
+  const optionStyle = (selected: boolean): React.CSSProperties => ({
+    padding: '10px 14px',
+    cursor: 'pointer',
+    backgroundColor: selected ? 'rgba(46,158,94,0.15)' : 'transparent',
+    color: selected ? '#2E9E5E' : '#F0FFF4',
+    fontSize: '14px',
+    borderRadius: '6px',
+  })
+
+  return (
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          width: '100%',
+          padding: '14px 16px',
+          backgroundColor: '#0D2B14',
+          border: `1px solid ${open ? '#2E9E5E' : '#1A4A1A'}`,
+          borderRadius: '12px',
+          color: displayValue ? '#F0FFF4' : '#6B7280',
+          fontSize: '15px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          userSelect: 'none',
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {displayValue || placeholder}
+        </span>
+        <span style={{ color: '#6B7280', marginLeft: '8px', flexShrink: 0 }}>▾</span>
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 4px)',
+          left: 0, right: 0,
+          backgroundColor: '#0D2B14',
+          border: '1px solid #1A4A1A',
+          borderRadius: '12px',
+          zIndex: 50,
+          maxHeight: '320px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        }}>
+          <div style={{ padding: '8px 8px 4px' }}>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search teams…"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                backgroundColor: '#071408',
+                border: '1px solid #1A4A1A',
+                borderRadius: '8px',
+                color: '#F0FFF4',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ overflowY: 'auto', padding: '4px 8px 8px' }}>
+            {!hasResults && (
+              <div style={{ padding: '12px', color: '#6B7280', fontSize: '13px', textAlign: 'center' }}>No teams found</div>
+            )}
+            {filteredPriority.length > 0 && (
+              <>
+                {!query && <div style={{ fontSize: '10px', color: '#2E9E5E', letterSpacing: '2px', padding: '6px 6px 4px', fontWeight: 700 }}>LIGA 1 · ISL</div>}
+                {filteredPriority.map(t => (
+                  <div
+                    key={t.name}
+                    onMouseDown={() => select(t.name)}
+                    style={optionStyle(value === t.name)}
+                  >
+                    {t.name}
+                  </div>
+                ))}
+              </>
+            )}
+            {filteredOther.length > 0 && (
+              <>
+                {filteredPriority.length > 0 && !query && (
+                  <div style={{ fontSize: '10px', color: '#6B7280', letterSpacing: '2px', padding: '10px 6px 4px', fontWeight: 700 }}>ALL TEAMS</div>
+                )}
+                {filteredOther.map(t => (
+                  <div
+                    key={t.name}
+                    onMouseDown={() => select(t.name)}
+                    style={optionStyle(value === t.name)}
+                  >
+                    {t.name}
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function H2HClient({ teams }: { teams: Team[] }) {
   const [teamA, setTeamA] = useState('')
   const [teamB, setTeamB] = useState('')
@@ -32,19 +190,25 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
   const [result, setResult] = useState<H2HResult | null>(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [autoGenerated, setAutoGenerated] = useState(false)
 
-  const selectStyle = {
-    width: '100%',
-    padding: '14px 16px',
-    backgroundColor: '#0D2B14',
-    border: '1px solid #1A4A1A',
-    borderRadius: '12px',
-    color: '#F0FFF4',
-    fontSize: '15px',
-    appearance: 'none' as const,
-    outline: 'none',
-    cursor: 'pointer',
-  }
+  // Read URL params on mount — pre-select teams and auto-generate
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const a = params.get('a')
+    const b = params.get('b')
+    if (a) setTeamA(decodeURIComponent(a))
+    if (b) setTeamB(decodeURIComponent(b))
+    if (a && b && a !== b) setAutoGenerated(true)
+  }, [])
+
+  // Auto-generate when both teams are set from URL
+  useEffect(() => {
+    if (autoGenerated && teamA && teamB) {
+      generate()
+      setAutoGenerated(false)
+    }
+  }, [autoGenerated, teamA, teamB])
 
   async function generate() {
     if (!teamA || !teamB) { setError('Select both teams'); return }
@@ -57,6 +221,11 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
       if (!res.ok) throw new Error('Failed to fetch H2H data')
       const data = await res.json()
       setResult(data)
+      // Update URL without page reload
+      const url = new URL(window.location.href)
+      url.searchParams.set('a', teamA)
+      url.searchParams.set('b', teamB)
+      window.history.replaceState({}, '', url.toString())
     } catch (e) {
       setError('Could not load H2H data. Try again.')
     } finally {
@@ -72,35 +241,25 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
     })
   }
 
+  const shareBase = typeof window !== 'undefined'
+    ? `${window.location.origin}/tools/h2h?a=${encodeURIComponent(teamA)}&b=${encodeURIComponent(teamB)}`
+    : ''
+
   const whatsappUrl = result
-    ? `https://wa.me/?text=${encodeURIComponent(`${teamA} vs ${teamB} H2H stats — ${result.teamA.wins}W ${result.draws}D ${result.teamB.wins}W\n\nSee the full card & make your prediction: ${window.location.origin}/tools/h2h?a=${encodeURIComponent(teamA)}&b=${encodeURIComponent(teamB)}`)}`
+    ? `https://wa.me/?text=${encodeURIComponent(`${teamA} vs ${teamB} H2H:\n${result.teamA.wins}W · ${result.draws}D · ${result.teamB.wins}W\n\nSee the full card & predict free: ${shareBase}`)}`
     : ''
 
   const twitterUrl = result
-    ? `https://x.com/intent/tweet?text=${encodeURIComponent(`${teamA} vs ${teamB} H2H:\n${teamA}: ${result.teamA.wins}W | Draws: ${result.draws} | ${teamB}: ${result.teamB.wins}W\n\nMake your prediction free 👇`)}&url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/tools/h2h?a=${encodeURIComponent(teamA)}&b=${encodeURIComponent(teamB)}`)}`
+    ? `https://x.com/intent/tweet?text=${encodeURIComponent(`${teamA} vs ${teamB} H2H:\n${result.teamA.wins}W · ${result.draws}D · ${result.teamB.wins}L\n\nFull card + predict free 👇`)}&url=${encodeURIComponent(shareBase)}`
     : ''
 
   return (
     <div>
       {/* Team selectors */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '12px', alignItems: 'center', marginBottom: '20px' }}>
-        <div style={{ position: 'relative' }}>
-          <select value={teamA} onChange={e => setTeamA(e.target.value)} style={selectStyle}>
-            <option value=''>Select Team A</option>
-            {teams.map(t => (
-              <option key={t.name} value={t.name}>{t.name}</option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect teams={teams} value={teamA} onChange={setTeamA} placeholder="Select Team A" />
         <div style={{ color: '#2E9E5E', fontWeight: 900, fontSize: '20px', textAlign: 'center' }}>VS</div>
-        <div style={{ position: 'relative' }}>
-          <select value={teamB} onChange={e => setTeamB(e.target.value)} style={selectStyle}>
-            <option value=''>Select Team B</option>
-            {teams.map(t => (
-              <option key={t.name} value={t.name}>{t.name}</option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect teams={teams} value={teamB} onChange={setTeamB} placeholder="Select Team B" />
       </div>
 
       {error && (
@@ -138,7 +297,6 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
             overflow: 'hidden',
             marginBottom: '16px',
           }}>
-            {/* Top bar */}
             <div style={{ height: '4px', background: 'linear-gradient(90deg, #2E9E5E, #8B5CF6)' }} />
 
             <div style={{ padding: '28px 24px' }}>
@@ -155,7 +313,7 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
                   <div style={{ fontSize: '28px', fontWeight: 900, color: '#2E9E5E' }}>
                     {result.teamA.wins} – {result.draws} – {result.teamB.wins}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>W · D · W</div>
+                  <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>W · D · L</div>
                 </div>
                 <div style={{ textAlign: 'center', flex: 1 }}>
                   {result.teamB.logo && (
@@ -223,21 +381,7 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
               href={whatsappUrl}
               target='_blank'
               rel='noopener noreferrer'
-              style={{
-                flex: 1,
-                minWidth: '140px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                backgroundColor: '#25D366',
-                color: '#fff',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '14px',
-              }}
+              style={{ flex: 1, minWidth: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#25D366', color: '#fff', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontWeight: 700, fontSize: '14px' }}
             >
               📱 WhatsApp
             </a>
@@ -245,43 +389,13 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
               href={twitterUrl}
               target='_blank'
               rel='noopener noreferrer'
-              style={{
-                flex: 1,
-                minWidth: '140px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                backgroundColor: '#000',
-                border: '1px solid #333',
-                color: '#fff',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '14px',
-              }}
+              style={{ flex: 1, minWidth: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: '#000', border: '1px solid #333', color: '#fff', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontWeight: 700, fontSize: '14px' }}
             >
               𝕏 Post
             </a>
             <button
               onClick={copyLink}
-              style={{
-                flex: 1,
-                minWidth: '140px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                backgroundColor: copied ? '#1A4A1A' : '#0D2B14',
-                border: '1px solid #1A4A1A',
-                color: copied ? '#2E9E5E' : '#9CA3AF',
-                padding: '12px 16px',
-                borderRadius: '10px',
-                fontWeight: 700,
-                fontSize: '14px',
-                cursor: 'pointer',
-              }}
+              style={{ flex: 1, minWidth: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', backgroundColor: copied ? '#1A4A1A' : '#0D2B14', border: '1px solid #1A4A1A', color: copied ? '#2E9E5E' : '#9CA3AF', padding: '12px 16px', borderRadius: '10px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
             >
               {copied ? '✓ Copied' : '🔗 Copy link'}
             </button>
@@ -293,14 +407,7 @@ export default function H2HClient({ teams }: { teams: Team[] }) {
               href={result.imageUrl}
               target='_blank'
               rel='noopener noreferrer'
-              style={{
-                display: 'block',
-                textAlign: 'center',
-                color: '#6B7280',
-                fontSize: '12px',
-                textDecoration: 'underline',
-                padding: '8px',
-              }}
+              style={{ display: 'block', textAlign: 'center', color: '#6B7280', fontSize: '12px', textDecoration: 'underline', padding: '8px' }}
             >
               Download card image (1080×1350) →
             </a>
