@@ -4,6 +4,20 @@ import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
+async function fetchLogoAsDataUrl(url: string): Promise<string | null> {
+  if (!url) return null
+  try {
+    const res = await fetch(url, { next: { revalidate: 86400 } })
+    if (!res.ok) return null
+    const buf = await res.arrayBuffer()
+    const contentType = res.headers.get('content-type') || 'image/png'
+    const b64 = Buffer.from(buf).toString('base64')
+    return `data:${contentType};base64,${b64}`
+  } catch {
+    return null
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const teamA = searchParams.get('a') || 'Team A'
@@ -15,6 +29,12 @@ export async function GET(req: NextRequest) {
   const logoB = searchParams.get('bl') || ''
 
   const meetings = winsA + winsB + draws
+
+  // Pre-fetch logos so ImageResponse doesn't need to reach out at render time
+  const [logoAData, logoBData] = await Promise.all([
+    fetchLogoAsDataUrl(logoA),
+    fetchLogoAsDataUrl(logoB),
+  ])
 
   return new ImageResponse(
     (
@@ -46,8 +66,8 @@ export async function GET(req: NextRequest) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '32px', width: '100%', padding: '0 60px', flex: 1 }}>
           {/* Team A */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-            {logoA ? (
-              <img src={logoA} width={160} height={160} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+            {logoAData ? (
+              <img src={logoAData} width={160} height={160} style={{ objectFit: 'contain', marginBottom: '20px' }} />
             ) : (
               <div style={{ width: '160px', height: '160px', backgroundColor: 'rgba(46,158,94,0.15)', borderRadius: '50%', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ fontSize: '60px', display: 'flex' }}>⚽</div>
@@ -79,8 +99,8 @@ export async function GET(req: NextRequest) {
 
           {/* Team B */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-            {logoB ? (
-              <img src={logoB} width={160} height={160} style={{ objectFit: 'contain', marginBottom: '20px' }} />
+            {logoBData ? (
+              <img src={logoBData} width={160} height={160} style={{ objectFit: 'contain', marginBottom: '20px' }} />
             ) : (
               <div style={{ width: '160px', height: '160px', backgroundColor: 'rgba(139,92,246,0.15)', borderRadius: '50%', marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ fontSize: '60px', display: 'flex' }}>⚽</div>
