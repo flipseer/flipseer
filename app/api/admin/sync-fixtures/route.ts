@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     // Get existing matches for this competition
     const { data: existing } = await supabase
       .from('matches')
-      .select('id, api_id, kickoff, status')
+      .select('id, api_id, kickoff, status, home_team_logo, away_team_logo')
       .eq('competition', competition)
 
     const existingByApiId = new Map(
@@ -73,6 +73,8 @@ export async function GET(req: NextRequest) {
       const apiId = String(f.fixture?.id)
       const homeTeam = f.teams?.home?.name || 'TBD'
       const awayTeam = f.teams?.away?.name || 'TBD'
+      const homeTeamLogo = f.teams?.home?.logo || null
+      const awayTeamLogo = f.teams?.away?.logo || null
       const kickoffUtc = f.fixture?.date
         ? new Date(f.fixture.date).toISOString().replace('T', ' ').replace('Z', '')
         : null
@@ -103,15 +105,20 @@ export async function GET(req: NextRequest) {
         continue
       }
 
-      const existing = existingByApiId.get(apiId)
+      const existingMatch = existingByApiId.get(apiId)
 
-      if (existing) {
-        // Update kickoff time if changed + status if completed
-        const needsUpdate = existing.kickoff !== kickoffUtc ||
-          (dbStatus === 'completed' && existing.status !== 'completed')
+      if (existingMatch) {
+        // Update kickoff time if changed + status if completed + logos if missing
+        const needsUpdate = existingMatch.kickoff !== kickoffUtc ||
+          (dbStatus === 'completed' && existingMatch.status !== 'completed') ||
+          (!existingMatch.home_team_logo && homeTeamLogo) ||
+          (!existingMatch.away_team_logo && awayTeamLogo)
 
         if (needsUpdate) {
           const updateData: any = { kickoff: kickoffUtc }
+          // Always backfill logos if missing
+          if (!existingMatch.home_team_logo && homeTeamLogo) updateData.home_team_logo = homeTeamLogo
+          if (!existingMatch.away_team_logo && awayTeamLogo) updateData.away_team_logo = awayTeamLogo
           if (dbStatus === 'completed') {
             updateData.status = 'completed'
             updateData.home_score = f.goals?.home ?? null
@@ -139,6 +146,8 @@ export async function GET(req: NextRequest) {
             api_id: parseInt(apiId),
             home_team: homeTeam,
             away_team: awayTeam,
+            home_team_logo: homeTeamLogo,
+            away_team_logo: awayTeamLogo,
             kickoff: kickoffUtc,
             status: dbStatus,
             league: leagueName,
