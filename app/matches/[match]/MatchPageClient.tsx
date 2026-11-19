@@ -33,7 +33,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
       ? new Date() > new Date(match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
       : false;
 
-    // If kickoff has passed but page was cached as upcoming, fetch real status from DB
     if (kickoffPassed && match?.status === 'upcoming') {
       fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
         .then(r => r.json())
@@ -49,7 +48,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         .catch(() => {});
     }
 
-    // Don't poll if already completed — Supabase data is authoritative
     if (match?.status === 'completed' || match?.status === 'finished') return;
     if (liveStatus === 'completed') return;
     if (match?.status !== 'live' && match?.status !== 'locked' && !kickoffPassed) return;
@@ -70,7 +68,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         if (found) {
           const newStatus = found.status === 'completed' ? 'completed' : 'live';
           setLiveStatus(newStatus);
-          // Only update score from API if match is not already completed in Supabase
           if (match?.status !== 'completed' && match?.status !== 'finished') {
             setLiveScore({ home: found.home_score ?? 0, away: found.away_score ?? 0 });
           }
@@ -78,7 +75,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
             new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
           );
         } else {
-          // Match not in live-scores — may have just finished. Fetch final score from Supabase.
           fetch(`/api/match-status?slug=${slug}`, { cache: 'no-store' })
             .then(r => r.json())
             .then(data => {
@@ -331,7 +327,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
                   <div key={i} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '18px' }}>{flag}</span>
                     <div style={{ flex: 1 }}>
-                      <a href={`/u/${p.profiles?.username}?ref=match_page`} style={{ fontSize: '13px', fontWeight: 'bold', color: '#2E9E5E', textDecoration: 'none' }}>
+                      <a href={`/u/${p.profiles?.username}`} style={{ fontSize: '13px', fontWeight: 'bold', color: '#2E9E5E', textDecoration: 'none' }}>
                         @{p.profiles?.username}
                       </a>
                       <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
