@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
         {/* Win bar */}
         <div style={{ width: '100%', padding: '0 60px', marginBottom: '48px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6B7280', display: 'flex' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#6B7280' }}>
             <span style={{ display: 'flex' }}>{meetings > 0 ? Math.round((winsA / meetings) * 100) : 0}% win rate</span>
             <span style={{ display: 'flex' }}>{meetings > 0 ? Math.round((winsB / meetings) * 100) : 0}% win rate</span>
           </div>
