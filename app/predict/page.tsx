@@ -12,6 +12,8 @@ type Match = {
   api_id: number;
   home_team: string;
   away_team: string;
+  home_team_logo: string | null;
+  away_team_logo: string | null;
   kickoff: string;
   status: string;
   league: string;
@@ -98,6 +100,21 @@ function buildShareUrl({ match, pred, username, country }: {
   return 'https://flipseer.com/predict/share?' + params.toString();
 }
 
+// ── Team name + logo row ──
+function TeamRow({ name, logo, align }: { name: string; logo: string | null; align: 'left' | 'right' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexDirection: align === 'right' ? 'row-reverse' : 'row' }}>
+      <div style={{ width: '28px', height: '28px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {logo
+          ? <img src={logo} alt={name} width={28} height={28} style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          : <span style={{ fontSize: '18px' }}>⚽</span>
+        }
+      </div>
+      <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{name}</span>
+    </div>
+  );
+}
+
 function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | undefined }) {
   const { locked, label: timeLeft } = useCountdown(match.kickoff);
   const kickoffDate = formatKickoffLocal(match.kickoff);
@@ -116,9 +133,9 @@ function GuestMatchCard({ match, comm }: { match: Match; comm: CommunityStats | 
         )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.home_team}</span>
+        <TeamRow name={match.home_team} logo={match.home_team_logo} align="left" />
         <span style={{ fontSize: '13px', color: '#6B7280' }}>vs</span>
-        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.away_team}</span>
+        <TeamRow name={match.away_team} logo={match.away_team_logo} align="right" />
       </div>
       {comm && comm.total > 0 && (
         <div style={{ marginBottom: '16px' }}>
@@ -156,7 +173,6 @@ function ComingSoon({ league }: { league: typeof LEAGUES[0] }) {
   const launch = league.key === 'ISL 2026/27' ? 'October 10, 2026'
     : league.key === 'NPFL 2026/27' ? 'January 2027'
     : 'Coming soon';
-
 
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px' }}>
@@ -223,9 +239,9 @@ function MatchCard({
         </div>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.home_team}</span>
+        <TeamRow name={match.home_team} logo={match.home_team_logo} align="left" />
         <span style={{ fontSize: '13px', color: '#6B7280' }}>vs</span>
-        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>{match.away_team}</span>
+        <TeamRow name={match.away_team} logo={match.away_team_logo} align="right" />
       </div>
       {comm && comm.total > 0 && (
         <div style={{ marginBottom: '16px' }}>
@@ -383,13 +399,11 @@ export default function Predict() {
   const DAILY_LIMIT = 40;
 
   useEffect(() => {
-    // Fire signup event once for new users — prevents duplicate fires on re-render
     if (!signupTracked.current) {
       const params = new URLSearchParams(window.location.search);
       if (params.get('new_user') === '1') {
         signupTracked.current = true;
         trackSignup('email');
-        // Clean URL without reload
         const cleanUrl = window.location.pathname + '?welcome=1';
         window.history.replaceState({}, '', cleanUrl);
       }
@@ -403,7 +417,7 @@ export default function Predict() {
       setMatchesLoading(true);
       const [matchRes, commRes] = await Promise.all([
         supabase.from('matches')
-          .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
+          .select('id, api_id, home_team, away_team, home_team_logo, away_team_logo, kickoff, status, league, competition')
           .in('status', ['upcoming'])
           .eq('competition', 'EPL 2026/27')
           .order('kickoff', { ascending: true }),
@@ -462,7 +476,7 @@ export default function Predict() {
     if (!league?.active) return;
     setMatchesLoading(true);
     const { data } = await supabase.from('matches')
-      .select('id, api_id, home_team, away_team, kickoff, status, league, competition')
+      .select('id, api_id, home_team, away_team, home_team_logo, away_team_logo, kickoff, status, league, competition')
       .in('status', ['upcoming'])
       .eq('competition', leagueKey)
       .order('kickoff', { ascending: true });
@@ -513,7 +527,6 @@ export default function Predict() {
         setLeagueUsed(prev => ({ ...prev, [activeLeague]: (prev[activeLeague] || 0) + 1 }));
         const totalPreds = (lifetimePredictionCount || 0) + 1;
         setLifetimePredictionCount(totalPreds);
-        // Track GA4 events
         const matchData = matches.find((m: any) => m.id === matchId);
         trackPredictionCreated({
           competition: activeLeague,
@@ -524,7 +537,6 @@ export default function Predict() {
         if (totalPreds > 1) {
           trackRepeatPrediction({});
         }
-        // Show league join prompt after very first prediction
         if (totalPreds === 1) {
           setTimeout(() => setShowLeaguePrompt(true), 1500);
         }
