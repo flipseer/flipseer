@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import dynamic_import from 'next/dynamic'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
   },
 }
 
+const LeaderboardClientWrapper = dynamic_import(() => import('./LeaderboardClient'), { ssr: false })
+const AllTimeRepTickerWrapper = dynamic_import(() => import('./AllTimeRepTicker'), { ssr: false })
+
 export default function LeaderboardPage() {
   return (
     <>
@@ -22,11 +26,8 @@ export default function LeaderboardPage() {
         <h1>Football Prediction Leaderboard — EPL, UCL, Liga 1, Ghana PL | Flipseer</h1>
         <p>Top football predictors competing across EPL 2026/27, UCL 2026/27, Liga 1 Indonesia and Ghana Premier League on Flipseer. Free prediction platform. No betting. Build your permanent Football Reputation.</p>
       </div>
+      <AllTimeRepTickerWrapper />
       <LeaderboardClientWrapper />
     </>
   )
 }
-
-// Dynamically import the client component to avoid SSR issues
-import dynamic_import from 'next/dynamic'
-const LeaderboardClientWrapper = dynamic_import(() => import('./LeaderboardClient'), { ssr: false })
