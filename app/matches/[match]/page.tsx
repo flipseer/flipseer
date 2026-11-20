@@ -113,6 +113,19 @@ export default async function MatchPage({ params }: Props) {
     communityStats.total++;
   });
 
+  // Fetch last 5 H2H results from matches table (completed only)
+  let h2hMatches: any[] = [];
+  const { data: h2hData } = await supabase
+    .from('matches')
+    .select('home_team, away_team, home_score, away_score, kickoff, home_team_logo, away_team_logo')
+    .eq('status', 'completed')
+    .or(
+      `and(home_team.eq.${home},away_team.eq.${away}),and(home_team.eq.${away},away_team.eq.${home})`
+    )
+    .order('kickoff', { ascending: false })
+    .limit(5);
+  h2hMatches = h2hData || [];
+
   // Related Liga 1 matches for internal linking
   let relatedMatches: { slug: string; home_team: string; away_team: string; kickoff: string | null }[] = [];
   if (match.competition?.includes('Liga 1')) {
@@ -135,6 +148,7 @@ export default async function MatchPage({ params }: Props) {
       match={match}
       predictions={predictions}
       communityStats={communityStats}
+      h2hMatches={h2hMatches}
       relatedMatches={relatedMatches}
     />
   );
