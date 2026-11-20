@@ -505,7 +505,7 @@ function UpcomingMatches() {
     const fetchMatches = async () => {
       const { data } = await supabase
         .from('matches')
-        .select('id, home_team, away_team, kickoff, status, league, competition')
+        .select('id, home_team, away_team, kickoff, status, league, competition, home_team_logo, away_team_logo')
         .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
@@ -590,39 +590,58 @@ function UpcomingMatches() {
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
+            const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             return (
-              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
-                <div style={{ minWidth: '80px', textAlign: 'center', flexShrink: 0 }}>
-                  {live ? (
-                    <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px' }}>LIVE</span>
-                  ) : countdown ? (
-                    <span style={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8B5CF6', fontSize: '11px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px', border: '1px solid #8B5CF6' }}>{countdown}</span>
-                  ) : (
-                    <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
-                  )}
-                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
-                </div>
-                <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
-                    <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
-                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
+              <a key={match.id} href={`/matches/${slug}`} style={{ textDecoration: 'none', display: 'block' }}>
+                <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '12px 14px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
+                  {/* Row 1: teams + logos */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+                    {/* Home */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
+                      {match.home_team_logo
+                        ? <img src={match.home_team_logo} alt={match.home_team} width={22} height={22} style={{ objectFit: 'contain', flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        : <span style={{ fontSize: '14px', flexShrink: 0 }}>⚽</span>
+                      }
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                    </div>
+                    {/* vs */}
+                    <span style={{ fontSize: '10px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0, padding: '0 4px' }}>vs</span>
+                    {/* Away */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{match.away_team}</span>
+                      {match.away_team_logo
+                        ? <img src={match.away_team_logo} alt={match.away_team} width={22} height={22} style={{ objectFit: 'contain', flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        : <span style={{ fontSize: '14px', flexShrink: 0 }}>⚽</span>
+                      }
+                    </div>
                   </div>
-                  <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
+                  {/* Row 2: competition + time + button */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                      <span style={{ fontSize: '10px', color: '#6B7280' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</span>
+                      <span style={{ fontSize: '10px', color: '#4B5563' }}>·</span>
+                      <span style={{ fontSize: '10px', color: '#9CA3AF' }}>{formatKickoff(match.kickoff)}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                      {live ? (
+                        <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '9px', fontWeight: 'bold', padding: '2px 7px', borderRadius: '999px' }}>LIVE</span>
+                      ) : countdown ? (
+                        <span style={{ backgroundColor: 'rgba(139,92,246,0.15)', color: '#8B5CF6', fontSize: '10px', fontWeight: 'bold', padding: '2px 7px', borderRadius: '999px', border: '1px solid #8B5CF640' }}>{countdown}</span>
+                      ) : null}
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleShare(match); }}
+                        title="Share"
+                        style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '6px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        {copied === match.id ? '✓' : '📤'}
+                      </button>
+                      <span style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '5px 12px', borderRadius: '7px', fontSize: '12px', fontWeight: 'bold' }}>
+                        {kickoffPast ? 'Locked' : 'Predict →'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                  <button
-                    onClick={() => handleShare(match)}
-                    title="Share this match"
-                    style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                  >
-                    {copied === match.id ? '✓' : '📤'}
-                  </button>
-                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                    {kickoffPast ? 'Locked' : 'Predict →'}
-                  </a>
-                </div>
-              </div>
+              </a>
             );
           })}
         </div>
