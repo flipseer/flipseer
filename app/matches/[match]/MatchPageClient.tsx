@@ -7,6 +7,16 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   'US': '🇺🇸', 'MX': '🇲🇽', 'JP': '🇯🇵', 'MA': '🇲🇦', 'GH': '🇬🇭', 'TR': '🇹🇷',
 };
 
+type H2HMatch = {
+  home_team: string;
+  away_team: string;
+  home_score: number | null;
+  away_score: number | null;
+  kickoff: string | null;
+  home_team_logo: string | null;
+  away_team_logo: string | null;
+};
+
 type Props = {
   home: string;
   away: string;
@@ -14,10 +24,25 @@ type Props = {
   match: any;
   predictions: any[];
   communityStats: { home: number; draw: number; away: number; total: number };
+  h2hMatches?: H2HMatch[];
   relatedMatches?: { slug: string; home_team: string; away_team: string; kickoff: string | null }[];
 };
 
-export default function MatchPageClient({ home, away, slug, match, predictions, communityStats, relatedMatches = [] }: Props) {
+function TeamLogo({ logo, name, size = 48 }: { logo: string | null; name: string; size?: number }) {
+  if (!logo) return null;
+  return (
+    <img
+      src={logo}
+      alt={name}
+      width={size}
+      height={size}
+      style={{ objectFit: 'contain', flexShrink: 0 }}
+      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+    />
+  );
+}
+
+export default function MatchPageClient({ home, away, slug, match, predictions, communityStats, h2hMatches = [], relatedMatches = [] }: Props) {
   const [copied, setCopied] = useState(false);
   const [liveScore, setLiveScore] = useState<{ home: number; away: number } | null>(
     match?.status === 'live' || match?.status === 'locked' || match?.status === 'completed'
@@ -129,6 +154,12 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
     });
   };
 
+  const formatH2HDate = (kickoff: string | null) => {
+    if (!kickoff) return '';
+    const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
+    return new Date(utc).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
+  };
+
   const getEventIcon = (e: any) => {
     if (e.type === 'Goal') {
       if (e.detail === 'Own Goal') return '⚽🔴';
@@ -144,6 +175,21 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
     return '•';
   };
 
+  // H2H summary stats
+  let homeWins = 0, draws = 0, awayWins = 0;
+  h2hMatches.forEach(m => {
+    if (m.home_score === null || m.away_score === null) return;
+    const homeIsHome = m.home_team === home;
+    const homeGoals = homeIsHome ? m.home_score : m.away_score;
+    const awayGoals = homeIsHome ? m.away_score : m.home_score;
+    if (homeGoals > awayGoals) homeWins++;
+    else if (homeGoals < awayGoals) awayWins++;
+    else draws++;
+  });
+
+  const homeLogo = match?.home_team_logo || null;
+  const awayLogo = match?.away_team_logo || null;
+
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', paddingBottom: '60px' }}>
 
@@ -154,7 +200,17 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'nowrap' }}>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'right', flex: 1, minWidth: '80px' }}>{home}</h2>
+          {/* Home team */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', minWidth: '80px' }}>
+            {homeLogo && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <TeamLogo logo={homeLogo} name={home} size={48} />
+              </div>
+            )}
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'right' }}>{home}</h2>
+          </div>
+
+          {/* Score / vs */}
           <div style={{ textAlign: 'center', flexShrink: 0 }}>
             {isCompleted ? (
               <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '10px', padding: '8px 16px' }}>
@@ -180,7 +236,16 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
               <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px', whiteSpace: 'nowrap' }}>{formatKickoff(match.kickoff)}</div>
             )}
           </div>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'left', flex: 1, minWidth: '80px' }}>{away}</h2>
+
+          {/* Away team */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px', minWidth: '80px' }}>
+            {awayLogo && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <TeamLogo logo={awayLogo} name={away} size={48} />
+              </div>
+            )}
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(14px, 3.5vw, 36px)', margin: 0, textAlign: 'left' }}>{away}</h2>
+          </div>
         </div>
 
         <div style={{ marginBottom: '20px' }}>
@@ -342,33 +407,137 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           </div>
         )}
 
-        {/* H2H LINK */}
-        <a
-          href={`/tools/h2h?a=${encodeURIComponent(home)}&b=${encodeURIComponent(away)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: '#0D2B14',
-            border: '1px solid #1A3A1A',
-            borderRadius: '14px',
-            padding: '16px 20px',
-            marginBottom: '24px',
-            textDecoration: 'none',
-          }}
-        >
-          <div>
-            <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
-              📊 {home} vs {away} — all-time H2H record
+        {/* INLINE H2H SUMMARY */}
+        {h2hMatches.length > 0 && (
+          <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', margin: 0 }}>📊 Head to Head</h2>
+              <a
+                href={`/tools/h2h?a=${encodeURIComponent(home)}&b=${encodeURIComponent(away)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '12px', color: '#2E9E5E', textDecoration: 'none' }}
+              >
+                Full card →
+              </a>
             </div>
-            <div style={{ color: '#6B7280', fontSize: '12px', marginTop: '2px' }}>
-              Win rates · last 5 results · shareable card
+
+            {/* W-D-L summary row */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+              <div style={{ flex: 1, textAlign: 'center', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '10px 4px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2E9E5E' }}>{homeWins}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>{home.split(' ')[0]} W</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'center', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '10px 4px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#9CA3AF' }}>{draws}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>Draws</div>
+              </div>
+              <div style={{ flex: 1, textAlign: 'center', backgroundColor: '#0D1F0F', borderRadius: '8px', padding: '10px 4px' }}>
+                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#3B82F6' }}>{awayWins}</div>
+                <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>{away.split(' ')[0]} W</div>
+              </div>
             </div>
+
+            {/* Last 5 results */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {h2hMatches.map((m, i) => {
+                const homeIsHome = m.home_team === home;
+                const displayHome = m.home_team;
+                const displayAway = m.away_team;
+                const hs = m.home_score ?? 0;
+                const as_ = m.away_score ?? 0;
+                const homeGoals = homeIsHome ? hs : as_;
+                const awayGoals = homeIsHome ? as_ : hs;
+                const result = homeGoals > awayGoals ? 'W' : homeGoals < awayGoals ? 'L' : 'D';
+                const resultColor = result === 'W' ? '#2E9E5E' : result === 'L' ? '#EF4444' : '#9CA3AF';
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', padding: '6px 0', borderBottom: i < h2hMatches.length - 1 ? '1px solid #1A3A1A' : 'none' }}>
+                    {/* Home logo */}
+                    <div style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {(homeIsHome ? m.home_team_logo : m.away_team_logo) && (
+                        <img
+                          src={(homeIsHome ? m.home_team_logo : m.away_team_logo)!}
+                          alt={displayHome}
+                          width={18}
+                          height={18}
+                          style={{ objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                    </div>
+                    <span style={{ flex: 1, color: '#D1D5DB', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {displayHome}
+                    </span>
+                    <span style={{ color: 'white', fontWeight: 'bold', fontFamily: 'Georgia, serif', fontSize: '13px', flexShrink: 0 }}>
+                      {hs} - {as_}
+                    </span>
+                    <span style={{ flex: 1, color: '#D1D5DB', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {displayAway}
+                    </span>
+                    {/* Away logo */}
+                    <div style={{ width: '20px', height: '20px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {(homeIsHome ? m.away_team_logo : m.home_team_logo) && (
+                        <img
+                          src={(homeIsHome ? m.away_team_logo : m.home_team_logo)!}
+                          alt={displayAway}
+                          width={18}
+                          height={18}
+                          style={{ objectFit: 'contain' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      )}
+                    </div>
+                    <span style={{ width: '20px', textAlign: 'center', fontWeight: 'bold', fontSize: '11px', color: resultColor, flexShrink: 0 }}>
+                      {result}
+                    </span>
+                    <span style={{ color: '#4B5563', fontSize: '11px', flexShrink: 0, minWidth: '52px', textAlign: 'right' }}>
+                      {formatH2HDate(m.kickoff)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <a
+              href={`/tools/h2h?a=${encodeURIComponent(home)}&b=${encodeURIComponent(away)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'block', marginTop: '14px', textAlign: 'center', backgroundColor: '#0D1F0F', border: '1px solid #1A3A1A', borderRadius: '8px', padding: '10px', color: '#2E9E5E', fontSize: '13px', fontWeight: 'bold', textDecoration: 'none' }}
+            >
+              📤 Generate shareable H2H card →
+            </a>
           </div>
-          <span style={{ color: '#2E9E5E', fontSize: '13px', whiteSpace: 'nowrap', marginLeft: '12px' }}>View →</span>
-        </a>
+        )}
+
+        {/* H2H LINK (shown when no history exists) */}
+        {h2hMatches.length === 0 && (
+          <a
+            href={`/tools/h2h?a=${encodeURIComponent(home)}&b=${encodeURIComponent(away)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#0D2B14',
+              border: '1px solid #1A3A1A',
+              borderRadius: '14px',
+              padding: '16px 20px',
+              marginBottom: '24px',
+              textDecoration: 'none',
+            }}
+          >
+            <div>
+              <div style={{ color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                📊 {home} vs {away} — all-time H2H record
+              </div>
+              <div style={{ color: '#6B7280', fontSize: '12px', marginTop: '2px' }}>
+                Win rates · last 5 results · shareable card
+              </div>
+            </div>
+            <span style={{ color: '#2E9E5E', fontSize: '13px', whiteSpace: 'nowrap', marginLeft: '12px' }}>View →</span>
+          </a>
+        )}
 
         {/* SEO CONTENT */}
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '14px', padding: '24px', marginBottom: '24px' }}>
