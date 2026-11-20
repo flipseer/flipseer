@@ -44,12 +44,12 @@ function TelegramBanner() {
     setShow(false);
     try { localStorage.setItem('flipseer_tg_banner', '1'); } catch (e) {}
   };
-  if (!show) return <div style={{ minHeight: '53px' }} />;
+  if (!show) return null;
   return (
     <div style={{ backgroundColor: '#0A1929', borderBottom: '1px solid #1E3A5F', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', position: 'relative' }}>
       <span style={{ fontSize: '20px', flexShrink: 0 }}>📣</span>
       <span style={{ fontSize: '13px', color: '#93C5FD', fontWeight: 'bold' }}>
-        Get pre-match predictions &amp; live results on Telegram →
+        Don&apos;t miss kickoff. Get Flipseer&apos;s daily predictions and track record — straight to Telegram.
       </span>
       <a
         href="https://t.me/flipseer"
@@ -69,7 +69,7 @@ function TelegramBanner() {
   );
 }
 
-// ── TELEGRAM FLOATING BUTTON ──
+// ── TELEGRAM FLOATING BUTTON — always visible ──
 function TelegramFloatingButton() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -89,7 +89,7 @@ function TelegramFloatingButton() {
   );
 }
 
-// ── TOP TICKER: national leaderboard + upcoming matches ──
+// ── TOP TICKER: national leaderboard + upcoming/current matches ──
 function TopTicker({ topNations }: { topNations: any[] }) {
   const [matches, setMatches] = useState<any[]>([]);
   useEffect(() => {
@@ -122,8 +122,9 @@ function TopTicker({ topNations }: { topNations: any[] }) {
     const isLive = m.status === 'live' || (diff < 0 && diff > -105 * 60 * 1000);
     const flag = COMP_FLAGS[m.competition] || '⚽';
     let timeLabel = '';
-    if (isLive) { timeLabel = '🔴 LIVE'; }
-    else if (diff > 0) {
+    if (isLive) {
+      timeLabel = '🔴 LIVE';
+    } else if (diff > 0) {
       const h = Math.floor(diff / 3600000);
       const min = Math.floor((diff % 3600000) / 60000);
       timeLabel = h > 0 ? 'in ' + h + 'h ' + min + 'm' : 'in ' + min + 'm';
@@ -132,14 +133,19 @@ function TopTicker({ topNations }: { topNations: any[] }) {
   });
 
   const nationItems = topNations.map((n, i) => ({
-    icon: n.flag, text: '#' + (i + 1) + ' ' + n.name + ' · ' + n.pts + ' rep', color: '#F59E0B',
+    icon: n.flag,
+    text: '#' + (i + 1) + ' ' + n.name + ' · ' + n.pts + ' rep',
+    color: '#F59E0B',
   }));
 
   const allItems: { icon: string; text: string; color: string; pill?: string; pillColor?: string }[] = [
     ...nationItems,
     ...matchItems.map(m => ({
-      icon: m.flag, text: m.text, color: m.isLive ? '#EF4444' : '#9CA3AF',
-      pill: m.timeLabel, pillColor: m.isLive ? '#EF4444' : '#8B5CF6',
+      icon: m.flag,
+      text: m.text,
+      color: m.isLive ? '#EF4444' : '#9CA3AF',
+      pill: m.timeLabel,
+      pillColor: m.isLive ? '#EF4444' : '#8B5CF6',
     })),
   ];
   if (allItems.length === 0) return null;
@@ -174,7 +180,7 @@ function ScrollBand({ items, label, labelColor, pointsColor, bgColor, borderColo
   label: string; labelColor: string; pointsColor: string;
   bgColor: string; borderColor: string; speed: number;
 }) {
-  if (items.length === 0) return <div style={{ minHeight: '37px', backgroundColor: bgColor, borderTop: '1px solid ' + borderColor, borderBottom: '1px solid ' + borderColor }} />;
+  if (items.length === 0) return null;
   const band = [...items, ...items];
   return (
     <div style={{ backgroundColor: bgColor, borderTop: '1px solid ' + borderColor, borderBottom: '1px solid ' + borderColor, padding: '8px 0', overflow: 'hidden', position: 'relative' }}>
@@ -199,7 +205,7 @@ function ScrollBand({ items, label, labelColor, pointsColor, bgColor, borderColo
   );
 }
 
-// ── TICKER 1: All-time reputation ──
+// ── TICKER 1: All-time reputation — every user with total_points > 0 ──
 function AllTimeRepTicker() {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
@@ -228,7 +234,7 @@ function AllTimeRepTicker() {
   return <ScrollBand items={items} label="🏆 ALL-TIME REP" labelColor="#F59E0B" pointsColor="#F59E0B" bgColor="#020D04" borderColor="#F59E0B30" speed={Math.max(40, items.length * 3)} />;
 }
 
-// ── TICKER 2: Today's live rep ──
+// ── TICKER 2: Today's live rep — points earned from matches today ──
 function TodayRepTicker() {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
@@ -267,61 +273,97 @@ function TodayRepTicker() {
   return <ScrollBand items={items} label="⚡ TODAY'S REP" labelColor="#2E9E5E" pointsColor="#2E9E5E" bgColor="#020B04" borderColor="#2E9E5E30" speed={Math.max(30, items.length * 4)} />;
 }
 
-// ── TRACK RECORD STRIP — community accuracy vs random baseline ──
-function TrackRecordStrip() {
-  const [accuracy, setAccuracy] = useState<number | null>(null);
-  const [totalPredictions, setTotalPredictions] = useState(0);
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await supabase
+function LiveActivity() {
+  const [activities, setActivities] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
+  const [fetched, setFetched] = useState(false);
+  const fetchActivity = async () => {
+    try {
+      const { data: preds } = await supabase
+        .from('predictions')
+        .select('predicted_outcome, confidence_pct, points_earned, prediction_processed, created_at, user_id')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (preds && preds.length > 0) {
+        const seen = new Set<string>();
+        const unique = preds.filter((p: any) => {
+          if (seen.has(p.user_id)) return false;
+          seen.add(p.user_id);
+          return true;
+        }).slice(0, 5);
+
+        const userIds = unique.map((p: any) => p.user_id);
+        const { data: profiles } = await supabase
           .from('profiles')
-          .select('accuracy_pct, total_predictions')
-          .gt('total_predictions', 10)
-          .not('accuracy_pct', 'is', null);
-        if (!data || data.length === 0) return;
-        const totalPreds = data.reduce((sum: number, p: any) => sum + (p.total_predictions || 0), 0);
-        const weightedAcc = data.reduce((sum: number, p: any) => sum + (p.accuracy_pct || 0) * (p.total_predictions || 0), 0);
-        const avg = totalPreds > 0 ? Math.round((weightedAcc / totalPreds) * 10) / 10 : 0;
-        setAccuracy(avg);
-        setTotalPredictions(totalPreds);
-      } catch (e) {}
-    };
-    load();
+          .select('id, username, country')
+          .in('id', userIds);
+
+        const profileMap: { [key: string]: any } = {};
+        (profiles || []).forEach((pr: any) => { profileMap[pr.id] = pr; });
+
+        const items = unique
+          .filter((p: any) => profileMap[p.user_id]?.username)
+          .map((p: any) => {
+            const profile = profileMap[p.user_id];
+            const diffMin = Math.floor((Date.now() - new Date(p.created_at).getTime()) / 60000);
+            const timeAgo = diffMin < 1 ? 'just now' : diffMin < 60 ? diffMin + 'm ago' : diffMin < 60 ? Math.floor(diffMin / 60) + 'h ago' : Math.floor(diffMin / 1440) + 'd ago';
+            const pick = p.predicted_outcome === 'home' ? 'Home Win' : p.predicted_outcome === 'away' ? 'Away Win' : 'Draw';
+            const country = profile?.country || '';
+            return { username: profile.username, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', pick, confidence: p.confidence_pct, points: p.points_earned, processed: p.prediction_processed, timeAgo };
+          });
+        setActivities(items);
+      }
+    } catch (e) { console.error('LiveActivity fetch error:', e); }
+    setFetched(true);
+  };
+  useEffect(() => {
+    setMounted(true);
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 60000);
+    return () => clearInterval(interval);
   }, []);
-
-  if (accuracy === null) return (
-    <div style={{ height: '41px', borderTop: '1px solid rgba(139,92,246,0.15)', borderBottom: '1px solid rgba(139,92,246,0.15)', backgroundColor: 'rgba(139,92,246,0.06)' }} />
+  if (!mounted || !fetched) return (
+    <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px', minHeight: '164px' }} aria-hidden="true">
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block' }} />
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>RECENT ACTIVITY</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ height: '38px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '8px' }} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
-  const aboveRandom = Math.round((accuracy - 33.3) * 10) / 10;
-  const isPositive = aboveRandom > 0;
-
+  if (activities.length === 0) return null;
   return (
-    <a
-      href="/track-record"
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: '10px', flexWrap: 'wrap',
-        backgroundColor: 'rgba(139,92,246,0.06)',
-        borderTop: '1px solid rgba(139,92,246,0.15)',
-        borderBottom: '1px solid rgba(139,92,246,0.15)',
-        padding: '10px 20px',
-        textDecoration: 'none',
-      }}
-    >
-      <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>📊 COMMUNITY TRACK RECORD</span>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: 'bold', color: '#2E9E5E' }}>
-        {accuracy}% accuracy
-      </span>
-      {isPositive && (
-        <span style={{ fontSize: '12px', backgroundColor: 'rgba(46,158,94,0.12)', color: '#2E9E5E', border: '1px solid rgba(46,158,94,0.3)', padding: '2px 10px', borderRadius: '999px', fontWeight: 'bold' }}>
-          +{aboveRandom}pp above random
-        </span>
-      )}
-      <span style={{ fontSize: '11px', color: '#6B7280' }}>·</span>
-      <span style={{ fontSize: '11px', color: '#6B7280' }}>{totalPredictions.toLocaleString()} predictions</span>
-      <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold' }}>See full record →</span>
-    </a>
+    <section style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '16px 20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#8B5CF6', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+          <span style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '2px' }}>RECENT ACTIVITY</span>
+          <span style={{ fontSize: '11px', color: '#8895A3', marginLeft: 'auto' }}>Latest predictions</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {activities.map((a, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '8px', padding: '8px 12px' }}>
+              <span style={{ fontSize: '16px' }} dangerouslySetInnerHTML={{ __html: a.flag }} />
+              <span style={{ fontSize: '12px', color: '#8B5CF6', fontWeight: 'bold' }}>@{a.username}</span>
+              <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+                {a.processed && a.points > 0
+                  ? <><span>gained </span><span style={{ color: '#F59E0B', fontWeight: 'bold' }}>+{a.points} rep</span></>
+                  : <><span>predicted </span><span style={{ color: 'white', fontWeight: 'bold' }}>{a.pick}</span><span> · </span><span style={{ color: '#8B5CF6' }}>{a.confidence}%</span></>
+                }
+              </span>
+              <span style={{ fontSize: '10px', color: '#8895A3', marginLeft: 'auto' }}>{a.timeAgo}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -463,7 +505,7 @@ function UpcomingMatches() {
     const fetchMatches = async () => {
       const { data } = await supabase
         .from('matches')
-        .select('id, home_team, away_team, home_team_logo, away_team_logo, kickoff, status, league, competition')
+        .select('id, home_team, away_team, kickoff, status, league, competition')
         .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
@@ -506,9 +548,7 @@ function UpcomingMatches() {
     const diff = now.getTime() - new Date(utcString).getTime();
     return diff > 0 && diff < 105 * 60 * 1000;
   };
-  const handleShare = (match: any, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleShare = (match: any) => {
     try {
       const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const url = `https://flipseer.com/matches/${slug}`;
@@ -525,10 +565,10 @@ function UpcomingMatches() {
     } catch (e) {}
   };
   if (loading) return (
-    <section style={{ padding: '32px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '300px' }} aria-hidden="true">
+    <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A', minHeight: '340px' }} aria-hidden="true">
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         <div style={{ height: '14px', width: '140px', backgroundColor: '#1A3A1A', borderRadius: '4px', margin: '0 auto 12px' }} />
-        <div style={{ height: '32px', width: '240px', backgroundColor: '#1A3A1A', borderRadius: '4px', margin: '0 auto 20px' }} />
+        <div style={{ height: '32px', width: '240px', backgroundColor: '#1A3A1A', borderRadius: '4px', margin: '0 auto 24px' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{ height: '72px', backgroundColor: '#0D2B14', border: '1px solid #2D1B69', borderRadius: '12px' }} />
@@ -539,20 +579,19 @@ function UpcomingMatches() {
   );
   if (matches.length === 0) return null;
   return (
-    <section style={{ padding: '32px 20px', borderBottom: '1px solid #1A3A1A' }}>
+    <section style={{ padding: '48px 20px', borderBottom: '1px solid #1A3A1A' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>⚽ PREDICT NOW</p>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', textAlign: 'center', marginBottom: '4px' }}>Upcoming Matches</h2>
-        <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', marginBottom: '20px' }}>Predict before kick-off. Your call is locked forever.</p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+        <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px', textAlign: 'center' }}>⚽ LIVE COMPETITIONS</p>
+        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', textAlign: 'center', marginBottom: '6px' }}>Upcoming Matches</h2>
+        <p style={{ color: '#6B7280', fontSize: '13px', textAlign: 'center', marginBottom: '24px' }}>Predict before kick-off. Your call is locked forever.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           {matches.map((match) => {
             const live = isLive(match.kickoff, match.status);
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
-            const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             return (
-              <a key={match.id} href={`/matches/${slug}`} style={{ display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none', textDecoration: 'none', color: 'inherit' }}>
+              <div key={match.id} style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
                 <div style={{ minWidth: '80px', textAlign: 'center', flexShrink: 0 }}>
                   {live ? (
                     <span style={{ backgroundColor: '#EF4444', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '999px' }}>LIVE</span>
@@ -561,41 +600,29 @@ function UpcomingMatches() {
                   ) : (
                     <span style={{ fontSize: '10px', color: '#6B7280', backgroundColor: 'rgba(127,29,29,0.2)', padding: '2px 8px', borderRadius: '999px' }}>🔒 LOCKED</span>
                   )}
-                  <div suppressHydrationWarning style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
+                  <div style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px' }}>{formatKickoff(match.kickoff)}</div>
                 </div>
                 <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <div style={{ flexShrink: 0, width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {match.home_team_logo ? (
-                        <img src={match.home_team_logo} alt={match.home_team} width={28} height={28} style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                      ) : <span style={{ fontSize: '18px' }}>⚽</span>}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', minWidth: 0 }}>
-                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.home_team}</span>
-                      <span style={{ fontSize: '10px', color: '#8895A3', fontWeight: 'bold' }}>vs</span>
-                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'center', lineHeight: 1.3 }}>{match.away_team}</span>
-                    </div>
-                    <div style={{ flexShrink: 0, width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {match.away_team_logo ? (
-                        <img src={match.away_team_logo} alt={match.away_team} width={28} height={28} style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                      ) : <span style={{ fontSize: '18px' }}>⚽</span>}
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                    <span style={{ fontSize: '11px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0 }}>vs</span>
+                    <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.away_team}</span>
                   </div>
                   <div style={{ fontSize: '10px', color: '#6B7280', marginTop: '3px' }}>{match.competition?.replace(/ 202\d\/\d\d$/, '') || ''}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                   <button
-                    onClick={(e) => handleShare(match, e)}
+                    onClick={() => handleShare(match)}
                     title="Share this match"
                     style={{ background: 'transparent', border: '1px solid #2D3748', borderRadius: '7px', color: copied === match.id ? '#2E9E5E' : '#6B7280', padding: '7px 10px', fontSize: '13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >
                     {copied === match.id ? '✓' : '📤'}
                   </button>
-                  <a href="/predict" onClick={e => e.stopPropagation()} style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+                  <a href="/predict" style={{ backgroundColor: kickoffPast ? 'transparent' : '#8B5CF6', color: kickoffPast ? '#6B7280' : 'white', border: kickoffPast ? '1px solid #1A3A1A' : 'none', padding: '7px 14px', borderRadius: '7px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                     {kickoffPast ? 'Locked' : 'Predict →'}
                   </a>
                 </div>
-              </a>
+              </div>
             );
           })}
         </div>
@@ -680,7 +707,14 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [heroNation, setHeroNation] = useState('');
   const [nationRank, setNationRank] = useState(0);
+  const [nationForecasters, setNationForecasters] = useState(0);
+  const [nextMatchCountdown, setNextMatchCountdown] = useState('');
   const [totalUsers, setTotalUsers] = useState(0);
+  const [activeForecasters, setActiveForecasters] = useState(0);
+  const [totalPredictions, setTotalPredictions] = useState(0);
+  const [isRealLeaderboard, setIsRealLeaderboard] = useState(false);
+  const [realLeaderboard, setRealLeaderboard] = useState<any[]>([]);
+  const [topUsers, setTopUsers] = useState<any[]>([]);
   const [topNations, setTopNations] = useState<any[]>([]);
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
@@ -688,7 +722,9 @@ export default function Home() {
       try {
         const statsRes = await fetch('/api/stats');
         const stats = await statsRes.json();
+        setTotalPredictions(stats.totalPredictions || 0);
         setTotalUsers(stats.totalUsers || 0);
+        setActiveForecasters(stats.activeForecasters || 0);
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const tzToCountry: { [key: string]: string } = {
           'Asia/Calcutta': 'India', 'Asia/Kolkata': 'India', 'Asia/Jakarta': 'Indonesia',
@@ -700,8 +736,8 @@ export default function Home() {
           'Africa/Johannesburg': 'South Africa', 'Africa/Casablanca': 'Morocco', 'Africa/Cairo': 'Egypt',
           'Asia/Tokyo': 'Japan', 'Asia/Seoul': 'South Korea', 'Asia/Karachi': 'Pakistan',
           'Asia/Dhaka': 'Bangladesh', 'Australia/Sydney': 'Australia', 'America/Toronto': 'Canada',
-          'America/Bogota': 'Colombia', 'Asia/Riyadh': 'Saudi Arabia',
-          'Europe/Istanbul': 'Turkey',
+          'America/Bogota': 'Colombia', 'Asia/Riyadh': 'Saudi Arabia', 'Asia/Tashkent': 'Uzbekistan',
+          'Europe/Istanbul': 'Turkey', 'Europe/Zagreb': 'Croatia', 'Europe/Oslo': 'Norway',
         };
         const tzToCode: { [key: string]: string } = {
           'Asia/Calcutta': 'IN', 'Asia/Kolkata': 'IN', 'Asia/Jakarta': 'ID',
@@ -713,7 +749,7 @@ export default function Home() {
           'Africa/Johannesburg': 'ZA', 'Africa/Casablanca': 'MA', 'Asia/Tokyo': 'JP',
           'Asia/Seoul': 'KR', 'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD',
           'Australia/Sydney': 'AU', 'America/Toronto': 'CA', 'America/Bogota': 'CO',
-          'Asia/Riyadh': 'SA', 'Europe/Istanbul': 'TR',
+          'Asia/Riyadh': 'SA', 'Europe/Istanbul': 'TR', 'Europe/Oslo': 'NO',
         };
         const detectedNation = tzToCountry[tz] || '';
         const visitorCode = tzToCode[tz] || '';
@@ -721,22 +757,35 @@ export default function Home() {
           setHeroNation(detectedNation);
           try { localStorage.setItem('flipseer_detected_nation', detectedNation); } catch (e) {}
         }
-        // Nation ranks from leaderboard
+        let leaderboardData: any[] = [];
         if ((stats.totalUsers || 0) >= 5) {
           const res = await fetch('/api/leaderboard');
-          const leaderboardData = await res.json();
-          if (Array.isArray(leaderboardData) && leaderboardData.length >= 1) {
-            const countryMap: { [key: string]: number } = {};
+          const data = await res.json();
+          if (data && Array.isArray(data)) leaderboardData = data;
+          if (leaderboardData.length >= 1) {
+            const countryMap: { [key: string]: { points: number; forecasters: number } } = {};
             leaderboardData.forEach((u: any) => {
               const c = u.country || 'Other';
-              countryMap[c] = (countryMap[c] || 0) + (u.total_points || 0);
+              if (!countryMap[c]) countryMap[c] = { points: 0, forecasters: 0 };
+              countryMap[c].points += u.total_points || 0;
+              countryMap[c].forecasters += 1;
             });
-            const ranked = Object.entries(countryMap).sort((a, b) => b[1] - a[1]);
+            const ranked = Object.entries(countryMap).sort((a, b) => b[1].points - a[1].points);
             const visitorRankIdx = ranked.findIndex(([c]) => c === visitorCode);
-            if (visitorRankIdx >= 0) setNationRank(visitorRankIdx + 1);
+            if (visitorRankIdx >= 0) { setNationRank(visitorRankIdx + 1); setNationForecasters(ranked[visitorRankIdx][1].forecasters); }
+            const sorted = ranked.slice(0, 6).map(([country, s], i) => {
+              const countryNames: { [key: string]: string } = { 'IN': 'India', 'ID': 'Indonesia', 'NG': 'Nigeria', 'BR': 'Brazil', 'AR': 'Argentina', 'FR': 'France', 'DE': 'Germany', 'GB': 'England', 'ES': 'Spain', 'PT': 'Portugal', 'MX': 'Mexico', 'US': 'USA', 'GH': 'Ghana', 'ZA': 'South Africa', 'MA': 'Morocco', 'JP': 'Japan', 'KR': 'South Korea', 'AU': 'Australia', 'CA': 'Canada', 'CO': 'Colombia', 'TR': 'Turkey', 'Other': 'Other Nations' };
+              return { rank: i + 1, flag: COUNTRY_FLAGS[country] || '&#x1F30D;', country: countryNames[country] || country, forecasters: s.forecasters, points: s.points };
+            });
+            if (sorted.length >= 1) { setRealLeaderboard(sorted); setIsRealLeaderboard(true); }
           }
         }
-        // Top nations for ticker
+        const { data: topU } = await supabase.from('profiles')
+          .select('username, total_points, rank_icon, country')
+          .gt('total_points', 0)
+          .order('total_points', { ascending: false })
+          .limit(10);
+        if (topU && topU.length > 0) setTopUsers(topU);
         const { data: allP } = await supabase.from('profiles').select('country, total_points');
         if (allP) {
           const nationMap: { [key: string]: number } = {};
@@ -762,10 +811,35 @@ export default function Home() {
             .map(([code, pts], idx) => ({ rank: idx + 1, flag: FLAGS[code] || '🌍', name: NAMES[code] || code, pts }));
           setTopNations(nationsSorted);
         }
+        const { data: nextMatch } = await supabase.from('matches').select('kickoff').in('competition', ['EPL 2026/27', 'UCL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27']).in('status', ['upcoming', 'locked']).order('kickoff', { ascending: true }).limit(1).single();
+        if (nextMatch?.kickoff) {
+          const utc = nextMatch.kickoff.endsWith('Z') ? nextMatch.kickoff : nextMatch.kickoff.replace(' ', 'T') + 'Z';
+          const diff = new Date(utc).getTime() - Date.now();
+          if (diff > 0) {
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            setNextMatchCountdown(h > 0 ? h + 'h ' + m + 'm' : m + 'm');
+          }
+        }
       } catch (err) { console.error('Data fetch error:', err); }
     };
     fetchData();
   }, []);
+
+  const NATION_TICKERS = [
+    { code: 'IN', flag: '&#x1F1EE;&#x1F1F3;', name: 'India' }, { code: 'ID', flag: '&#x1F1EE;&#x1F1E9;', name: 'Indonesia' },
+    { code: 'NG', flag: '&#x1F1F3;&#x1F1EC;', name: 'Nigeria' }, { code: 'BR', flag: '&#x1F1E7;&#x1F1F7;', name: 'Brazil' },
+    { code: 'AR', flag: '&#x1F1E6;&#x1F1F7;', name: 'Argentina' }, { code: 'FR', flag: '&#x1F1EB;&#x1F1F7;', name: 'France' },
+    { code: 'DE', flag: '&#x1F1E9;&#x1F1EA;', name: 'Germany' }, { code: 'ES', flag: '&#x1F1EA;&#x1F1F8;', name: 'Spain' },
+    { code: 'PT', flag: '&#x1F1F5;&#x1F1F9;', name: 'Portugal' }, { code: 'GB', flag: '&#x1F3F4;', name: 'England' },
+    { code: 'MX', flag: '&#x1F1F2;&#x1F1FD;', name: 'Mexico' }, { code: 'US', flag: '&#x1F1FA;&#x1F1F8;', name: 'USA' },
+    { code: 'GH', flag: '&#x1F1EC;&#x1F1ED;', name: 'Ghana' }, { code: 'MA', flag: '&#x1F1F2;&#x1F1E6;', name: 'Morocco' },
+    { code: 'JP', flag: '&#x1F1EF;&#x1F1F5;', name: 'Japan' }, { code: 'KR', flag: '&#x1F1F0;&#x1F1F7;', name: 'S.Korea' },
+    { code: 'AU', flag: '&#x1F1E6;&#x1F1FA;', name: 'Australia' }, { code: 'CA', flag: '&#x1F1E8;&#x1F1E6;', name: 'Canada' },
+    { code: 'ZA', flag: '&#x1F1FF;&#x1F1E6;', name: 'S.Africa' }, { code: 'EG', flag: '&#x1F1EA;&#x1F1EC;', name: 'Egypt' },
+    { code: 'PK', flag: '&#x1F1F5;&#x1F1F0;', name: 'Pakistan' }, { code: 'BD', flag: '&#x1F1E7;&#x1F1E9;', name: 'Bangladesh' },
+    { code: 'NO', flag: '&#x1F1F3;&#x1F1F4;', name: 'Norway' }, { code: 'SE', flag: '&#x1F1F8;&#x1F1EA;', name: 'Sweden' },
+  ];
 
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', margin: 0, overflowX: 'hidden' }}>
@@ -783,7 +857,7 @@ export default function Home() {
         @keyframes repTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
       `}</style>
 
-      {/* ── HERO ── */}
+      {/* ── HERO — first thing a new visitor sees ── */}
       <section style={{
         background: 'linear-gradient(180deg, #071408 0%, #0D1F0F 100%)',
         padding: 'clamp(40px,8vw,72px) 20px clamp(32px,6vw,56px)',
@@ -794,7 +868,7 @@ export default function Home() {
       }}>
         <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '70%', height: '100%', background: 'radial-gradient(ellipse,rgba(139,92,246,0.1) 0%,transparent 70%)', pointerEvents: 'none' }} />
         <div style={{ maxWidth: '640px', margin: '0 auto', position: 'relative' }}>
-          {/* What it is */}
+          {/* What it is — one line */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#0D2B14', border: '1px solid #2E9E5E', borderRadius: '999px', padding: '6px 18px', marginBottom: '24px' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#2E9E5E', display: 'inline-block', animation: 'pulse 1.5s infinite', flexShrink: 0 }} />
             <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold', letterSpacing: '1.5px' }}>EPL · UCL · Liga 1 · Ghana PL · ISL — LIVE NOW</span>
@@ -851,7 +925,7 @@ export default function Home() {
             </a>
           </div>
           <p style={{ fontSize: '12px', color: '#6B7280' }}>
-            Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your WhatsApp group.
+            Already predicting? <a href="/groups" style={{ color: '#F59E0B', textDecoration: 'none', fontWeight: 'bold' }}>Create a private league</a> with your group and settle it forever.
           </p>
         </div>
       </section>
@@ -859,17 +933,90 @@ export default function Home() {
       {/* ── TICKER BARS ── */}
       <TelegramBanner />
       <TopTicker topNations={topNations} />
+      {/* AllTimeRepTicker hidden on homepage — available at /leaderboard */}
+      <TodayRepTicker />
 
-      {/* ── P0: MATCH CARDS — first clickable content ── */}
+      {/* BUZZ BAR */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '7px 20px', minHeight: '34px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', flexWrap: 'wrap', visibility: mounted ? 'visible' : 'hidden' }}>
+          {totalPredictions > 0 && (
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#F59E0B', fontWeight: 'bold' }}>⚡ {totalPredictions}+ predictions made</span>
+            </span>
+          )}
+          {totalUsers > 0 && (
+            <span style={{ fontSize: '12px', color: '#9CA3AF' }}>
+              <span style={{ color: '#8B5CF6', fontWeight: 'bold' }}>👥 {totalUsers} registered</span> · {activeForecasters} active
+            </span>
+          )}
+          {nextMatchCountdown && (
+            <span style={{ fontSize: '12px', color: '#EF4444', fontWeight: 'bold' }}>⏱ Next match in {nextMatchCountdown}</span>
+          )}
+          <span style={{ fontSize: '12px', color: '#2E9E5E', fontWeight: 'bold' }}>🏆 Private leagues live</span>
+        </div>
+      </div>
+
+      {/* LIVE COMPETITIONS PREDICT BANNER */}
+      <div style={{ backgroundColor: '#050E05', borderBottom: '1px solid #1A3A1A', padding: '10px 20px', overflowX: 'auto' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', minWidth: 'max-content' }}>
+          <span style={{ fontSize: '11px', color: '#4B5563', fontWeight: 'bold', letterSpacing: '1px', flexShrink: 0, animation: 'bannerPulse 2s ease-in-out infinite' }}>⚡ PREDICT TODAY:</span>
+          {[
+            { href: '/predict', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'EPL', color: '#8B5CF6', live: true },
+            { href: '/predict', flag: '🇮🇩', name: 'Liga 1', color: '#CE1126', live: true },
+            { href: '/predict', flag: '🇬🇭', name: 'Ghana PL', color: '#F59E0B', live: true },
+            { href: '/predict', flag: '⭐', name: 'UCL', color: '#A78BFA', live: true },
+            { href: '/predict', flag: '🇮🇳', name: 'ISL', color: '#FF6B35', live: true },
+          ].map(({ href, flag, name, color, live }) => (
+            <a key={name} href={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', backgroundColor: live ? color + '18' : 'transparent', border: '1px solid ' + (live ? color + '80' : '#1A3A1A'), borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0 }}>
+              <span style={{ fontSize: '14px' }}>{flag}</span>
+              <span style={{ fontSize: '12px', color: live ? color : '#4B5563', fontWeight: 'bold' }}>{name}</span>
+              <span style={{ fontSize: '9px', backgroundColor: color, color: 'white', padding: '2px 6px', borderRadius: '999px', fontWeight: 'bold', animation: 'liveBadgePulse 1.5s ease-in-out infinite' }}>LIVE</span>
+            </a>
+          ))}
+          <a href="/predict" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', backgroundColor: '#2E9E5E', color: 'white', borderRadius: '999px', padding: '5px 14px', textDecoration: 'none', flexShrink: 0, fontSize: '11px', fontWeight: 'bold', animation: 'ctaPulse 1.5s ease-in-out infinite', boxShadow: '0 0 16px rgba(46,158,94,0.4)' }}>
+            Predict Now →
+          </a>
+        </div>
+      </div>
+
+      {/* TOP BANNER */}
+      <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
+            🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL · ⭐ UCL · 🇮🇩 Liga 1 · 🇬🇭 Ghana PL · 🇮🇳 ISL — all live now — Predict free forever
+          </span>
+          <span style={{ fontSize: '11px', color: '#C4B5FD' }}>
+            🏆 Private leagues active · Nation Battle live
+          </span>
+          <a href="/predict" style={{ backgroundColor: 'white', color: '#8B5CF6', padding: '4px 16px', borderRadius: '999px', textDecoration: 'none', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
+            Predict Now →
+          </a>
+        </div>
+      </div>
+
+      {/* UPCOMING MATCHES */}
       <UpcomingMatches />
 
-      {/* ── P0: TRACK RECORD STRIP — trust signal below match cards ── */}
-      <TrackRecordStrip />
+      {/* PRIVATE LEAGUE CTA — prominent, right after matches */}
+      <div style={{ backgroundColor: '#071408', borderBottom: '1px solid #1A3A1A', padding: '20px 20px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+          <a
+            href="/groups"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(245,158,11,0.12)', border: '2px solid rgba(245,158,11,0.6)', color: '#F59E0B', padding: '14px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 0 24px rgba(245,158,11,0.15)', width: '100%', maxWidth: '480px', justifyContent: 'center' }}
+          >
+            👥 Create a Private League for Your Friends →
+          </a>
+          <p style={{ fontSize: '12px', color: '#6B7280', margin: 0, textAlign: 'center' }}>
+            Predict together · Track who calls it right · Share results on WhatsApp
+          </p>
+        </div>
+      </div>
 
-      {/* ── LIVE SCORES (only shown when matches are live) ── */}
+      {/* LIVE SCORES + ACTIVITY */}
       <LiveScoreCard />
+      <LiveActivity />
 
-      {/* ── THREE STEPS ── */}
+      {/* THREE STEPS */}
       <section style={{ padding: '40px 20px', borderBottom: '1px solid #1A3A1A', backgroundColor: '#050E05' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 12 }}>
@@ -890,39 +1037,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── P0: REP TICKERS — demoted to below Three Steps ── */}
-      <AllTimeRepTicker />
-      <TodayRepTicker />
-
-      {/* ── INVITE BANNER ── */}
+      {/* INVITE BANNER */}
       <InviteBanner />
 
-      {/* ── P0: INLINE TELEGRAM CTA — more prominent than floating button ── */}
-      <section style={{ backgroundColor: '#060D1A', borderTop: '1px solid #1E3A5F', borderBottom: '1px solid #1E3A5F', padding: '36px 20px' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '36px', marginBottom: '12px' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="#2AABEE" style={{ display: 'inline-block', verticalAlign: 'middle' }}><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.829.941z"/></svg>
-          </div>
-          <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,4vw,28px)', marginBottom: '8px', fontWeight: 800 }}>
-            Never miss a prediction window
-          </h2>
-          <p style={{ color: '#93C5FD', fontSize: '14px', lineHeight: 1.7, marginBottom: '20px', maxWidth: '480px', margin: '0 auto 20px' }}>
-            Pre-match predictions and live alerts for EPL, Liga 1, Ghana PL and ISL — straight to Telegram.
-          </p>
-          <a
-            href="https://t.me/flipseer"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', backgroundColor: '#2AABEE', color: 'white', padding: '14px 32px', borderRadius: '12px', textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', boxShadow: '0 0 32px rgba(42,171,238,0.4)', marginBottom: '12px' }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.869 4.326-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.829.941z"/></svg>
-            Join @flipseer on Telegram →
-          </a>
-          <p style={{ fontSize: '11px', color: '#4B6A8A', marginTop: '8px' }}>Free · No spam · Unsubscribe anytime</p>
-        </div>
-      </section>
-
-      {/* ── 5 COMPETITIONS ── */}
+      {/* 5 COMPETITIONS */}
       <section style={{ padding: '56px 20px', borderBottom: '1px solid #1A3A1A', background: 'linear-gradient(180deg, #1A0B2E 0%, #0D1F0F 100%)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #8B5CF6', borderRadius: '16px', padding: '32px 24px' }}>
@@ -956,7 +1074,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── NATION BATTLE ── */}
+      {/* NATION BATTLE */}
       <section style={{ padding: '64px 20px', borderBottom: '1px solid #1A3A1A' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <p style={{ fontSize: '11px', color: '#8B5CF6', fontWeight: 'bold', letterSpacing: '3px', marginBottom: '12px' }}>NATION BATTLE · LIVE</p>
@@ -968,7 +1086,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer style={{ backgroundColor: '#050E05', borderTop: '1px solid #1A3A1A', padding: '32px 20px', textAlign: 'center' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ fontSize: 20, fontWeight: 800, color: '#8B5CF6', marginBottom: 16, letterSpacing: '-0.5px' }}>⚽ FLIPSEER</div>
@@ -979,7 +1097,6 @@ export default function Home() {
               { href: '/football-reputation', label: 'Football Reputation' },
               { href: '/nations', label: 'Nation Battle' },
               { href: '/leaderboard', label: 'Leaderboard' },
-              { href: '/track-record', label: 'Track Record' },
               { href: '/privacy', label: 'Privacy Policy' },
               { href: '/terms', label: 'Terms of Service' },
             ].map(({ href, label }) => (
