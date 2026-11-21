@@ -505,7 +505,7 @@ function UpcomingMatches() {
     const fetchMatches = async () => {
       const { data } = await supabase
         .from('matches')
-        .select('id, home_team, away_team, kickoff, status, league, competition, home_team_logo, away_team_logo')
+        .select('id, slug, home_team, away_team, kickoff, status, league, competition, home_team_logo, away_team_logo')
         .in('competition', ['EPL 2026/27', 'Liga 1 2026/27', 'Ghana PL 2026/27', 'UCL 2026/27', 'ISL 2026/27'])
         .in('status', ['upcoming', 'live'])
         .order('kickoff', { ascending: true })
@@ -550,7 +550,7 @@ function UpcomingMatches() {
   };
   const handleShare = (match: any) => {
     try {
-      const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const slug = match.slug || match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const url = `https://flipseer.com/matches/${slug}`;
       const comp = match.competition?.replace(/ 202\d\/\d\d$/, '') || 'Football';
       const shareText = `⚽ ${match.home_team} vs ${match.away_team} · ${comp}\n\nPredict the winner before kickoff 🔒\n👉 ${url}\n\n📲 Get live alerts → t.me/flipseer\n#Flipseer #Football`;
@@ -590,7 +590,7 @@ function UpcomingMatches() {
             const countdown = getCountdown(match.kickoff);
             const utcString = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
             const kickoffPast = new Date(utcString).getTime() < now.getTime();
-            const slug = match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            const slug = match.slug || match.home_team.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-vs-' + match.away_team.toLowerCase().replace(/[^a-z0-9]+/g, '-');
             return (
               <a key={match.id} href={`/matches/${slug}`} style={{ textDecoration: 'none', display: 'block' }}>
                 <div style={{ backgroundColor: '#0D2B14', border: '1px solid ' + (live ? '#8B5CF6' : '#2D1B69'), borderRadius: '12px', padding: '12px 14px', boxShadow: live ? '0 0 16px rgba(139,92,246,0.15)' : 'none' }}>
