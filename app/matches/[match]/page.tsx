@@ -90,6 +90,7 @@ export default async function MatchPage({ params }: Props) {
 
   const home = match.home_team;
   const away = match.away_team;
+  const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
 
   let predictions: any[] = [];
   let communityStats = { home: 0, draw: 0, away: 0, total: 0 };
@@ -112,6 +113,11 @@ export default async function MatchPage({ params }: Props) {
     communityStats[p.predicted_outcome as 'home' | 'draw' | 'away']++;
     communityStats.total++;
   });
+
+  const isCompleted = match.status === 'completed';
+  const homePct = communityStats.total > 0 ? Math.round((communityStats.home / communityStats.total) * 100) : 0;
+  const drawPct = communityStats.total > 0 ? Math.round((communityStats.draw / communityStats.total) * 100) : 0;
+  const awayPct = communityStats.total > 0 ? Math.round((communityStats.away / communityStats.total) * 100) : 0;
 
   // Fetch last 5 H2H results from matches table (completed only)
   let h2hMatches: any[] = [];
@@ -140,16 +146,87 @@ export default async function MatchPage({ params }: Props) {
     relatedMatches = related || [];
   }
 
+  // SportsEvent JSON-LD schema
+  const kickoffUtc = match.kickoff
+    ? (match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z')
+    : null;
+
+  const competitionMeta: Record<string, { tz: string; country: string; orgUrl: string }> = {
+    'Liga 1': { tz: '+07:00', country: 'Indonesia', orgUrl: 'https://flipseer.com/predictions/liga-1' },
+    'ISL': { tz: '+05:30', country: 'India', orgUrl: 'https://flipseer.com/predictions/isl' },
+    'EPL': { tz: '+00:00', country: 'England', orgUrl: 'https://flipseer.com/predictions/epl' },
+    'UCL': { tz: '+01:00', country: 'Europe', orgUrl: 'https://flipseer.com/predictions/ucl' },
+    'Ghana PL': { tz: '+00:00', country: 'Ghana', orgUrl: 'https://flipseer.com/predictions/ghana-pl' },
+  };
+  const meta = competitionMeta[competition] || { tz: '+00:00', country: 'International', orgUrl: 'https://flipseer.com' };
+
+  const startDate = kickoffUtc
+    ? kickoffUtc.replace('Z', meta.tz === '+00:00' ? 'Z' : meta.tz)
+    : null;
+
+  const eventStatus = isCompleted
+    ? 'https://schema.org/EventCompleted'
+    : 'https://schema.org/EventScheduled';
+
+  const jsonLd: any = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    'name': `${home} vs ${away} — ${competition} Prediction`,
+    'url': `https://flipseer.com/matches/${slug}`,
+    ...(startDate && { 'startDate': startDate }),
+    'eventStatus': eventStatus,
+    'location': {
+      '@type': 'Place',
+      'name': competition,
+      'address': { '@type': 'PostalAddress', 'addressCountry': meta.country },
+    },
+    'competitor': [
+      { '@type': 'SportsTeam', 'name': home, ...(match.home_team_logo && { 'logo': match.home_team_logo }) },
+      { '@type': 'SportsTeam', 'name': away, ...(match.away_team_logo && { 'logo': match.away_team_logo }) },
+    ],
+    'organizer': { '@type': 'Organization', 'name': competition, 'url': meta.orgUrl },
+    'description': isCompleted
+      ? `${home} ${match.home_score}-${match.away_score} ${away}. ${communityStats.total} Flipseer users predicted this ${competition} match.`
+      : `Predict ${home} vs ${away} in ${competition} before kickoff. Lock your call permanently on Flipseer. Free. No betting.`,
+  };
+
+  if (isCompleted && match.home_score !== null) {
+    jsonLd['subEvent'] = {
+      '@type': 'Event',
+      'name': 'Final Score',
+      'description': `${home} ${match.home_score} - ${match.away_score} ${away}`,
+    };
+  }
+
   return (
-    <MatchPageClient
-      home={home}
-      away={away}
-      slug={slug}
-      match={match}
-      predictions={predictions}
-      communityStats={communityStats}
-      h2hMatches={h2hMatches}
-      relatedMatches={relatedMatches}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div style={{ position: 'absolute', width: '1px', height: '1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' }}>
+        <h1>{home} vs {away} Prediction — {competition} | Flipseer</h1>
+        {isCompleted ? (
+          <p>Final result: {home} {match.home_score} - {match.away_score} {away}. {communityStats.total} Flipseer fans predicted this {competition} match. {homePct}% backed {home}, {drawPct}% predicted a draw, {awayPct}% backed {away}.</p>
+        ) : (
+          <p>Predict {home} vs {away} in {competition} before kickoff. {communityStats.total > 0 ? `${communityStats.total} predictions so far: ${homePct}% back ${home}, ${drawPct}% draw, ${awayPct}% back ${away}.` : 'Be the first to predict this match.'} Lock your prediction permanently on Flipseer. Free. No betting.</p>
+        )}
+        <ul>
+          {predictions.slice(0, 5).map((p: any, i: number) => (
+            <li key={i}>{p.profiles?.username || 'Forecaster'} ({p.profiles?.country || ''}): {p.predicted_outcome === 'home' ? home : p.predicted_outcome === 'away' ? away : 'Draw'} — {p.confidence_pct}% confidence{p.predicted_home_score !== null ? `, score: ${p.predicted_home_score}-${p.predicted_away_score}` : ''}</li>
+          ))}
+        </ul>
+      </div>
+      <MatchPageClient
+        home={home}
+        away={away}
+        slug={slug}
+        match={match}
+        predictions={predictions}
+        communityStats={communityStats}
+        h2hMatches={h2hMatches}
+        relatedMatches={relatedMatches}
+      />
+    </>
   );
 }
