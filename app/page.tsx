@@ -597,18 +597,18 @@ function UpcomingMatches() {
                   {/* Row 1: teams + logos */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
                     {/* Home */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, minHeight: '36px' }}>
                       {match.home_team_logo
                         ? <img src={match.home_team_logo} alt={match.home_team} width={22} height={22} style={{ objectFit: 'contain', flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         : <span style={{ fontSize: '14px', flexShrink: 0 }}>⚽</span>
                       }
-                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.home_team}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', lineHeight: '1.3' }}>{match.home_team}</span>
                     </div>
                     {/* vs */}
                     <span style={{ fontSize: '10px', color: '#8895A3', fontWeight: 'bold', flexShrink: 0, padding: '0 4px' }}>vs</span>
                     {/* Away */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'right' }}>{match.away_team}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, justifyContent: 'flex-end', minHeight: '36px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 'bold', color: 'white', textAlign: 'right', lineHeight: '1.3' }}>{match.away_team}</span>
                       {match.away_team_logo
                         ? <img src={match.away_team_logo} alt={match.away_team} width={22} height={22} style={{ objectFit: 'contain', flexShrink: 0 }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         : <span style={{ fontSize: '14px', flexShrink: 0 }}>⚽</span>
