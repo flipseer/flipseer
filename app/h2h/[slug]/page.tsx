@@ -10,8 +10,11 @@ function parseSlug(slug: string): { teamA: string; teamB: string } | null {
   // slug format: "persebaya-surabaya-vs-arema-fc"
   const vsIndex = slug.indexOf('-vs-');
   if (vsIndex === -1) return null;
-  const teamA = slug.slice(0, vsIndex).replace(/-/g, ' ');
-  const teamB = slug.slice(vsIndex + 4).replace(/-/g, ' ');
+  // Convert slug segments to Title Case
+  const toTitle = (s: string) =>
+    s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  const teamA = toTitle(slug.slice(0, vsIndex));
+  const teamB = toTitle(slug.slice(vsIndex + 4));
   return { teamA, teamB };
 }
 
@@ -92,13 +95,17 @@ export default async function H2HPage({ params }: Props) {
 
   const upcomingMatch = upcomingData?.[0] || null;
 
-  // Get logos from most recent match
-  const recentMatch = h2hMatches[0];
-  const teamALogo = recentMatch
-    ? (recentMatch.home_team.toLowerCase() === teamA.toLowerCase() ? recentMatch.home_team_logo : recentMatch.away_team_logo)
+  // Get logos: prefer completed H2H match, fall back to upcoming match
+  const logoSource = h2hMatches[0] || upcomingMatch;
+  const teamALogo = logoSource
+    ? (logoSource.home_team.toLowerCase() === teamA.toLowerCase()
+        ? logoSource.home_team_logo
+        : logoSource.away_team_logo)
     : null;
-  const teamBLogo = recentMatch
-    ? (recentMatch.home_team.toLowerCase() === teamA.toLowerCase() ? recentMatch.away_team_logo : recentMatch.home_team_logo)
+  const teamBLogo = logoSource
+    ? (logoSource.home_team.toLowerCase() === teamA.toLowerCase()
+        ? logoSource.away_team_logo
+        : logoSource.home_team_logo)
     : null;
 
   return (
