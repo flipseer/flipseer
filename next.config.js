@@ -96,6 +96,91 @@ const nextConfig = {
         destination: '/nigeria-premier-league',
         permanent: true,
       },
+
+      // ── GSC redirect-error fixes (17 broken URLs) ──────────────────────────
+
+      // Country/league hub pages that moved or were removed
+      {
+        source: '/indonesia',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/argentina',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/ghana',
+        destination: '/ghana-premier-league',
+        permanent: true,
+      },
+      {
+        source: '/nigeria',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/brazil',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/epl',
+        destination: '/premier-league',
+        permanent: true,
+      },
+      {
+        source: '/groups',
+        destination: '/predict',
+        permanent: true,
+      },
+
+      // Old league sub-routes
+      {
+        source: '/leagues/country',
+        destination: '/leaderboard',
+        permanent: true,
+      },
+      {
+        source: '/leagues/friends',
+        destination: '/leaderboard',
+        permanent: true,
+      },
+
+      // Static pages that moved
+      {
+        source: '/how-to-play',
+        destination: '/how-to-predict-football',
+        permanent: true,
+      },
+      {
+        source: '/football-reputation',
+        destination: '/predict',
+        permanent: true,
+      },
+
+      // Old World Cup match pages (deleted from DB) → predict page
+      {
+        source: '/matches/norway-vs-england',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/matches/argentina-vs-switzerland',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/matches/spain-vs-belgium',
+        destination: '/predict',
+        permanent: true,
+      },
+      {
+        source: '/matches/france-vs-morocco',
+        destination: '/predict',
+        permanent: true,
+      },
     ]
   },
 }
