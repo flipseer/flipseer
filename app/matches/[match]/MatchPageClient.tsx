@@ -144,7 +144,29 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
 
   const competition = match?.competition?.replace(' 2026/27', '') || 'Football';
 
-  const shareText = `⚽ ${home} vs ${away} — ${competition}\n\n${communityStats.total > 0 ? `${homePct}% predict ${home} win · ${drawPct}% Draw · ${awayPct}% ${away} win\n\n` : ''}What's your prediction? → flipseer.com/matches/${slug}\n\nFree. No betting. Pure football. #Flipseer`;
+  // Build lock time string for share text
+  const lockTimeStr = (() => {
+    if (!match?.kickoff || !isUpcoming) return '';
+    const utc = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
+    const d = new Date(utc);
+    const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return `🕐 Lock closes ${time} on ${date}`;
+  })();
+
+  // Dynamic share text with community split and lock time
+  const shareText = [
+    `⚽ ${home} vs ${away} — ${competition}`,
+    lockTimeStr,
+    communityStats.total > 0
+      ? `📊 ${homePct}% back ${home} · ${drawPct}% Draw · ${awayPct}% ${away}`
+      : '',
+    `\nPredict before kickoff → flipseer.com/matches/${slug}`,
+    `No betting · permanent record · #Flipseer`,
+  ].filter(Boolean).join('\n');
+
+  // Auth URL with return redirect
+  const authUrl = `/auth?next=/matches/${encodeURIComponent(slug)}`;
 
   const formatKickoff = (kickoff: string) => {
     if (!kickoff) return '';
@@ -256,7 +278,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {isUpcoming && (
-            <a href="/predict" style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
+            // FIX: was href="/predict" — now sends to auth with return URL
+            <a href={authUrl} style={{ backgroundColor: '#2E9E5E', color: 'white', padding: '12px 28px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
               ⚽ Predict This Match →
             </a>
           )}
@@ -371,7 +394,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '14px', padding: '32px', textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎯</div>
             <p style={{ color: '#6B7280', fontSize: '15px', margin: '0 0 16px 0' }}>No predictions yet — be the first to call it!</p>
-            <a href="/predict" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
+            {/* FIX: was href="/predict" — now sends to auth with return URL */}
+            <a href={authUrl} style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px' }}>
               Make Your Prediction →
             </a>
           </div>
@@ -595,7 +619,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
           <p style={{ color: '#6B7280', fontSize: '13px', margin: '0 0 16px 0' }}>
             Predict. Lock before kickoff. Build your permanent football record.
           </p>
-          <a href="/auth" style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
+          {/* FIX: added ?next= so user returns here after auth */}
+          <a href={authUrl} style={{ display: 'inline-block', backgroundColor: '#1A7A4A', color: 'white', padding: '14px 32px', borderRadius: '10px', textDecoration: 'none', fontSize: '15px', fontWeight: 'bold' }}>
             Predict Free →
           </a>
           <p style={{ color: '#4B5563', fontSize: '11px', marginTop: '10px' }}>Free forever · No card · No betting</p>
