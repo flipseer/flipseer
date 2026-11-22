@@ -135,6 +135,8 @@ export default function Auth() {
   const [detectedNation, setDetectedNation] = useState('');
 
   const [joinCode, setJoinCode] = useState('');
+  // FIX: read ?next= param so users return to the page they came from after auth
+  const [nextUrl, setNextUrl] = useState('/predict');
 
   useEffect(() => {
     try {
@@ -145,10 +147,13 @@ export default function Auth() {
         if (code) setCountry(code);
       }
     } catch (e) {}
-    // Check for join code in URL
+    // Check for join code and next URL in URL params
     const params = new URLSearchParams(window.location.search);
     const jc = params.get('join');
     if (jc) setJoinCode(jc.toUpperCase());
+    // FIX: read and validate ?next= param
+    const next = params.get('next');
+    if (next && next.startsWith('/')) setNextUrl(next);
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -157,7 +162,8 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // FIX: pass ?next= through to callback so returning users land back on the match page
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });
@@ -169,7 +175,10 @@ export default function Auth() {
     setMessage('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'x',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        // FIX: pass ?next= through to callback so returning users land back on the match page
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
+      },
     });
     if (error) { setMessage(error.message); setXLoading(false); }
   };
@@ -198,10 +207,11 @@ export default function Auth() {
         // Ensure profile exists on every login — catches missed signups
         const fallbackUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '') + '_' + data.user.id.slice(-4);
         await ensureProfile(data.user.id, email, fallbackUsername, null);
+        // FIX: use nextUrl so user returns to match page; joinCode takes priority
         if (joinCode) {
           window.location.href = '/groups?join=' + joinCode;
         } else {
-          window.location.href = '/predict';
+          window.location.href = nextUrl;
         }
       }
     } else {
@@ -226,6 +236,7 @@ export default function Auth() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username, country }),
         }).catch(() => {});
+        // New user onboarding flow stays unchanged — always goes to groups/welcome
         if (joinCode) {
           window.location.href = '/groups?join=' + joinCode;
         } else {
