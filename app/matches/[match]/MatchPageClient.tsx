@@ -52,6 +52,24 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   const [liveStatus, setLiveStatus] = useState<string>(match?.status || 'upcoming');
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [events, setEvents] = useState<any[]>([]);
+  // HYDRATION FIX: date formatting is locale/timezone-dependent — must be client-only
+  const [kickoffDisplay, setKickoffDisplay] = useState<string>('');
+  const [h2hDates, setH2hDates] = useState<string[]>([]);
+
+  // HYDRATION FIX: populate date strings client-side only, after mount
+  useEffect(() => {
+    if (match?.kickoff) {
+      const utc = match.kickoff.endsWith('Z') ? match.kickoff : match.kickoff.replace(' ', 'T') + 'Z';
+      setKickoffDisplay(new Date(utc).toLocaleString('en-GB', {
+        day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: true,
+      }));
+    }
+    setH2hDates(h2hMatches.map(m => {
+      if (!m.kickoff) return '';
+      const utc = m.kickoff.endsWith('Z') ? m.kickoff : m.kickoff.replace(' ', 'T') + 'Z';
+      return new Date(utc).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
+    }));
+  }, [match?.kickoff, h2hMatches]);
 
   useEffect(() => {
     const kickoffPassed = match?.kickoff
@@ -168,20 +186,6 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
   // Auth URL with return redirect
   const authUrl = `/auth?next=/matches/${encodeURIComponent(slug)}`;
 
-  const formatKickoff = (kickoff: string) => {
-    if (!kickoff) return '';
-    const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
-    return new Date(utc).toLocaleString('en-GB', {
-      day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', hour12: true,
-    });
-  };
-
-  const formatH2HDate = (kickoff: string | null) => {
-    if (!kickoff) return '';
-    const utc = kickoff.endsWith('Z') ? kickoff : kickoff.replace(' ', 'T') + 'Z';
-    return new Date(utc).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
-  };
-
   const getEventIcon = (e: any) => {
     if (e.type === 'Goal') {
       if (e.detail === 'Own Goal') return '⚽🔴';
@@ -254,8 +258,8 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
             ) : (
               <div style={{ fontSize: '24px', color: '#4B5563', fontWeight: 'bold' }}>vs</div>
             )}
-            {match?.kickoff && !isCompleted && !isLive && (
-              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px', whiteSpace: 'nowrap' }}>{formatKickoff(match.kickoff)}</div>
+            {kickoffDisplay && !isCompleted && !isLive && (
+              <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '8px', whiteSpace: 'nowrap' }}>{kickoffDisplay}</div>
             )}
           </div>
 
@@ -413,18 +417,19 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
                 const flag = COUNTRY_FLAGS[p.profiles?.country] || '🌍';
                 const hasScore = p.predicted_home_score !== null && p.predicted_away_score !== null;
                 return (
-                  <div key={i} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  // DEAD CLICK FIX: whole row is now a link, not just the @username text
+                  <a key={i} href={`/u/${p.profiles?.username}`} style={{ backgroundColor: '#0D2B14', border: '1px solid #1A3A1A', borderRadius: '10px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: 'inherit' }}>
                     <span style={{ fontSize: '18px' }}>{flag}</span>
                     <div style={{ flex: 1 }}>
-                      <a href={`/u/${p.profiles?.username}`} style={{ fontSize: '13px', fontWeight: 'bold', color: '#2E9E5E', textDecoration: 'none' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#2E9E5E' }}>
                         @{p.profiles?.username}
-                      </a>
+                      </div>
                       <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
                         {outcome}{hasScore ? ` · ${p.predicted_home_score}-${p.predicted_away_score}` : ''} · {p.confidence_pct}% confidence
                       </div>
                     </div>
                     <span style={{ fontSize: '10px', color: '#4B5563', backgroundColor: '#1A3A1A', padding: '2px 8px', borderRadius: '999px' }}>🔒 Locked</span>
-                  </div>
+                  </a>
                 );
               })}
             </div>
@@ -515,7 +520,7 @@ export default function MatchPageClient({ home, away, slug, match, predictions, 
                       {result}
                     </span>
                     <span style={{ color: '#4B5563', fontSize: '11px', flexShrink: 0, minWidth: '52px', textAlign: 'right' }}>
-                      {formatH2HDate(m.kickoff)}
+                      {h2hDates[i] || ''}
                     </span>
                   </div>
                 );
