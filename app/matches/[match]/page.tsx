@@ -16,9 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // Added `id` to select so we can count predictions for noindex decision
   const { data: matches } = await supabase
     .from('matches')
-    .select('home_team, away_team, competition, kickoff, home_score, away_score, status')
+    .select('id, home_team, away_team, competition, kickoff, home_score, away_score, status')
     .eq('slug', slug)
     .limit(1);
 
@@ -34,6 +35,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? ` | Result: ${match.home_score}-${match.away_score}`
     : '';
 
+  // NOINDEX FIX: completed pages with zero predictions get noindex,follow
+  // so Google stops crawling thin content pages and focuses crawl budget
+  // on pages that actually have user predictions.
+  let robotsDirective = 'index,follow';
+  if (isCompleted && match?.id) {
+    const { count } = await supabase
+      .from('predictions')
+      .select('id', { count: 'exact', head: true })
+      .eq('match_id', match.id);
+    if ((count ?? 0) === 0) {
+      robotsDirective = 'noindex,follow';
+    }
+  }
+
   const title = `${home} vs ${away} Prediction | ${competition} | Flipseer`;
   const desc = isCompleted
     ? `${home} ${match?.home_score}-${match?.away_score} ${away}${resultStr}. See what Flipseer fans predicted before kickoff. Build your own football reputation. Free.`
@@ -46,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     alternates: {
       canonical: `https://flipseer.com/matches/${slug}`,
     },
+    robots: robotsDirective,
     openGraph: {
       title,
       description: desc,
