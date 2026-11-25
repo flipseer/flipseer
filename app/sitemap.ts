@@ -28,7 +28,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]
 
   // ── Match pages ───────────────────────────────────────────────────────────
-  // Fetch in batches to get all 1,400+ matches
   async function fetchMatchBatch(from: number, to: number) {
     const { data } = await supabase
       .from('matches')
@@ -48,14 +47,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const allMatches = [...batch1, ...batch2, ...batch3]
 
+  // LASTMOD FIX: never emit a future date as lastmod.
+  // Future kickoffs → today (honest: page exists and is current).
+  // Past kickoffs   → kickoff date (match happened, page is stable).
+  const now = new Date();
+
   const matchPages: MetadataRoute.Sitemap = allMatches
     .filter((m) => m.slug && m.slug.trim() !== '')
-    .map((m) => ({
-      url: `${base}/matches/${m.slug}`,
-      lastModified: new Date(m.kickoff),
-      changeFrequency: (m.status === 'completed' ? 'monthly' : 'daily') as 'monthly' | 'daily',
-      priority: m.status === 'completed' ? 0.65 : 0.8,
-    }))
+    .map((m) => {
+      const kickoffDate = m.kickoff ? new Date(m.kickoff) : null;
+      const lastModified = kickoffDate && kickoffDate <= now ? kickoffDate : now;
+
+      return {
+        url: `${base}/matches/${m.slug}`,
+        lastModified,
+        changeFrequency: (m.status === 'completed' ? 'monthly' : 'daily') as 'monthly' | 'daily',
+        priority: m.status === 'completed' ? 0.65 : 0.8,
+      };
+    });
 
   // ── Profile pages ─────────────────────────────────────────────────────────
   const { data: profiles } = await supabase
@@ -70,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((p) => p.username)
     .map((p) => ({
       url: `${base}/u/${p.username}`,
-      lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
+      lastModified: p.updated_at ? new Date(p.updated_at) : now,
       changeFrequency: 'weekly' as const,
       priority: 0.7,
     }))
