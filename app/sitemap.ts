@@ -9,17 +9,7 @@ const supabase = createClient(
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://flipseer.com'
 
-  // ── Static pages ──────────────────────────────────────────────────────────
-    const staticPages: MetadataRoute.Sitemap = [
-    { url: `${base}/`,                     priority: 1.0,  changeFrequency: 'daily'   },
-    { url: `${base}/leaderboard`,          priority: 0.9,  changeFrequency: 'daily'   },
-    { url: `${base}/predict`,              priority: 0.9,  changeFrequency: 'daily'   },
-    { url: `${base}/premier-league`,       priority: 0.85, changeFrequency: 'daily'   },
-    { url: `${base}/ucl`,                  priority: 0.85, changeFrequency: 'daily'   },
-    { url: `${base}/indian-super-league`,  priority: 0.8,  changeFrequency: 'daily'   },
-    { url: `${base}/nations`,              priority: 0.8,  changeFrequency: 'weekly'  },
-    { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily'   },
-      const staticPages: MetadataRoute.Sitemap = [
+  const staticPages: MetadataRoute.Sitemap = [
     { url: `${base}/`,                     priority: 1.0,  changeFrequency: 'daily'  },
     { url: `${base}/leaderboard`,          priority: 0.9,  changeFrequency: 'daily'  },
     { url: `${base}/predict`,              priority: 0.9,  changeFrequency: 'daily'  },
@@ -30,10 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily'  },
     { url: `${base}/track-record`,         priority: 0.8,  changeFrequency: 'daily'  },
   ]
-    { url: `${base}/track-record`,         priority: 0.8,  changeFrequency: 'daily'   },
-  ]
 
-  // ── Match pages ───────────────────────────────────────────────────────────
   async function fetchMatchBatch(from: number, to: number) {
     const { data } = await supabase
       .from('matches')
@@ -52,27 +39,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ])
 
   const allMatches = [...batch1, ...batch2, ...batch3]
-
-  // LASTMOD FIX: never emit a future date as lastmod.
-  // Future kickoffs → today (honest: page exists and is current).
-  // Past kickoffs   → kickoff date (match happened, page is stable).
-  const now = new Date();
+  const now = new Date()
 
   const matchPages: MetadataRoute.Sitemap = allMatches
     .filter((m) => m.slug && m.slug.trim() !== '')
     .map((m) => {
-      const kickoffDate = m.kickoff ? new Date(m.kickoff) : null;
-      const lastModified = kickoffDate && kickoffDate <= now ? kickoffDate : now;
-
+      const kickoffDate = m.kickoff ? new Date(m.kickoff) : null
+      const lastModified = kickoffDate && kickoffDate <= now ? kickoffDate : now
       return {
         url: `${base}/matches/${m.slug}`,
         lastModified,
         changeFrequency: (m.status === 'completed' ? 'monthly' : 'daily') as 'monthly' | 'daily',
         priority: m.status === 'completed' ? 0.65 : 0.8,
-      };
-    });
+      }
+    })
 
-  // ── Profile pages ─────────────────────────────────────────────────────────
   const { data: profiles } = await supabase
     .from('profiles')
     .select('username, updated_at')
