@@ -19,7 +19,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/indian-super-league`,  priority: 0.8,  changeFrequency: 'daily'   },
     { url: `${base}/nations`,              priority: 0.8,  changeFrequency: 'weekly'  },
     { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily'   },
-    { url: `${base}/auth`,                 priority: 0.6,  changeFrequency: 'monthly' },
+      const staticPages: MetadataRoute.Sitemap = [
+    { url: `${base}/`,                     priority: 1.0,  changeFrequency: 'daily'  },
+    { url: `${base}/leaderboard`,          priority: 0.9,  changeFrequency: 'daily'  },
+    { url: `${base}/predict`,              priority: 0.9,  changeFrequency: 'daily'  },
+    { url: `${base}/premier-league`,       priority: 0.85, changeFrequency: 'daily'  },
+    { url: `${base}/ucl`,                  priority: 0.85, changeFrequency: 'daily'  },
+    { url: `${base}/indian-super-league`,  priority: 0.8,  changeFrequency: 'daily'  },
+    { url: `${base}/nations`,              priority: 0.8,  changeFrequency: 'weekly' },
+    { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily'  },
+    { url: `${base}/track-record`,         priority: 0.8,  changeFrequency: 'daily'  },
+  ]
     { url: `${base}/track-record`,         priority: 0.8,  changeFrequency: 'daily'   },
   ]
 
