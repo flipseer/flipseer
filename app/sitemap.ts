@@ -10,20 +10,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://flipseer.com'
 
   // ── Static pages ──────────────────────────────────────────────────────────
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${base}/`,                   priority: 1.0,  changeFrequency: 'daily'   },
-    { url: `${base}/leaderboard`,        priority: 0.9,  changeFrequency: 'daily'   },
-    { url: `${base}/predict`,            priority: 0.9,  changeFrequency: 'daily'   },
-    { url: `${base}/premier-league`,     priority: 0.85, changeFrequency: 'daily'   },
-    { url: `${base}/ucl`,                priority: 0.85, changeFrequency: 'daily'   },
-    { url: `${base}/indian-super-league`, priority: 0.8, changeFrequency: 'daily'   },
-    { url: `${base}/nations`,            priority: 0.8,  changeFrequency: 'weekly'  },
-    { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily' },
-    { url: `${base}/indonesia`,            priority: 0.75, changeFrequency: 'daily' },
-      { url: `${base}/world-cup-2026-predictions`,           priority: 0.7, changeFrequency: 'weekly' },
-    { url: `${base}/football-prediction-accuracy-tracker`, priority: 0.65, changeFrequency: 'monthly' },
-    { url: `${base}/auth`,               priority: 0.6,  changeFrequency: 'monthly' },
-    { url: `${base}/track-record`, priority: 0.8, changeFrequency: 'daily' },
+    const staticPages: MetadataRoute.Sitemap = [
+    { url: `${base}/`,                     priority: 1.0,  changeFrequency: 'daily'   },
+    { url: `${base}/leaderboard`,          priority: 0.9,  changeFrequency: 'daily'   },
+    { url: `${base}/predict`,              priority: 0.9,  changeFrequency: 'daily'   },
+    { url: `${base}/premier-league`,       priority: 0.85, changeFrequency: 'daily'   },
+    { url: `${base}/ucl`,                  priority: 0.85, changeFrequency: 'daily'   },
+    { url: `${base}/indian-super-league`,  priority: 0.8,  changeFrequency: 'daily'   },
+    { url: `${base}/nations`,              priority: 0.8,  changeFrequency: 'weekly'  },
+    { url: `${base}/ghana-premier-league`, priority: 0.75, changeFrequency: 'daily'   },
+    { url: `${base}/auth`,                 priority: 0.6,  changeFrequency: 'monthly' },
+    { url: `${base}/track-record`,         priority: 0.8,  changeFrequency: 'daily'   },
   ]
 
   // ── Match pages ───────────────────────────────────────────────────────────
