@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   creator: 'Flipseer',
   publisher: 'Flipseer',
   metadataBase: new URL('https://flipseer.com'),
-    manifest: '/manifest.json',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
