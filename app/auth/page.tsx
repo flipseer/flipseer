@@ -84,14 +84,12 @@ const NATION_TO_CODE: { [key: string]: string } = {
 
 // ── SAFE PROFILE CREATOR — called after any signup method ──
 async function ensureProfile(userId: string, email: string, username: string, country: string | null) {
-  // Check if profile already exists
   const { data: existing } = await supabase
     .from('profiles')
     .select('id')
     .eq('id', userId)
     .single();
-  if (existing) return; // Already has profile — skip
-  // Create profile
+  if (existing) return;
   const { error } = await supabase.from('profiles').insert({
     id: userId,
     username: username.trim(),
@@ -107,8 +105,6 @@ async function ensureProfile(userId: string, email: string, username: string, co
     rank_icon: '🥉',
   });
   if (error) {
-    console.error('Profile creation failed:', error.message);
-    // Retry with upsert as fallback
     await supabase.from('profiles').upsert([{
       id: userId,
       username: username.trim(),
@@ -133,10 +129,11 @@ export default function Auth() {
   const [xLoading, setXLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [detectedNation, setDetectedNation] = useState('');
-
   const [joinCode, setJoinCode] = useState('');
-  // FIX: read ?next= param so users return to the page they came from after auth
   const [nextUrl, setNextUrl] = useState('/predict');
+
+  // Derived: true when user came from a match page
+  const fromMatchPage = nextUrl !== '/predict';
 
   useEffect(() => {
     try {
@@ -147,11 +144,9 @@ export default function Auth() {
         if (code) setCountry(code);
       }
     } catch (e) {}
-    // Check for join code and next URL in URL params
     const params = new URLSearchParams(window.location.search);
     const jc = params.get('join');
     if (jc) setJoinCode(jc.toUpperCase());
-    // FIX: read and validate ?next= param
     const next = params.get('next');
     if (next && next.startsWith('/')) setNextUrl(next);
   }, []);
@@ -162,7 +157,6 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        // FIX: pass ?next= through to callback so returning users land back on the match page
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
@@ -176,7 +170,6 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'x',
       options: {
-        // FIX: pass ?next= through to callback so returning users land back on the match page
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextUrl)}`,
       },
     });
@@ -204,10 +197,8 @@ export default function Auth() {
       if (error) {
         setMessage(error.message);
       } else if (data.user) {
-        // Ensure profile exists on every login — catches missed signups
         const fallbackUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '') + '_' + data.user.id.slice(-4);
         await ensureProfile(data.user.id, email, fallbackUsername, null);
-        // FIX: use nextUrl so user returns to match page; joinCode takes priority
         if (joinCode) {
           window.location.href = '/groups?join=' + joinCode;
         } else {
@@ -217,7 +208,6 @@ export default function Auth() {
     } else {
       if (!username.trim()) { setMessage('Username is required'); setLoading(false); return; }
       if (username.trim().length < 3) { setMessage('Username must be at least 3 characters'); setLoading(false); return; }
-      // Check username not taken
       const { data: existing } = await supabase
         .from('profiles')
         .select('id')
@@ -228,17 +218,17 @@ export default function Auth() {
       if (error && error.message !== 'Error sending confirmation email') {
         setMessage(error.message);
       } else if (data.user) {
-        // Create profile with guaranteed execution
         await ensureProfile(data.user.id, email, username, country || null);
-        // Welcome email — fire and forget
         fetch('/api/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, username, country }),
         }).catch(() => {});
-        // New user onboarding flow stays unchanged — always goes to groups/welcome
+        // SOFT-AUTH FIX: return to match page after signup
         if (joinCode) {
           window.location.href = '/groups?join=' + joinCode;
+        } else if (fromMatchPage) {
+          window.location.href = nextUrl + '?new_user=1';
         } else {
           window.location.href = '/groups?welcome=1';
         }
@@ -287,28 +277,39 @@ export default function Auth() {
   return (
     <main style={{ backgroundColor: '#0D1F0F', minHeight: '100vh', fontFamily: 'Arial, sans-serif', color: 'white', display: 'flex', flexDirection: 'column' }}>
       {/* BANNER */}
-      <div style={{ backgroundColor: '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
+      <div style={{ backgroundColor: fromMatchPage ? '#1A3A5C' : '#4C1D95', padding: '10px 20px', textAlign: 'center' }}>
         <span style={{ fontSize: '13px', color: 'white', fontWeight: 'bold' }}>
           {joinCode
             ? `🏆 Sign in to join the league — Code: ${joinCode}`
+            : fromMatchPage
+            ? '⚽ Create a free account to lock your prediction'
             : <>🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL 2026/27 starts August 21 —{' '}
-          {detectedNation
-            ? `Represent ${detectedNation}. Predict every match free.`
-            : 'Predict every match. Represent your nation. Free forever.'
-          }</>
+              {detectedNation
+                ? `Represent ${detectedNation}. Predict every match free.`
+                : 'Predict every match. Represent your nation. Free forever.'
+              }</>
           }
         </span>
       </div>
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
         <div style={{ backgroundColor: '#0D2B14', border: '1px solid #1A7A4A', borderRadius: '16px', padding: '36px', width: '100%', maxWidth: '420px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '8px' }}>🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
+            <div style={{ fontSize: '36px', marginBottom: '8px' }}>
+              {fromMatchPage ? '⚽' : '🏴󠁧󠁢󠁥󠁮󠁧󠁿'}
+            </div>
             <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '6px' }}>
-              {isLogin ? 'Welcome back' : detectedNation ? `Represent ${detectedNation}` : 'Build your reputation'}
+              {isLogin
+                ? 'Welcome back'
+                : fromMatchPage
+                ? 'Lock in your prediction'
+                : detectedNation ? `Represent ${detectedNation}` : 'Build your reputation'
+              }
             </h1>
             <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
               {isLogin
                 ? 'Sign in to your forecasting profile'
+                : fromMatchPage
+                ? 'Free account · takes 10 seconds · prediction saves automatically'
                 : detectedNation
                   ? `Join ${detectedNation}'s forecasters. Predict. Earn points. Build legacy.`
                   : 'Join the global football forecasting competition'
@@ -422,7 +423,16 @@ export default function Auth() {
           )}
           <button onClick={handleAuth} disabled={loading}
             style={{ width: '100%', padding: '14px', backgroundColor: '#1A7A4A', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
-            {loading ? 'Please wait...' : isLogin ? 'Sign In →' : detectedNation ? `Join & Represent ${detectedNation} →` : 'Create Account →'}
+            {loading
+              ? 'Please wait...'
+              : isLogin
+              ? 'Sign In →'
+              : fromMatchPage
+              ? 'Create Account & Lock Prediction →'
+              : detectedNation
+              ? `Join & Represent ${detectedNation} →`
+              : 'Create Account →'
+            }
           </button>
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
             <span style={{ color: '#6B7280', fontSize: '13px' }}>
