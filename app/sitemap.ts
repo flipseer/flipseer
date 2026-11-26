@@ -24,25 +24,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   async function fetchMatchBatch(from: number, to: number) {
     const { data } = await supabase
       .from('matches')
-      .select('slug, kickoff, status')
-      .in('status', ['completed', 'upcoming', 'live', 'locked'])
+      .select('slug, kickoff, status, prediction_count')
       .not('slug', 'is', null)
       .order('kickoff', { ascending: false })
       .range(from, to)
     return data ?? []
   }
 
-  const [batch1, batch2, batch3] = await Promise.all([
+  const [batch1, batch2] = await Promise.all([
     fetchMatchBatch(0, 499),
     fetchMatchBatch(500, 999),
-    fetchMatchBatch(1000, 1499),
   ])
 
-  const allMatches = [...batch1, ...batch2, ...batch3]
+  const allMatches = [...batch1, ...batch2]
   const now = new Date()
 
   const matchPages: MetadataRoute.Sitemap = allMatches
-    .filter((m) => m.slug && m.slug.trim() !== '')
+    .filter((m) => {
+      if (!m.slug || m.slug.trim() === '') return false
+      // Exclude completed matches with zero predictions — they have noindex anyway
+      if (m.status === 'completed' && (!m.prediction_count || m.prediction_count === 0)) return false
+      // Only include upcoming/live/locked and completed matches with predictions
+      return ['upcoming', 'live', 'locked', 'completed'].includes(m.status)
+    })
     .map((m) => {
       const kickoffDate = m.kickoff ? new Date(m.kickoff) : null
       const lastModified = kickoffDate && kickoffDate <= now ? kickoffDate : now
